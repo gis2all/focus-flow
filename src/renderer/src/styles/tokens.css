@@ -32,6 +32,8 @@
   --mountain-a: rgba(170, 196, 237, 0.44);
   --mountain-b: rgba(196, 214, 244, 0.55);
   --mountain-c: rgba(224, 234, 248, 0.82);
+  --scrollbar-thumb: rgba(60, 90, 130, 0.22);
+  --scrollbar-thumb-hover: rgba(60, 90, 130, 0.34);
 }
 
 :root[data-theme="dark"] {
@@ -57,10 +59,41 @@
   --mountain-a: rgba(18, 77, 151, 0.48);
   --mountain-b: rgba(13, 55, 109, 0.7);
   --mountain-c: rgba(8, 29, 57, 0.95);
+  --scrollbar-thumb: rgba(120, 160, 210, 0.28);
+  --scrollbar-thumb-hover: rgba(120, 160, 210, 0.42);
 }
 
 * {
   box-sizing: border-box;
+  scrollbar-color: var(--scrollbar-thumb) transparent;
+  scrollbar-width: thin;
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  background-clip: content-box;
+  border: 2px solid transparent;
+  border-radius: 4px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+  background-clip: content-box;
+}
+
+*::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 body {

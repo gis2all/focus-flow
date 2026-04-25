@@ -1,6 +1,5 @@
-import type { ReactElement } from 'react'
+import { useState, type FocusEvent, type KeyboardEvent, type ReactElement } from 'react'
 import type { AppSettings, ThemePreference } from '@shared/types'
-import { settingLabels, settingsSections } from '../appConfig'
 import styles from '../App.module.css'
 
 interface SettingsViewProps {
@@ -9,92 +8,289 @@ interface SettingsViewProps {
   updateSettings(patch: Partial<AppSettings>): Promise<void>
 }
 
-export const SettingsView = ({ activeTheme, settings, updateSettings }: SettingsViewProps): ReactElement => (
-  <div className={styles.settingsView}>
-    <aside className={styles.settingsTabs}>
-      {settingsSections.map((section, index) => (
-        <button className={index === 0 ? styles.settingsTabActive : ''} key={section} type="button">
-          {section}
-        </button>
-      ))}
-    </aside>
+type SelectOption<T extends string> = {
+  label: string
+  value: T
+}
 
+type StepperDirection = 'up' | 'down'
+
+type NumericSettingKey = 'focusMinutes' | 'shortBreakMinutes' | 'longBreakMinutes' | 'longBreakInterval'
+
+export const getNextStepperValue = (value: number, direction: StepperDirection): number =>
+  Math.max(1, direction === 'up' ? value + 1 : value - 1)
+
+export const parseStepperDraft = (draft: string, fallback: number): number => {
+  const trimmed = draft.trim()
+  if (!trimmed) return fallback
+  const value = Number(trimmed)
+  if (!Number.isFinite(value)) return fallback
+  return Math.max(1, Math.round(value))
+}
+
+const manualBreakOptions: Array<SelectOption<'manualBreak' | 'autoBreak'>> = [
+  { value: 'manualBreak', label: '由用户入场休息' },
+  { value: 'autoBreak', label: '自动进入休息' }
+]
+
+const manualFocusOptions: Array<SelectOption<'manualFocus' | 'autoFocus'>> = [
+  { value: 'manualFocus', label: '由用户入场专注' },
+  { value: 'autoFocus', label: '自动进入专注' }
+]
+
+const themeOptions: Array<SelectOption<ThemePreference>> = [
+  { value: 'system', label: '跟随系统' },
+  { value: 'light', label: '白天模式' },
+  { value: 'dark', label: '黑暗模式' }
+]
+
+const timerSteppers: Array<{ key: NumericSettingKey; label: string; unit: string }> = [
+  { key: 'focusMinutes', label: '专注时长', unit: '分钟' },
+  { key: 'shortBreakMinutes', label: '短休时长', unit: '分钟' },
+  { key: 'longBreakMinutes', label: '长休时长', unit: '分钟' },
+  { key: 'longBreakInterval', label: '长休间隔', unit: '轮' }
+]
+
+interface SettingSwitchProps {
+  checked: boolean
+  label: string
+  onChange(value: boolean): void
+}
+
+const SettingSwitch = ({ checked, label, onChange }: SettingSwitchProps): ReactElement => (
+  <label className={styles.settingLine}>
+    <span>{label}</span>
+    <input checked={checked} onChange={(event) => onChange(event.target.checked)} type="checkbox" />
+  </label>
+)
+
+interface SettingSelectProps<T extends string> {
+  label: string
+  options: Array<SelectOption<T>>
+  value: T
+  onChange(value: T): void
+}
+
+const SettingSelect = <T extends string>({
+  label,
+  options,
+  value,
+  onChange
+}: SettingSelectProps<T>): ReactElement => {
+  const [isOpen, setIsOpen] = useState(false)
+  const selected = options.find((option) => option.value === value) ?? options[0]
+
+  const closeOnFocusLeave = (event: FocusEvent<HTMLDivElement>): void => {
+    const nextTarget = event.relatedTarget as Node | null
+    if (!nextTarget || !event.currentTarget.contains(nextTarget)) {
+      setIsOpen(false)
+    }
+  }
+
+  return (
+    <div className={styles.settingLine}>
+      <span>{label}</span>
+      <div className={styles.settingsSelect} onBlur={closeOnFocusLeave}>
+        <button
+          aria-expanded={isOpen}
+          aria-haspopup="listbox"
+          className={`${styles.settingsSelectButton} ${isOpen ? styles.settingsSelectButtonOpen : ''}`}
+          onClick={() => setIsOpen((current) => !current)}
+          type="button"
+        >
+          <span>{selected.label}</span>
+          <span aria-hidden="true" className={styles.settingsSelectChevron}>
+            ▼
+          </span>
+        </button>
+        {isOpen ? (
+          <div className={styles.settingsSelectMenu} role="listbox">
+            {options.map((option) => (
+              <button
+                aria-selected={option.value === value}
+                className={`${styles.settingsSelectOption} ${
+                  option.value === value ? styles.settingsSelectOptionActive : ''
+                }`}
+                key={option.value}
+                onClick={() => {
+                  onChange(option.value)
+                  setIsOpen(false)
+                }}
+                role="option"
+                type="button"
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        ) : null}
+      </div>
+    </div>
+  )
+}
+
+interface SettingStepperProps {
+  label: string
+  unit: string
+  value: number
+  onChange(value: number): void
+}
+
+const SettingStepper = ({ label, unit, value, onChange }: SettingStepperProps): ReactElement => {
+  const [isEditing, setIsEditing] = useState(false)
+  const [draft, setDraft] = useState(`${value}`)
+
+  const saveDraft = (): void => {
+    const nextValue = parseStepperDraft(draft, value)
+    setIsEditing(false)
+    setDraft(`${nextValue}`)
+    if (nextValue !== value) {
+      onChange(nextValue)
+    }
+  }
+
+  const cancelDraft = (): void => {
+    setIsEditing(false)
+    setDraft(`${value}`)
+  }
+
+  const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>): void => {
+    if (event.key === 'Enter') {
+      event.preventDefault()
+      saveDraft()
+      return
+    }
+
+    if (event.key === 'Escape') {
+      event.preventDefault()
+      cancelDraft()
+    }
+  }
+
+  return (
+    <div className={styles.settingLine}>
+      <span>{label}</span>
+      <div className={styles.settingStepper}>
+        {isEditing ? (
+          <input
+            autoFocus
+            className={styles.stepperEditInput}
+            inputMode="numeric"
+            onBlur={saveDraft}
+            onChange={(event) => setDraft(event.target.value)}
+            onKeyDown={handleKeyDown}
+            type="text"
+            value={draft}
+          />
+        ) : (
+          <button
+            className={styles.stepperValueButton}
+            onClick={() => {
+              setDraft(`${value}`)
+              setIsEditing(true)
+            }}
+            type="button"
+          >
+            {value} {unit}
+          </button>
+        )}
+        <span className={styles.stepperButtons}>
+          <button
+            aria-label={`增加${label}`}
+            onClick={() => onChange(getNextStepperValue(value, 'up'))}
+            type="button"
+          >
+            ▲
+          </button>
+          <button
+            aria-label={`减少${label}`}
+            disabled={value <= 1}
+            onClick={() => onChange(getNextStepperValue(value, 'down'))}
+            type="button"
+          >
+            ▼
+          </button>
+        </span>
+      </div>
+    </div>
+  )
+}
+
+export const SettingsView = ({ settings, updateSettings }: SettingsViewProps): ReactElement => (
+  <div className={styles.settingsView}>
     <section className={styles.settingsBody}>
       <div className={styles.settingsPanel}>
-      <div className={styles.settingsGroup}>
-        <h2>常规</h2>
-        {settingLabels.map(([key, label]) => (
-          <label className={styles.settingLine} key={key}>
-            <span>{label}</span>
-            <input
-              checked={Boolean(settings[key])}
-              onChange={(event) => void updateSettings({ [key]: event.target.checked } as Partial<AppSettings>)}
-              type="checkbox"
+        <div className={styles.settingsGroup}>
+          <h2>基础体验</h2>
+          <SettingSwitch
+            checked={settings.notificationsEnabled}
+            label="显示系统通知"
+            onChange={(value) => void updateSettings({ notificationsEnabled: value })}
+          />
+          <SettingSwitch
+            checked={settings.soundEnabled}
+            label="播放提示音"
+            onChange={(value) => void updateSettings({ soundEnabled: value })}
+          />
+          <SettingSwitch
+            checked={settings.closeToTray}
+            label="关闭窗口后继续运行"
+            onChange={(value) => void updateSettings({ closeToTray: value })}
+          />
+        </div>
+
+        <div className={styles.settingsGroup}>
+          <h2>计时节奏</h2>
+          {timerSteppers.map((item) => (
+            <SettingStepper
+              key={item.key}
+              label={item.label}
+              onChange={(value) => void updateSettings({ [item.key]: value } as Partial<AppSettings>)}
+              unit={item.unit}
+              value={settings[item.key]}
             />
-          </label>
-        ))}
-      </div>
+          ))}
+        </div>
 
-      <div className={styles.settingsGroup}>
-        <h2>计时默认行为</h2>
-        <label className={styles.settingLine}>
-          <span>完成专注后</span>
-          <select value={settings.autoStartBreaks ? 'autoBreak' : 'manualBreak'} onChange={(event) => void updateSettings({ autoStartBreaks: event.target.value === 'autoBreak' })}>
-            <option value="manualBreak">由用户入场休息</option>
-            <option value="autoBreak">自动进入休息</option>
-          </select>
-        </label>
-        <label className={styles.settingLine}>
-          <span>完成短休后</span>
-          <select value={settings.autoStartFocus ? 'autoFocus' : 'manualFocus'} onChange={(event) => void updateSettings({ autoStartFocus: event.target.value === 'autoFocus' })}>
-            <option value="manualFocus">由用户入场专注</option>
-            <option value="autoFocus">自动进入专注</option>
-          </select>
-        </label>
-        <label className={styles.settingLine}>
-          <span>完成长休后</span>
-          <select value={settings.autoStartFocus ? 'autoFocus' : 'manualFocus'} onChange={(event) => void updateSettings({ autoStartFocus: event.target.value === 'autoFocus' })}>
-            <option value="manualFocus">由用户入场专注</option>
-            <option value="autoFocus">自动进入专注</option>
-          </select>
-        </label>
-      </div>
+        <div className={styles.settingsGroup}>
+          <h2>阶段切换</h2>
+          <SettingSelect
+            label="完成专注后"
+            onChange={(value) => void updateSettings({ autoStartBreaks: value === 'autoBreak' })}
+            options={manualBreakOptions}
+            value={settings.autoStartBreaks ? 'autoBreak' : 'manualBreak'}
+          />
+          <SettingSelect
+            label="完成短休 / 长休后"
+            onChange={(value) => void updateSettings({ autoStartFocus: value === 'autoFocus' })}
+            options={manualFocusOptions}
+            value={settings.autoStartFocus ? 'autoFocus' : 'manualFocus'}
+          />
+        </div>
 
-      <div className={styles.settingsGroup}>
-        <h2>计时设置</h2>
-        {[
-          ['focusMinutes', '专注时长'],
-          ['shortBreakMinutes', '短休息时长'],
-          ['longBreakMinutes', '长休息时长'],
-          ['longBreakInterval', '长休息间隔']
-        ].map(([key, label]) => (
-          <label className={styles.settingLine} key={key}>
-            <span>{label}</span>
-            <input
-              min={1}
-              onChange={(event) => void updateSettings({ [key]: Number(event.target.value) } as Partial<AppSettings>)}
-              type="number"
-              value={settings[key as keyof AppSettings] as number}
-            />
-          </label>
-        ))}
-      </div>
+        <div className={styles.settingsGroup}>
+          <h2>启动与窗口</h2>
+          <SettingSwitch
+            checked={settings.openAtLogin}
+            label="开机自启"
+            onChange={(value) => void updateSettings({ openAtLogin: value })}
+          />
+          <SettingSwitch
+            checked={settings.startToTray}
+            label="启动到托盘"
+            onChange={(value) => void updateSettings({ startToTray: value })}
+          />
+        </div>
 
-      <div className={styles.settingsGroup}>
-        <h2>其他</h2>
-        <label className={styles.settingLine}>
-          <span>主题模式</span>
-          <select
-            onChange={(event) => void updateSettings({ themePreference: event.target.value as ThemePreference })}
+        <div className={styles.settingsGroup}>
+          <h2>外观</h2>
+          <SettingSelect
+            label="主题模式"
+            onChange={(value) => void updateSettings({ themePreference: value })}
+            options={themeOptions}
             value={settings.themePreference}
-          >
-            <option value="system">跟随系统</option>
-            <option value="light">白天模式</option>
-            <option value="dark">黑暗模式</option>
-          </select>
-        </label>
-        <p>当前显示：{activeTheme === 'dark' ? '黑暗模式' : '白天模式'}</p>
-      </div>
+          />
+        </div>
       </div>
     </section>
   </div>

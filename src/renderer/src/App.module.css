@@ -215,6 +215,7 @@
 
 .autoSwitch input,
 .settingLine input[type="checkbox"] {
+  justify-self: end;
   position: relative;
   width: 30px;
   height: 18px;
@@ -516,9 +517,7 @@
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 18%, transparent);
 }
 
-.inlineTaskForm input,
-.settingLine input[type="number"],
-.settingLine select {
+.inlineTaskForm input {
   min-height: 32px;
   padding: 0 10px;
   color: var(--text-1);
@@ -1189,54 +1188,67 @@
 
 .settingsView {
   display: grid;
-  grid-template-columns: 92px minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   min-height: 0;
-}
-
-.settingsTabs {
-  display: grid;
-  align-content: start;
-  background: var(--surface);
-  border-right: 1px solid var(--line);
-}
-
-.settingsTabs button {
-  min-height: 36px;
-  padding: 0 12px;
-  color: var(--text-2);
-  text-align: left;
-  background: transparent;
-  border: 0;
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.settingsTabs .settingsTabActive {
-  color: var(--accent);
-  background: var(--accent-soft);
 }
 
 .settingsBody {
   min-height: 0;
   overflow: auto;
+  scrollbar-gutter: stable;
+}
+
+.settingsBody::-webkit-scrollbar {
+  width: 8px;
+}
+
+.settingsBody::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.settingsBody::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  background-clip: content-box;
+  border: 2px solid transparent;
+  border-radius: 4px;
+}
+
+.settingsBody::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+  background-clip: content-box;
+}
+
+.settingsBody::-webkit-scrollbar-button,
+.settingsBody::-webkit-scrollbar-button:single-button {
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 .settingsPanel {
   display: grid;
   align-content: start;
-  gap: 16px;
-  padding: 14px 16px 18px;
+  gap: 18px;
+  padding: 20px 28px 34px;
 }
 
 .settingsGroup {
   display: grid;
-  gap: 8px;
+  gap: 10px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+
+.settingsGroup:first-child {
+  padding-top: 0;
+  border-top: 0;
 }
 
 .settingsGroup h2 {
   margin: 0;
   color: var(--text-1);
-  font-size: 12px;
+  font-size: 13px;
+  font-weight: 800;
 }
 
 .settingsGroup p {
@@ -1247,18 +1259,169 @@
 
 .settingLine {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) 220px;
   align-items: center;
-  gap: 12px;
-  min-height: 28px;
+  gap: 24px;
+  min-height: 38px;
   color: var(--text-2);
   font-size: 12px;
 }
 
-.settingLine select,
-.settingLine input[type="number"] {
-  min-width: 132px;
+.settingsSelect,
+.settingStepper {
+  width: 220px;
   justify-self: end;
+}
+
+.settingsSelect {
+  position: relative;
+}
+
+.settingsSelectButton {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 38px;
+  align-items: center;
+  gap: 0;
+  width: 100%;
+  min-height: 40px;
+  padding: 0 0 0 14px;
+  color: var(--text-1);
+  text-align: left;
+  background: color-mix(in srgb, var(--surface) 78%, var(--window-bg) 22%);
+  border: 1px solid var(--line-strong);
+  border-radius: 4px;
+}
+
+.settingsSelectButton:hover,
+.settingsSelectButton:focus-visible,
+.settingsSelectButtonOpen {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 24%, transparent);
+  outline: none;
+}
+
+.settingsSelectButton span:first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.settingsSelectChevron {
+  display: grid;
+  align-self: stretch;
+  place-items: center;
+  color: var(--text-2);
+  border-left: 1px solid var(--line);
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.settingsSelectButtonOpen .settingsSelectChevron {
+  color: var(--accent);
+  transform: rotate(180deg);
+}
+
+.settingsSelectMenu {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 4px);
+  right: 0;
+  width: 100%;
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: 4px;
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.22);
+}
+
+.settingsSelectOption {
+  width: 100%;
+  min-height: 36px;
+  padding: 0 14px;
+  color: var(--text-2);
+  text-align: left;
+  background: transparent;
+  border: 0;
+}
+
+.settingsSelectOption:hover,
+.settingsSelectOption:focus-visible {
+  color: var(--text-1);
+  background: var(--accent-soft);
+  outline: none;
+}
+
+.settingsSelectOptionActive {
+  color: #fff;
+  background: var(--accent);
+}
+
+.settingsSelectOptionActive:hover,
+.settingsSelectOptionActive:focus-visible {
+  color: #fff;
+  background: var(--accent-strong);
+}
+
+.settingStepper {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 38px;
+  min-height: 40px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--surface) 78%, var(--window-bg) 22%);
+  border: 1px solid var(--line-strong);
+  border-radius: 4px;
+}
+
+.settingStepper:focus-within,
+.settingStepper:hover {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+.stepperValueButton,
+.stepperEditInput {
+  min-width: 0;
+  padding: 0 10px 0 14px;
+  color: var(--text-1);
+  text-align: left;
+  background: transparent;
+  border: 0;
+  outline: none;
+  font-weight: 700;
+}
+
+.stepperEditInput {
+  width: 100%;
+}
+
+.stepperButtons {
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  border-left: 1px solid var(--line);
+}
+
+.stepperButtons button {
+  display: grid;
+  place-items: center;
+  padding: 0;
+  color: var(--text-2);
+  background: transparent;
+  border: 0;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.stepperButtons button:first-child {
+  border-bottom: 1px solid var(--line);
+}
+
+.stepperButtons button:hover:not(:disabled),
+.stepperButtons button:focus-visible:not(:disabled) {
+  color: #fff;
+  background: var(--accent);
+  outline: none;
 }
 
 @media (max-width: 480px) {
