@@ -1,0 +1,941 @@
+.appFrame {
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr);
+  grid-template-rows: 42px minmax(0, 1fr);
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  color: var(--text-1);
+  background: var(--window-bg);
+}
+
+.sideRail {
+  grid-row: 2;
+  display: grid;
+  grid-template-rows: 1fr;
+  background: var(--rail-bg);
+  border-right: 1px solid var(--line);
+}
+
+.navIcon,
+.windowControlIcon {
+  display: block;
+  width: 14px;
+  height: 14px;
+  color: currentColor;
+}
+
+.primaryNav {
+  display: grid;
+  align-content: start;
+  padding-top: 10px;
+}
+
+.navItem {
+  display: grid;
+  grid-template-columns: 16px 1fr;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 12px;
+  color: var(--text-2);
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-left: 3px solid transparent;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.navItemActive {
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-left-color: var(--accent);
+}
+
+.appSurface {
+  grid-row: 2;
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  background: var(--window-bg);
+}
+
+.titleBar {
+  grid-column: 1 / -1;
+  -webkit-app-region: drag;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 42px;
+  padding-left: 14px;
+  background: var(--window-bg);
+  border-bottom: 1px solid var(--line);
+}
+
+.titleBrand {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.titleBrand strong {
+  color: var(--text-1);
+  font: 700 16px/1 var(--font-ui);
+}
+
+.titleActions {
+  -webkit-app-region: no-drag;
+  display: flex;
+  align-items: stretch;
+  justify-content: flex-end;
+  height: 100%;
+}
+
+.themeToggleButton {
+  width: 42px;
+  height: 100%;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  color: var(--text-3);
+  background: transparent;
+  border: 0;
+}
+
+.windowControls {
+  display: flex;
+  height: 100%;
+}
+
+.windowControls button {
+  width: 42px;
+  height: 100%;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  color: var(--text-3);
+  background: transparent;
+  border: 0;
+}
+
+.themeToggleButton:hover,
+.windowControls button:hover {
+  color: var(--text-1);
+  background: var(--surface);
+}
+
+.closeWindowButton:hover {
+  color: #fff;
+  background: #d94d45;
+}
+
+.timerView,
+.listView,
+.statsView,
+.settingsView {
+  display: grid;
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+  padding: 14px 16px 12px;
+  box-sizing: border-box;
+}
+
+.timerView {
+  grid-template-rows: auto minmax(0, 1fr) auto auto;
+  gap: 10px;
+}
+
+.timerHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.timerHeader p {
+  margin: 0;
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.autoSwitch {
+  display: grid;
+  grid-template-columns: auto auto auto;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-3);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.autoSwitch strong {
+  color: var(--accent);
+}
+
+.autoSwitch input,
+.settingLine input[type="checkbox"] {
+  position: relative;
+  width: 30px;
+  height: 18px;
+  margin: 0;
+  appearance: none;
+  background: var(--switch-off);
+  border-radius: 999px;
+  transition: background-color 140ms ease;
+}
+
+.autoSwitch input::after,
+.settingLine input[type="checkbox"]::after {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  content: "";
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+  transition: transform 140ms ease;
+}
+
+.autoSwitch input:checked,
+.settingLine input[type="checkbox"]:checked {
+  background: var(--accent);
+}
+
+.autoSwitch input:checked::after,
+.settingLine input[type="checkbox"]:checked::after {
+  transform: translateX(12px);
+}
+
+.timerHero {
+  position: relative;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  min-height: 0;
+  border: 1px solid var(--line-soft);
+  border-radius: 14px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 48% 18%, var(--hero-glow), transparent 38%),
+    linear-gradient(180deg, var(--hero-top), var(--hero-bottom));
+}
+
+.timerHeroBackdrop {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.mountainLayer {
+  position: absolute;
+  inset: auto 0 0;
+  height: 140px;
+  background:
+    radial-gradient(ellipse at 18% 58%, var(--mountain-a), transparent 36%),
+    radial-gradient(ellipse at 48% 68%, var(--mountain-b), transparent 33%),
+    radial-gradient(ellipse at 75% 64%, var(--mountain-c), transparent 31%);
+}
+
+.mountainLayer::before,
+.mountainLayer::after {
+  position: absolute;
+  right: -5%;
+  left: -5%;
+  bottom: 8px;
+  height: 92px;
+  content: "";
+  background:
+    linear-gradient(166deg, transparent 0 30%, var(--mountain-a) 30% 42%, transparent 42%),
+    linear-gradient(176deg, transparent 0 18%, var(--mountain-b) 18% 34%, transparent 34%),
+    linear-gradient(185deg, transparent 0 43%, var(--mountain-c) 43% 57%, transparent 57%);
+}
+
+.mountainLayer::after {
+  bottom: -6px;
+  opacity: 0.72;
+  transform: scaleX(1.08);
+}
+
+.timerClockWrap {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  min-height: 0;
+  padding: 14px 16px 6px;
+  text-align: center;
+}
+
+.timerDigits {
+  display: inline-flex;
+  align-items: flex-start;
+  justify-content: center;
+  min-width: 5.2ch;
+  color: var(--text-hero);
+  font-family: var(--font-display);
+  font-variant-numeric: tabular-nums lining-nums proportional-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+  line-height: 0.8;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.timerDigitsGroup {
+  display: block;
+  min-width: 1.95ch;
+  letter-spacing: -0.12em;
+  font-size: clamp(96px, 23vw, 128px);
+  font-weight: 900;
+  line-height: 0.82;
+  text-align: center;
+}
+
+.timerDigitsSeparator {
+  display: block;
+  width: 0.56ch;
+  margin: 0 0.02em;
+  font-size: clamp(88px, 20vw, 118px);
+  font-weight: 900;
+  line-height: 0.78;
+  transform: translateY(0.02em);
+}
+
+.timerQuote {
+  margin: 10px 0 0;
+  color: var(--text-3);
+  font-size: 11px;
+  text-align: center;
+}
+
+.timerMetaRow {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 110px;
+  gap: 16px;
+  align-items: end;
+  padding: 0 18px 14px;
+}
+
+.currentTaskCard {
+  display: grid;
+  gap: 6px;
+}
+
+.currentTaskCard span,
+.currentTaskCard small {
+  color: var(--text-3);
+  font-size: 11px;
+}
+
+.currentTaskCard strong {
+  color: var(--text-1);
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.focusDialCard {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.focusDial {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100px;
+  height: 100px;
+  color: var(--text-2);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, var(--window-bg) 59%, transparent 61%),
+    conic-gradient(var(--accent) var(--progress), rgba(122, 142, 175, 0.18) 0);
+}
+
+.focusDialContent {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 5px;
+  transform: translateY(1px);
+}
+
+.focusDial span {
+  font-size: 10px;
+  line-height: 1.1;
+  text-align: center;
+}
+
+.focusDial strong {
+  color: var(--text-1);
+  font-size: 20px;
+  line-height: 1;
+  font-weight: 800;
+  text-align: center;
+}
+
+.timerActions {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.timerActions button {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  min-height: 52px;
+  gap: 3px;
+  padding: 8px 6px;
+  color: var(--text-1);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+
+.timerActions button span {
+  color: var(--accent);
+  font-size: 18px;
+}
+
+.timerActions button b {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.timerActions button small {
+  color: var(--text-2);
+  font-size: 11px;
+}
+
+.timerActions .startButton {
+  color: #fff;
+  background: linear-gradient(180deg, var(--accent), var(--accent-strong));
+  border-color: transparent;
+}
+
+.timerActions .startButton span,
+.timerActions .startButton small,
+.timerActions .startButton b {
+  color: inherit;
+}
+
+.listView {
+  grid-template-rows: auto auto minmax(0, 1fr) auto auto;
+  gap: 8px;
+}
+
+.taskTabs {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.taskTabButton {
+  position: relative;
+  padding: 0;
+  color: var(--text-2);
+  background: transparent;
+  border: 0;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.taskTabActive {
+  color: var(--text-1);
+}
+
+.taskTabActive::after {
+  position: absolute;
+  right: 0;
+  bottom: -10px;
+  left: 0;
+  height: 2px;
+  content: "";
+  background: var(--accent);
+}
+
+.pageTopper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 30px;
+  gap: 12px;
+}
+
+.tabLine {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  color: var(--text-2);
+  font-size: 12px;
+}
+
+.tabLine strong {
+  position: relative;
+  color: var(--text-1);
+}
+
+.tabLine strong::after {
+  position: absolute;
+  right: 0;
+  bottom: -10px;
+  left: 0;
+  height: 2px;
+  content: "";
+  background: var(--accent);
+}
+
+.inlineTaskForm {
+  display: grid;
+  grid-template-columns: 132px auto;
+  gap: 8px;
+}
+
+.inlineTaskForm input,
+.settingLine input[type="number"],
+.settingLine select {
+  min-height: 28px;
+  padding: 0 8px;
+  color: var(--text-1);
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+
+.inlineTaskForm button {
+  min-height: 28px;
+  padding: 0 6px;
+  color: var(--accent);
+  background: transparent;
+  border: 0;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.taskListHeader {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) 172px 28px;
+  align-items: center;
+  padding: 4px 2px 8px;
+  color: var(--text-3);
+  border-bottom: 1px solid var(--line);
+  font-size: 11px;
+}
+
+.denseList {
+  display: grid;
+  align-content: start;
+  gap: 4px;
+  min-height: 0;
+  overflow: auto;
+}
+
+.taskLine {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) 172px 28px;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+  padding: 0 2px;
+  color: var(--text-2);
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font-size: 12px;
+}
+
+.taskLineSelected {
+  color: var(--text-1);
+  background: var(--surface);
+  border-color: var(--line-soft);
+}
+
+.taskLineDone {
+  opacity: 0.76;
+}
+
+.taskDraggable {
+  cursor: grab;
+}
+
+.taskDropTarget {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.ghostLine {
+  grid-template-columns: 22px minmax(0, 1fr) 56px 42px;
+}
+
+.fakeCheck,
+.taskStateButton,
+.checkButton {
+  width: 14px;
+  height: 14px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  color: var(--accent);
+  background: transparent;
+  border: 1px solid var(--line-strong);
+  border-radius: 2px;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.taskLineDone .checkButton {
+  border-color: var(--accent);
+  background: var(--accent);
+  box-shadow: inset 0 0 0 2px var(--window-bg);
+}
+
+.taskRestoreButton {
+  border-color: var(--accent);
+}
+
+.taskNameButton,
+.taskTitleText {
+  overflow: hidden;
+  color: inherit;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  background: transparent;
+  border: 0;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.taskTitleInput {
+  width: 100%;
+  min-height: 28px;
+  padding: 0 8px;
+  color: var(--text-1);
+  background: var(--window-bg);
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.taskStats {
+  display: grid;
+  justify-items: end;
+  gap: 2px;
+}
+
+.tomatoBadge,
+.taskStatusDot,
+.taskFocusBadge {
+  color: var(--text-3);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.taskGhostAction {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  color: var(--text-3);
+  background: transparent;
+  border: 0;
+  font-size: 16px;
+}
+
+.taskDeleteButton {
+  line-height: 1;
+}
+
+.taskEmptyState {
+  display: grid;
+  place-items: center;
+  min-height: 120px;
+  padding: 16px;
+  color: var(--text-3);
+  background: var(--surface);
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  font-size: 12px;
+  text-align: center;
+}
+
+.dragHint,
+.selectedHint {
+  margin: 0;
+  color: var(--text-3);
+  font-size: 11px;
+}
+
+.statsView {
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 8px;
+}
+
+.statsLayout {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1.35fr) minmax(148px, 0.85fr);
+  gap: 8px;
+  height: 100%;
+  min-height: 0;
+}
+
+.statsNumbers,
+.chartPanel,
+.donutPanel,
+.rankPanel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.statsNumbers {
+  display: grid;
+  grid-template-rows: 76px repeat(3, 1fr);
+  gap: 0;
+  overflow: hidden;
+}
+
+.metricCard {
+  display: grid;
+  align-content: center;
+  gap: 4px;
+  padding: 10px 12px;
+  color: #fff;
+  background: linear-gradient(180deg, #5b97ff, var(--accent));
+}
+
+.metricCard span,
+.statsNumbers > div span {
+  font-size: 11px;
+}
+
+.metricCard strong {
+  font-size: 22px;
+}
+
+.statsNumbers > div:not(.metricCard) {
+  display: grid;
+  align-content: center;
+  gap: 3px;
+  padding: 10px 12px;
+  border-top: 1px solid var(--line);
+}
+
+.statsNumbers strong {
+  color: var(--text-1);
+  font-size: 18px;
+}
+
+.chartPanel {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  min-width: 0;
+  padding: 10px 12px;
+}
+
+.chartPanel h2,
+.rankPanel h2 {
+  margin: 0;
+  color: var(--text-1);
+  font-size: 12px;
+}
+
+.hourChart {
+  display: grid;
+  grid-template-columns: repeat(24, 1fr);
+  align-items: end;
+  gap: 3px;
+  min-height: 98px;
+  padding-top: 10px;
+}
+
+.hourSlot {
+  display: flex;
+  align-items: end;
+  height: 100%;
+}
+
+.hourSlot div {
+  width: 100%;
+  min-height: 3px;
+  background: linear-gradient(180deg, var(--accent), #64c9ff);
+}
+
+.chartAxis {
+  display: flex;
+  justify-content: space-between;
+  color: var(--text-3);
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+  font-size: 10px;
+}
+
+.donutPanel {
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr);
+  align-items: center;
+  min-height: 0;
+  padding: 10px 12px;
+}
+
+.donut {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, var(--surface) 52%, transparent 54%),
+    conic-gradient(var(--accent) 0 var(--focus), var(--cyan) var(--focus) var(--break), var(--surface-3) var(--break) 100%);
+}
+
+.legendList {
+  display: grid;
+  align-content: center;
+  gap: 8px;
+  color: var(--text-2);
+  font-size: 11px;
+}
+
+.legendList span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legendList b {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background: var(--accent);
+}
+
+.legendList span:nth-child(2) b {
+  background: var(--cyan);
+}
+
+.legendList span:nth-child(3) b {
+  background: var(--surface-3);
+}
+
+.rankPanel {
+  display: grid;
+  align-content: start;
+  grid-auto-rows: min-content;
+  gap: 8px;
+  min-height: 0;
+  padding: 10px 12px;
+}
+
+.rankPanel div {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-2);
+  font-size: 11px;
+}
+
+.rankPanel strong {
+  color: var(--text-1);
+}
+
+.statsEmptyState {
+  color: var(--text-3);
+  font-size: 11px;
+}
+
+.settingsView {
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr);
+  min-height: 0;
+}
+
+.settingsTabs {
+  display: grid;
+  align-content: start;
+  background: var(--surface);
+  border-right: 1px solid var(--line);
+}
+
+.settingsTabs button {
+  min-height: 36px;
+  padding: 0 12px;
+  color: var(--text-2);
+  text-align: left;
+  background: transparent;
+  border: 0;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.settingsTabs .settingsTabActive {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.settingsBody {
+  min-height: 0;
+  overflow: auto;
+}
+
+.settingsPanel {
+  display: grid;
+  align-content: start;
+  gap: 16px;
+  padding: 14px 16px 18px;
+}
+
+.settingsGroup {
+  display: grid;
+  gap: 8px;
+}
+
+.settingsGroup h2 {
+  margin: 0;
+  color: var(--text-1);
+  font-size: 12px;
+}
+
+.settingsGroup p {
+  margin: 0;
+  color: var(--text-3);
+  font-size: 11px;
+}
+
+.settingLine {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 28px;
+  color: var(--text-2);
+  font-size: 12px;
+}
+
+.settingLine select,
+.settingLine input[type="number"] {
+  min-width: 132px;
+  justify-self: end;
+}
+
+@media (max-width: 480px) {
+  .appFrame {
+    grid-template-columns: 84px minmax(0, 1fr);
+  }
+
+  .timerMetaRow,
+  .statsLayout,
+  .settingsView {
+    grid-template-columns: 1fr;
+  }
+
+  .timerActions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
