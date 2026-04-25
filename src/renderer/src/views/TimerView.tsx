@@ -1,6 +1,13 @@
 import type { CSSProperties, ReactElement } from 'react'
 import type { AppSettings, TimerPhase, TimerSnapshot } from '@shared/types'
 import { phaseLabel } from '../appConfig'
+import {
+  ActionArrowIcon,
+  CoffeeCupIcon,
+  LoungeChairIcon,
+  PauseControlIcon,
+  SkipNextIcon
+} from '../components/AppIcons'
 import { formatTimerClock } from '../viewModel'
 import styles from '../App.module.css'
 
@@ -13,6 +20,27 @@ interface TimerViewProps {
   updateSettings(patch: Partial<AppSettings>): Promise<void>
 }
 
+interface PrimaryTimerAction {
+  action: 'start' | 'resume'
+  label: string
+}
+
+export const getPrimaryTimerAction = (
+  snapshot: Pick<TimerSnapshot, 'status' | 'phase'>
+): PrimaryTimerAction => {
+  if (snapshot.status === 'paused') {
+    return {
+      action: 'resume',
+      label: snapshot.phase === 'focus' ? '继续专注' : '继续休息'
+    }
+  }
+
+  return {
+    action: 'start',
+    label: '开始专注'
+  }
+}
+
 export const TimerView = ({
   currentTaskTitle,
   progressPercent,
@@ -23,13 +51,25 @@ export const TimerView = ({
 }: TimerViewProps): ReactElement => {
   const autoSwitchEnabled = settings.autoStartBreaks || settings.autoStartFocus
   const [displayMinutes = '00', displaySeconds = '00'] = formatTimerClock(snapshot.remainingMs).split(':')
+  const primaryAction = getPrimaryTimerAction(snapshot)
+  const canPause = snapshot.status === 'running'
+  const canSkip = snapshot.status === 'running' || snapshot.status === 'paused'
+
+  const handlePrimaryAction = (): void => {
+    if (primaryAction.action === 'resume') {
+      void window.focusFlow.timer.resume()
+      return
+    }
+
+    void startTimer('focus')
+  }
 
   return (
     <div className={styles.timerView}>
       <div className={styles.timerHeader}>
         <p>{phaseLabel[snapshot.phase]} · 第 {Math.max(1, snapshot.focusCount + 1)} 个番茄钟</p>
         <label className={styles.autoSwitch}>
-          <span>自动切换</span>
+          <span>自动切换专注/休息</span>
           <input
             checked={autoSwitchEnabled}
             onChange={(event) =>
@@ -37,7 +77,6 @@ export const TimerView = ({
             }
             type="checkbox"
           />
-          <strong>{autoSwitchEnabled ? '开' : '关'}</strong>
         </label>
       </div>
 
@@ -70,28 +109,25 @@ export const TimerView = ({
       </div>
 
       <div className={styles.timerActions}>
-        <button className={styles.startButton} onClick={() => void startTimer('focus')} type="button">
-          <span>▶</span>
-          <b>开始</b>
+        <button className={`${styles.timerActionButton} ${styles.startButton}`} onClick={handlePrimaryAction} type="button">
+          <ActionArrowIcon className={styles.timerActionIcon} />
+          <b>{primaryAction.label}</b>
         </button>
-        <button
-          onClick={() => void (snapshot.status === 'paused' ? window.focusFlow.timer.resume() : window.focusFlow.timer.pause())}
-          type="button"
-        >
-          <span>{snapshot.status === 'paused' ? '▶' : 'Ⅱ'}</span>
-          <b>{snapshot.status === 'paused' ? '继续' : '暂停'}</b>
+        <button className={styles.timerActionButton} disabled={!canPause} onClick={() => void window.focusFlow.timer.pause()} type="button">
+          <PauseControlIcon className={styles.timerActionIcon} />
+          <b>暂停</b>
         </button>
-        <button onClick={() => void window.focusFlow.timer.skip()} type="button">
-          <span>⏭</span>
+        <button className={styles.timerActionButton} disabled={!canSkip} onClick={() => void window.focusFlow.timer.skip()} type="button">
+          <SkipNextIcon className={styles.timerActionIcon} />
           <b>跳过</b>
         </button>
-        <button onClick={() => void startTimer('shortBreak')} type="button">
-          <b>短休息</b>
-          <small>{settings.shortBreakMinutes} 分钟</small>
+        <button className={styles.timerActionButton} onClick={() => void startTimer('shortBreak')} type="button">
+          <CoffeeCupIcon className={styles.timerActionIcon} />
+          <b>{`短休 · ${settings.shortBreakMinutes} 分钟`}</b>
         </button>
-        <button onClick={() => void startTimer('longBreak')} type="button">
-          <b>长休息</b>
-          <small>{settings.longBreakMinutes} 分钟</small>
+        <button className={styles.timerActionButton} onClick={() => void startTimer('longBreak')} type="button">
+          <LoungeChairIcon className={styles.timerActionIcon} />
+          <b>{`长休 · ${settings.longBreakMinutes} 分钟`}</b>
         </button>
       </div>
     </div>

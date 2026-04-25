@@ -201,16 +201,12 @@
 
 .autoSwitch {
   display: grid;
-  grid-template-columns: auto auto auto;
+  grid-template-columns: auto auto;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   color: var(--text-3);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
-}
-
-.autoSwitch strong {
-  color: var(--accent);
 }
 
 .autoSwitch input,
@@ -384,46 +380,59 @@
 .timerActions {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 8px;
+  gap: 10px;
 }
 
-.timerActions button {
+.timerActionButton {
   display: grid;
   justify-items: center;
   align-content: center;
-  min-height: 52px;
-  gap: 3px;
-  padding: 8px 6px;
+  min-height: 60px;
+  gap: 6px;
+  padding: 10px 10px 12px;
   color: var(--text-1);
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 6px;
+  background: color-mix(in srgb, var(--surface) 78%, var(--window-bg) 22%);
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
 }
 
-.timerActions button span {
+.timerActionButton:hover,
+.timerActionButton:focus-visible {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 18%, transparent);
+  outline: none;
+}
+
+.timerActionIcon {
+  width: 18px;
+  height: 18px;
   color: var(--accent);
-  font-size: 18px;
 }
 
-.timerActions button b {
-  font-size: 13px;
+.timerActionButton b {
+  overflow: hidden;
+  font-size: 12px;
   font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.timerActions button small {
-  color: var(--text-2);
-  font-size: 11px;
-}
-
-.timerActions .startButton {
+.startButton {
   color: #fff;
   background: linear-gradient(180deg, var(--accent), var(--accent-strong));
   border-color: transparent;
 }
 
-.timerActions .startButton span,
-.timerActions .startButton small,
-.timerActions .startButton b {
+.startButton:hover,
+.startButton:focus-visible {
+  border-color: transparent;
+  box-shadow: 0 10px 22px color-mix(in srgb, var(--accent) 24%, transparent);
+}
+
+.startButton .timerActionIcon,
+.startButton b {
   color: inherit;
 }
 

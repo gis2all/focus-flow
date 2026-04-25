@@ -106,3 +106,42 @@ export const CloseIcon = (props: IconProps): ReactElement => (
     <path d="m12 4-8 8" />
   </svg>
 )
+
+export const ActionArrowIcon = (props: IconProps): ReactElement => (
+  <svg {...baseProps} {...props}>
+    <path d="M3.5 8H12" />
+    <path d="m8.8 4.6 3.2 3.4-3.2 3.4" />
+  </svg>
+)
+
+export const PauseControlIcon = (props: IconProps): ReactElement => (
+  <svg {...baseProps} {...props}>
+    <path d="M5.4 4.2v7.6" />
+    <path d="M10.6 4.2v7.6" />
+  </svg>
+)
+
+export const SkipNextIcon = (props: IconProps): ReactElement => (
+  <svg {...baseProps} {...props}>
+    <path d="M4.2 4.5v7" />
+    <path d="m6.2 4.9 4.5 3.1-4.5 3.1z" />
+  </svg>
+)
+
+export const CoffeeCupIcon = (props: IconProps): ReactElement => (
+  <svg {...baseProps} {...props}>
+    <path d="M4 5.4h5.9v2.8A2.3 2.3 0 0 1 7.6 10.5H6.3A2.3 2.3 0 0 1 4 8.2Z" />
+    <path d="M9.9 6h1a1.3 1.3 0 1 1 0 2.6h-1" />
+    <path d="M3.5 12.3h8" />
+  </svg>
+)
+
+export const LoungeChairIcon = (props: IconProps): ReactElement => (
+  <svg {...baseProps} {...props}>
+    <path d="M2.8 10.8h10.4" />
+    <path d="M4 10.8V9.5a1.2 1.2 0 0 1 1.2-1.2h2.2a2 2 0 0 0 1.7-.9l1.2-1.9" />
+    <path d="M4 10.8 3.2 7.8A1.5 1.5 0 0 1 4.7 6h.9a1.7 1.7 0 0 1 1.6 1.1L7.8 8.8" />
+    <path d="M4 10.8v1.4" />
+    <path d="M11.8 10.8v1.4" />
+  </svg>
+)
