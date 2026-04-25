@@ -10,6 +10,9 @@ interface WindowTitleBarProps {
 export const WindowTitleBar = ({ activeTheme, onToggleTheme }: WindowTitleBarProps): ReactElement => (
   <header className={styles.titleBar}>
     <div className={styles.titleBrand}>
+      <span className={styles.titleBrandMark} aria-hidden="true">
+        F
+      </span>
       <strong>FocusFlow</strong>
     </div>
     <div className={styles.titleActions}>

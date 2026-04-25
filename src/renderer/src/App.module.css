@@ -1,57 +1,76 @@
 .appFrame {
   display: grid;
-  grid-template-columns: 92px minmax(0, 1fr);
-  grid-template-rows: 42px minmax(0, 1fr);
+  grid-template-columns: 124px minmax(0, 1fr);
+  grid-template-rows: 50px minmax(0, 1fr);
   width: 100vw;
   height: 100vh;
   overflow: hidden;
   color: var(--text-1);
-  background: var(--window-bg);
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.92), transparent 36%),
+    linear-gradient(140deg, var(--hero-bottom), var(--window-bg) 45%, var(--hero-bottom));
 }
 
 .sideRail {
   grid-row: 2;
   display: grid;
   grid-template-rows: 1fr;
-  background: var(--rail-bg);
-  border-right: 1px solid var(--line);
+  background:
+    linear-gradient(90deg, var(--rail-bg), color-mix(in srgb, var(--rail-bg) 72%, transparent)),
+    radial-gradient(circle at 70% 16%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 42%);
+  border-right: 0;
 }
 
 .navIcon,
 .windowControlIcon {
   display: block;
-  width: 14px;
-  height: 14px;
+  width: 18px;
+  height: 18px;
   color: currentColor;
 }
 
 .primaryNav {
   display: grid;
   align-content: start;
-  padding-top: 10px;
+  gap: 4px;
+  padding-top: 14px;
 }
 
 .navItem {
+  position: relative;
   display: grid;
-  grid-template-columns: 16px 1fr;
+  grid-template-columns: 22px 1fr;
   align-items: center;
-  gap: 8px;
-  min-height: 40px;
-  padding: 0 12px;
+  gap: 12px;
+  min-height: 54px;
+  margin-right: 8px;
+  padding: 0 12px 0 18px;
   color: var(--text-2);
   text-align: left;
   background: transparent;
   border: 0;
-  border-left: 3px solid transparent;
-  font-size: 12px;
-  font-weight: 600;
+  border-left: 0;
+  border-radius: 0 10px 10px 0;
+  font-size: 14px;
+  font-weight: 800;
   white-space: nowrap;
 }
 
 .navItemActive {
   color: var(--accent);
-  background: var(--accent-soft);
-  border-left-color: var(--accent);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 16%, transparent), color-mix(in srgb, var(--accent) 7%, transparent));
+}
+
+.navItemActive::before {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: -1px;
+  width: 5px;
+  content: "";
+  background: linear-gradient(180deg, var(--accent), var(--accent-strong));
+  border-radius: 999px;
+  box-shadow: 0 8px 18px color-mix(in srgb, var(--accent) 26%, transparent);
 }
 
 .appSurface {
@@ -68,21 +87,43 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  min-height: 42px;
-  padding-left: 14px;
-  background: var(--window-bg);
-  border-bottom: 1px solid var(--line);
+  min-height: 50px;
+  padding-left: 20px;
+  background: color-mix(in srgb, var(--window-bg) 86%, transparent);
+  border-bottom: 0;
+  backdrop-filter: blur(22px);
 }
 
 .titleBrand {
   display: flex;
   align-items: center;
+  gap: 12px;
   min-width: 0;
+}
+
+.titleBrandMark {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  color: #fff;
+  font-size: 20px;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.08em;
+  background:
+    radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.4), transparent 24%),
+    linear-gradient(145deg, #2f85ff, var(--accent-strong));
+  border-radius: 7px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.42),
+    0 8px 18px color-mix(in srgb, var(--accent) 24%, transparent);
 }
 
 .titleBrand strong {
   color: var(--text-1);
-  font: 700 16px/1 var(--font-ui);
+  font: 850 17px/1 var(--font-ui);
+  letter-spacing: -0.03em;
 }
 
 .titleActions {
@@ -94,7 +135,7 @@
 }
 
 .themeToggleButton {
-  width: 42px;
+  width: 48px;
   height: 100%;
   padding: 0;
   display: grid;
@@ -110,7 +151,7 @@
 }
 
 .windowControls button {
-  width: 42px;
+  width: 48px;
   height: 100%;
   padding: 0;
   display: grid;
@@ -147,36 +188,47 @@
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  grid-template-rows: auto minmax(0, 1fr) auto auto;
+  grid-template-rows: 30px minmax(0, 1fr) 68px;
   gap: 10px;
+  padding: 18px 24px 18px;
   background:
-    radial-gradient(circle at 48% 24%, var(--hero-glow), transparent 36%),
-    linear-gradient(180deg, var(--hero-top), var(--hero-bottom));
+    radial-gradient(circle at 52% 24%, color-mix(in srgb, var(--hero-glow) 88%, transparent), transparent 34%),
+    linear-gradient(180deg, var(--hero-top) 0%, var(--hero-top) 58%, var(--hero-bottom) 100%);
+  border: 0;
+  border-radius: 22px 0 0 0;
 }
 
 .timerView::before,
 .timerView::after {
   position: absolute;
-  right: -4%;
-  left: -4%;
-  bottom: 40px;
+  right: -8%;
+  left: -7%;
+  bottom: 4px;
   z-index: 0;
-  height: 170px;
+  height: 188px;
   pointer-events: none;
   content: "";
   background:
-    radial-gradient(ellipse at 18% 58%, var(--mountain-a), transparent 36%),
-    radial-gradient(ellipse at 48% 68%, var(--mountain-b), transparent 33%),
-    radial-gradient(ellipse at 75% 64%, var(--mountain-c), transparent 31%),
-    linear-gradient(166deg, transparent 0 30%, var(--mountain-a) 30% 42%, transparent 42%),
-    linear-gradient(176deg, transparent 0 18%, var(--mountain-b) 18% 34%, transparent 34%),
-    linear-gradient(185deg, transparent 0 43%, var(--mountain-c) 43% 57%, transparent 57%);
+    radial-gradient(ellipse at 12% 77%, var(--mountain-a) 0 31%, transparent 32%),
+    radial-gradient(ellipse at 42% 82%, var(--mountain-b) 0 30%, transparent 31%),
+    radial-gradient(ellipse at 73% 76%, var(--mountain-c) 0 34%, transparent 35%),
+    linear-gradient(166deg, transparent 0 29%, var(--mountain-a) 29% 43%, transparent 43%),
+    linear-gradient(176deg, transparent 0 20%, var(--mountain-c) 20% 38%, transparent 38%),
+    linear-gradient(152deg, transparent 0 57%, var(--mountain-b) 57% 75%, transparent 75%);
 }
 
 .timerView::after {
-  bottom: -12px;
-  opacity: 0.72;
-  transform: scaleX(1.08);
+  right: 22px;
+  left: auto;
+  top: 118px;
+  bottom: auto;
+  width: 118px;
+  height: 118px;
+  opacity: 0.28;
+  transform: none;
+  background-image: radial-gradient(circle, color-mix(in srgb, var(--accent) 20%, transparent) 1px, transparent 1.6px);
+  background-size: 10px 10px;
+  mask-image: radial-gradient(circle, #000 0 62%, transparent 74%);
 }
 
 .timerHeader,
@@ -193,28 +245,71 @@
 }
 
 .timerHeader p {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   margin: 0;
   color: var(--accent);
-  font-size: 12px;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 850;
+}
+
+.timerStatusBadge {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+}
+
+.timerStatusHalo {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  border: 3px solid color-mix(in srgb, var(--accent) 24%, white 10%);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  animation: timerStatusPulse 2.2s ease-in-out infinite;
+}
+
+.timerStatusCore {
+  position: relative;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--accent-strong);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+@keyframes timerStatusPulse {
+  0%,
+  100% {
+    opacity: 0.68;
+    transform: scale(0.98);
+  }
+
+  50% {
+    opacity: 0.92;
+    transform: scale(1.08);
+  }
 }
 
 .autoSwitch {
   display: grid;
   grid-template-columns: auto auto;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   color: var(--text-3);
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 780;
 }
 
 .autoSwitch input,
 .settingLine input[type="checkbox"] {
   justify-self: end;
   position: relative;
-  width: 30px;
-  height: 18px;
+  width: 38px;
+  height: 22px;
   margin: 0;
   appearance: none;
   background: var(--switch-off);
@@ -227,8 +322,8 @@
   position: absolute;
   top: 2px;
   left: 2px;
-  width: 14px;
-  height: 14px;
+  width: 18px;
+  height: 18px;
   content: "";
   background: #fff;
   border-radius: 50%;
@@ -243,16 +338,16 @@
 
 .autoSwitch input:checked::after,
 .settingLine input[type="checkbox"]:checked::after {
-  transform: translateX(12px);
+  transform: translateX(16px);
 }
 
 .timerHero {
   position: relative;
   display: grid;
-  grid-template-rows: minmax(0, 1fr) auto;
+  grid-template-rows: minmax(0, 1fr) 172px;
   min-height: 0;
   border: 1px solid transparent;
-  border-radius: 14px;
+  border-radius: 20px;
   overflow: visible;
   background: transparent;
 }
@@ -264,11 +359,13 @@
   align-content: center;
   justify-items: center;
   min-height: 0;
-  padding: 14px 16px 6px;
+  padding: 10px 16px 0;
   text-align: center;
 }
 
 .timerDigits {
+  position: relative;
+  z-index: 1;
   display: inline-flex;
   align-items: flex-start;
   justify-content: center;
@@ -285,8 +382,8 @@
 .timerDigitsGroup {
   display: block;
   min-width: 1.95ch;
-  letter-spacing: -0.12em;
-  font-size: clamp(96px, 23vw, 128px);
+  letter-spacing: -0.1em;
+  font-size: clamp(92px, 18vw, 118px);
   font-weight: 900;
   line-height: 0.82;
   text-align: center;
@@ -296,16 +393,19 @@
   display: block;
   width: 0.56ch;
   margin: 0 0.02em;
-  font-size: clamp(88px, 20vw, 118px);
+  font-size: clamp(84px, 16vw, 108px);
   font-weight: 900;
   line-height: 0.78;
   transform: translateY(0.02em);
 }
 
 .timerQuote {
-  margin: 10px 0 0;
+  position: relative;
+  z-index: 1;
+  margin: 18px 0 0;
   color: var(--text-3);
-  font-size: 11px;
+  font-size: 15px;
+  font-weight: 720;
   text-align: center;
 }
 
@@ -313,27 +413,44 @@
   position: relative;
   z-index: 1;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 110px;
-  gap: 16px;
+  grid-template-columns: minmax(0, 1fr) 140px;
+  gap: 14px;
   align-items: end;
-  padding: 0 18px 14px;
+  min-height: 172px;
+  padding: 0 0 20px;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
 }
 
 .currentTaskCard {
   display: grid;
-  gap: 6px;
+  align-content: end;
+  gap: 11px;
+  min-width: 0;
 }
 
 .currentTaskCard span,
 .currentTaskCard small {
   color: var(--text-3);
-  font-size: 11px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.currentTaskCard small {
+  line-height: 1.45;
 }
 
 .currentTaskCard strong {
   color: var(--text-1);
-  font-size: 17px;
-  font-weight: 700;
+  overflow: hidden;
+  font-size: 21px;
+  line-height: 1;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .focusDialCard {
@@ -346,40 +463,74 @@
   position: relative;
   display: grid;
   place-items: center;
-  width: 100px;
-  height: 100px;
+  width: 140px;
+  height: 140px;
   color: var(--text-2);
   border-radius: 50%;
-  background:
-    radial-gradient(circle, var(--window-bg) 59%, transparent 61%),
-    conic-gradient(var(--accent) var(--progress), rgba(122, 142, 175, 0.18) 0);
+  background: transparent;
+  box-shadow: none;
+  transform: translateY(2px);
+}
+
+.focusDial::after {
+  content: none;
+}
+
+.focusDialSvg {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+  transform: rotate(-72deg);
+}
+
+.focusDialTrack,
+.focusDialProgress {
+  fill: none;
+  stroke-width: 10;
+}
+
+.focusDialTrack {
+  stroke: rgba(229, 235, 244, 0.92);
+}
+
+.focusDialProgress {
+  stroke: #4b91ff;
+  stroke-linecap: round;
+  stroke-dasharray: var(--progress-value) 100;
+  filter:
+    drop-shadow(0 1px 0 rgba(255, 255, 255, 0.45))
+    drop-shadow(0 4px 8px rgba(70, 136, 255, 0.22));
 }
 
 .focusDialContent {
   display: grid;
   justify-items: center;
   align-content: center;
-  gap: 5px;
-  transform: translateY(1px);
+  gap: 6px;
+  position: relative;
+  z-index: 1;
+  transform: translateY(-4px);
 }
 
 .focusDial span {
-  font-size: 10px;
+  color: var(--text-3);
+  font-size: 11px;
   line-height: 1.1;
+  font-weight: 700;
   text-align: center;
 }
 
 .focusDial strong {
   color: var(--text-1);
-  font-size: 20px;
+  font-size: 24px;
   line-height: 1;
-  font-weight: 800;
+  font-weight: 850;
   text-align: center;
 }
 
 .timerActions {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: 1.34fr repeat(4, minmax(0, 1fr));
   gap: 10px;
 }
 
@@ -387,13 +538,16 @@
   display: grid;
   justify-items: center;
   align-content: center;
-  min-height: 60px;
+  min-height: 68px;
   gap: 6px;
-  padding: 10px 10px 12px;
+  padding: 9px 10px 10px;
   color: var(--text-1);
-  background: color-mix(in srgb, var(--surface) 78%, var(--window-bg) 22%);
-  border: 1px solid var(--line-strong);
-  border-radius: 8px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--window-bg) 96%, transparent), color-mix(in srgb, var(--surface-2) 82%, transparent));
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow:
+    0 12px 30px rgba(48, 101, 188, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
 .timerActionButton:hover,
@@ -411,8 +565,8 @@
 
 .timerActionButton b {
   overflow: hidden;
-  font-size: 12px;
-  font-weight: 700;
+  font-size: 13px;
+  font-weight: 850;
   line-height: 1.2;
   text-align: center;
   text-overflow: ellipsis;
@@ -421,8 +575,11 @@
 
 .startButton {
   color: #fff;
-  background: linear-gradient(180deg, var(--accent), var(--accent-strong));
+  background:
+    radial-gradient(circle at 70% 10%, rgba(113, 179, 255, 0.58), transparent 30%),
+    linear-gradient(180deg, #2d87ff, var(--accent-strong));
   border-color: transparent;
+  box-shadow: var(--blue-shadow);
 }
 
 .startButton:hover,

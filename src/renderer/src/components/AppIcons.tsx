@@ -114,6 +114,12 @@ export const ActionArrowIcon = (props: IconProps): ReactElement => (
   </svg>
 )
 
+export const PlayControlIcon = (props: IconProps): ReactElement => (
+  <svg {...baseProps} {...props} fill="currentColor" stroke="none">
+    <path d="M4.8 3.2v9.6L12.4 8 4.8 3.2Z" />
+  </svg>
+)
+
 export const PauseControlIcon = (props: IconProps): ReactElement => (
   <svg {...baseProps} {...props}>
     <path d="M5.4 4.2v7.6" />

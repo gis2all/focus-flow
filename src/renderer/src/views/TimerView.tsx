@@ -2,10 +2,10 @@ import type { CSSProperties, ReactElement } from 'react'
 import type { AppSettings, TimerPhase, TimerSnapshot } from '@shared/types'
 import { phaseLabel } from '../appConfig'
 import {
-  ActionArrowIcon,
   CoffeeCupIcon,
   LoungeChairIcon,
   PauseControlIcon,
+  PlayControlIcon,
   SkipNextIcon
 } from '../components/AppIcons'
 import { formatTimerClock } from '../viewModel'
@@ -54,6 +54,15 @@ export const TimerView = ({
   const primaryAction = getPrimaryTimerAction(snapshot)
   const canPause = snapshot.status === 'running'
   const canSkip = snapshot.status === 'running' || snapshot.status === 'paused'
+  const normalizedProgress = Math.min(100, Math.max(0, progressPercent))
+  const timerStyle = {
+    '--progress': `${normalizedProgress}%`,
+    '--progress-value': `${normalizedProgress}`
+  } as CSSProperties
+  const longBreakInterval = Math.max(1, settings.longBreakInterval)
+  const completedInCycle = snapshot.focusCount % longBreakInterval
+  const longBreakProgress =
+    snapshot.focusCount === 0 ? 1 : completedInCycle === 0 ? longBreakInterval : completedInCycle
 
   const handlePrimaryAction = (): void => {
     if (primaryAction.action === 'resume') {
@@ -65,9 +74,15 @@ export const TimerView = ({
   }
 
   return (
-    <div className={styles.timerView}>
+    <div className={styles.timerView} style={timerStyle}>
       <div className={styles.timerHeader}>
-        <p>{phaseLabel[snapshot.phase]} · 第 {Math.max(1, snapshot.focusCount + 1)} 个番茄钟</p>
+        <p>
+          <span className={styles.timerStatusBadge} aria-hidden="true">
+            <span className={styles.timerStatusHalo} />
+            <span className={styles.timerStatusCore} />
+          </span>
+          {phaseLabel[snapshot.phase]} · 第 {Math.max(1, snapshot.focusCount + 1)} 个番茄钟
+        </p>
         <label className={styles.autoSwitch}>
           <span>自动切换专注/休息</span>
           <input
@@ -98,10 +113,14 @@ export const TimerView = ({
             <small>预计专注：2 个番茄钟　已专注：{snapshot.focusCount} 个番茄钟</small>
           </div>
           <div className={styles.focusDialCard}>
-            <div className={styles.focusDial} style={{ '--progress': `${progressPercent}%` } as CSSProperties}>
+            <div className={styles.focusDial}>
+              <svg className={styles.focusDialSvg} viewBox="0 0 100 100" aria-hidden="true">
+                <circle className={styles.focusDialTrack} cx="50" cy="50" r="44" pathLength="100" />
+                <circle className={styles.focusDialProgress} cx="50" cy="50" r="44" pathLength="100" />
+              </svg>
               <div className={styles.focusDialContent}>
                 <span>长休进度</span>
-                <strong>{Math.max(1, snapshot.focusCount || 1)}/4</strong>
+                <strong>{longBreakProgress}/{longBreakInterval}</strong>
               </div>
             </div>
           </div>
@@ -110,7 +129,7 @@ export const TimerView = ({
 
       <div className={styles.timerActions}>
         <button className={`${styles.timerActionButton} ${styles.startButton}`} onClick={handlePrimaryAction} type="button">
-          <ActionArrowIcon className={styles.timerActionIcon} />
+          <PlayControlIcon className={styles.timerActionIcon} />
           <b>{primaryAction.label}</b>
         </button>
         <button className={styles.timerActionButton} disabled={!canPause} onClick={() => void window.focusFlow.timer.pause()} type="button">
