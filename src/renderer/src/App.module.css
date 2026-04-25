@@ -870,21 +870,25 @@
 
 .statsView {
   grid-template-rows: auto minmax(0, 1fr);
-  gap: 8px;
+  gap: 10px;
 }
 
 .statsLayout {
   display: grid;
-  grid-template-columns: 96px minmax(0, 1fr);
-  grid-template-rows: minmax(0, 1.35fr) minmax(148px, 0.85fr);
-  gap: 8px;
+  grid-template-columns: minmax(0, 1.55fr) minmax(220px, 0.75fr);
+  grid-template-rows: minmax(86px, auto) minmax(0, 1fr) minmax(156px, 0.62fr);
+  grid-template-areas:
+    "numbers numbers"
+    "chart composition"
+    "rank rank";
+  gap: 10px;
   height: 100%;
   min-height: 0;
 }
 
 .statsNumbers,
 .chartPanel,
-.donutPanel,
+.compositionPanel,
 .rankPanel {
   background: var(--surface);
   border: 1px solid var(--line);
@@ -892,116 +896,199 @@
 }
 
 .statsNumbers {
+  grid-area: numbers;
   display: grid;
-  grid-template-rows: 76px repeat(3, 1fr);
-  gap: 0;
-  overflow: hidden;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  min-height: 0;
+  background: transparent;
+  border: 0;
 }
 
-.metricCard {
+.statsNumbers > div {
   display: grid;
   align-content: center;
   gap: 4px;
+  min-width: 0;
   padding: 10px 12px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.metricCard {
   color: #fff;
   background: linear-gradient(180deg, #5b97ff, var(--accent));
+  border-color: transparent;
 }
 
 .metricCard span,
 .statsNumbers > div span {
+  color: inherit;
   font-size: 11px;
+  font-weight: 700;
+  opacity: 0.88;
 }
 
 .metricCard strong {
-  font-size: 22px;
+  color: #fff;
 }
 
-.statsNumbers > div:not(.metricCard) {
-  display: grid;
-  align-content: center;
-  gap: 3px;
-  padding: 10px 12px;
-  border-top: 1px solid var(--line);
+.statsNumbers small {
+  color: var(--text-3);
+  font-size: 10px;
+}
+
+.metricCard small {
+  color: rgba(255, 255, 255, 0.72);
 }
 
 .statsNumbers strong {
   color: var(--text-1);
-  font-size: 18px;
+  overflow: hidden;
+  font-size: 20px;
+  line-height: 1.05;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .chartPanel {
+  grid-area: chart;
   display: grid;
-  grid-template-rows: auto 1fr auto;
+  grid-template-rows: auto minmax(0, 1fr) auto;
   min-width: 0;
-  padding: 10px 12px;
+  min-height: 0;
+  padding: 14px 18px 12px;
 }
 
-.chartPanel h2,
-.rankPanel h2 {
+.statsPanelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+}
+
+.statsPanelHeader h2 {
   margin: 0;
   color: var(--text-1);
   font-size: 12px;
+  font-weight: 800;
+}
+
+.statsPanelHeader span {
+  color: var(--text-3);
+  font-size: 10px;
+  white-space: nowrap;
 }
 
 .hourChart {
+  position: relative;
   display: grid;
   grid-template-columns: repeat(24, 1fr);
   align-items: end;
-  gap: 3px;
-  min-height: 98px;
-  padding-top: 10px;
+  gap: 5px;
+  min-height: 0;
+  height: 100%;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.hourChartFrame {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr);
+  gap: 10px;
+  min-height: 0;
+  margin-top: 10px;
+}
+
+.yAxisTicks {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  align-items: center;
+  min-height: 0;
+  padding: 6px 0 8px;
+  color: var(--text-3);
+  font-size: 9px;
+  line-height: 1;
+  text-align: right;
+}
+
+.yAxisTicks span:first-child {
+  align-self: start;
+}
+
+.yAxisTicks span:last-child {
+  align-self: end;
 }
 
 .hourSlot {
   display: flex;
   align-items: end;
   height: 100%;
+  min-width: 0;
 }
 
 .hourSlot div {
   width: 100%;
-  min-height: 3px;
+  min-height: 0;
+  border-radius: 2px 2px 0 0;
   background: linear-gradient(180deg, var(--accent), #64c9ff);
+  box-shadow: 0 0 0 1px rgba(56, 132, 255, 0.08);
+}
+
+.chartAxisRow {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr);
+  gap: 10px;
+  padding-top: 6px;
 }
 
 .chartAxis {
   display: flex;
   justify-content: space-between;
   color: var(--text-3);
-  padding-top: 8px;
-  border-top: 1px solid var(--line);
   font-size: 10px;
 }
 
-.donutPanel {
+.compositionPanel {
+  grid-area: composition;
   display: grid;
-  grid-template-columns: 92px minmax(0, 1fr);
-  align-items: center;
+  grid-template-rows: auto minmax(0, 1fr);
   min-height: 0;
-  padding: 10px 12px;
+  padding: 14px 16px;
+}
+
+.compositionBody {
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 14px;
+  min-height: 0;
 }
 
 .donut {
-  width: 72px;
-  height: 72px;
+  width: 92px;
+  height: 92px;
   border-radius: 50%;
   background:
-    radial-gradient(circle, var(--surface) 52%, transparent 54%),
+    radial-gradient(circle, var(--surface) 51%, transparent 53%),
     conic-gradient(var(--accent) 0 var(--focus), var(--cyan) var(--focus) var(--break), var(--surface-3) var(--break) 100%);
 }
 
 .legendList {
+  width: 100%;
   display: grid;
-  align-content: center;
-  gap: 8px;
+  gap: 7px;
   color: var(--text-2);
   font-size: 11px;
 }
 
 .legendList span {
-  display: flex;
+  display: grid;
+  grid-template-columns: 8px minmax(0, 1fr) auto;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .legendList b {
@@ -1009,6 +1096,18 @@
   width: 8px;
   height: 8px;
   background: var(--accent);
+}
+
+.legendList em {
+  overflow: hidden;
+  font-style: normal;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.legendList strong {
+  color: var(--text-1);
+  font-size: 11px;
 }
 
 .legendList span:nth-child(2) b {
@@ -1020,29 +1119,71 @@
 }
 
 .rankPanel {
+  grid-area: rank;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 10px;
+  min-height: 0;
+  padding: 14px 18px;
+}
+
+.rankList {
   display: grid;
   align-content: start;
-  grid-auto-rows: min-content;
-  gap: 8px;
+  gap: 9px;
   min-height: 0;
-  padding: 10px 12px;
+  overflow: auto;
 }
 
-.rankPanel div {
+.rankRow {
   display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: center;
-  gap: 10px;
-  color: var(--text-2);
-  font-size: 11px;
+  gap: 5px;
 }
 
-.rankPanel strong {
+.rankRowTop {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 12px;
+  color: var(--text-2);
+  font-size: 12px;
+}
+
+.rankRowTop span {
+  overflow: hidden;
   color: var(--text-1);
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rankRowTop strong {
+  color: var(--text-1);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.rankTrack {
+  height: 6px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--surface-3) 64%, transparent);
+  border-radius: 999px;
+}
+
+.rankTrack span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), #64c9ff);
+  border-radius: inherit;
 }
 
 .statsEmptyState {
+  display: grid;
+  place-items: center;
+  min-height: 84px;
   color: var(--text-3);
+  border: 1px dashed var(--line);
+  border-radius: 8px;
   font-size: 11px;
 }
 
@@ -1126,9 +1267,22 @@
   }
 
   .timerMetaRow,
-  .statsLayout,
   .settingsView {
     grid-template-columns: 1fr;
+  }
+
+  .statsLayout {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(220px, 1fr) auto auto;
+    grid-template-areas:
+      "numbers"
+      "chart"
+      "composition"
+      "rank";
+  }
+
+  .statsNumbers {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .timerActions {

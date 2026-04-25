@@ -28,6 +28,7 @@ export class StatsService {
     const tasks = await this.tasks.list()
     return aggregateStats({
       now,
+      tasks,
       sessions: await this.sessions.list(),
       completedTasks: countCompletedTasksForLocalDay(tasks, now)
     })

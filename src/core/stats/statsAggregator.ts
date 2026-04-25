@@ -1,8 +1,9 @@
-import type { FocusStats, TimerSession } from '@shared/types'
+import type { FocusStats, Task, TimerSession } from '@shared/types'
 
 export interface AggregateStatsInput {
   now: Date
   sessions: TimerSession[]
+  tasks?: Task[]
   completedTasks?: number
 }
 
@@ -24,6 +25,7 @@ export const aggregateStats = (input: AggregateStatsInput): FocusStats => {
   const todayKey = localDateKey(input.now)
   const hourlyFocusMinutes = Array.from({ length: 24 }, () => 0)
   const taskTotals = new Map<string, number>()
+  const tasksById = new Map((input.tasks ?? []).map((task) => [task.id, task]))
   const weeklyBuckets = new Map<string, { focusMinutes: number; completedPomodoros: number }>()
 
   for (let index = 6; index >= 0; index -= 1) {
@@ -54,7 +56,7 @@ export const aggregateStats = (input: AggregateStatsInput): FocusStats => {
       weeklyBucket.completedPomodoros += 1
     }
 
-    if (session.taskId) {
+    if (dateKey === todayKey && session.taskId && tasksById.has(session.taskId)) {
       taskTotals.set(session.taskId, (taskTotals.get(session.taskId) ?? 0) + minutes)
     }
   }
@@ -87,7 +89,15 @@ export const aggregateStats = (input: AggregateStatsInput): FocusStats => {
       ...value
     })),
     taskFocusMinutes: Array.from(taskTotals.entries())
-      .map(([taskId, minutes]) => ({ taskId, minutes }))
+      .map(([taskId, minutes]) => {
+        const task = tasksById.get(taskId)!
+        return {
+          taskId,
+          title: task.title,
+          minutes,
+          status: task.completedAt ? ('completed' as const) : ('active' as const)
+        }
+      })
       .sort((left, right) => right.minutes - left.minutes)
   }
 }

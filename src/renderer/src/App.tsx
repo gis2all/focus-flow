@@ -176,7 +176,7 @@ export const App = (): ReactElement => {
     }
 
     if (activeView === 'stats') {
-      return <StatsView stats={stats} taskTitleById={taskTitleById} />
+      return <StatsView stats={stats} taskBoard={taskBoard} />
     }
 
     return <SettingsView settings={settings} updateSettings={updateSettings} activeTheme={activeTheme} />

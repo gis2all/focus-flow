@@ -1,11 +1,11 @@
 import type { CSSProperties, ReactElement } from 'react'
-import type { FocusStats } from '@shared/types'
+import type { FocusStats, TaskBoardSnapshot } from '@shared/types'
 import { formatDurationLabel } from '../viewModel'
 import styles from '../App.module.css'
 
 interface StatsViewProps {
   stats: FocusStats
-  taskTitleById: Record<string, string>
+  taskBoard: TaskBoardSnapshot
 }
 
 export const getHourBarHeight = (minutes: number, maxHourly: number): string => {
@@ -13,14 +13,39 @@ export const getHourBarHeight = (minutes: number, maxHourly: number): string => 
   return `${(minutes / maxHourly) * 100}%`
 }
 
-export const StatsView = ({ stats, taskTitleById }: StatsViewProps): ReactElement => {
-  const maxHourly = Math.max(...stats.hourlyFocusMinutes, 1)
+export const getRankBarWidth = (minutes: number, maxMinutes: number): string => {
+  if (minutes <= 0) return '0%'
+  return `${(minutes / maxMinutes) * 100}%`
+}
+
+export const StatsView = ({ stats, taskBoard }: StatsViewProps): ReactElement => {
+  const hourlyPeak = Math.max(...stats.hourlyFocusMinutes, 0)
+  const maxHourly = Math.max(hourlyPeak, 1)
   const focusTotal = Math.max(stats.today.focusMinutes, 0)
   const shortBreakMinutes = Math.max(stats.today.shortBreakMinutes, 0)
   const longBreakMinutes = Math.max(stats.today.longBreakMinutes, 0)
-  const totalTracked = Math.max(focusTotal + shortBreakMinutes + longBreakMinutes, 1)
+  const breakTotal = shortBreakMinutes + longBreakMinutes
+  const totalTrackedRaw = focusTotal + breakTotal
+  const totalTracked = Math.max(totalTrackedRaw, 1)
   const focusPercent = Math.round((focusTotal / totalTracked) * 100)
   const breakPercent = Math.round(((focusTotal + shortBreakMinutes) / totalTracked) * 100)
+  const completedTaskDurations = taskBoard.completedItems
+    .filter((item) => item.focusMinutes > 0)
+    .map((item) => ({
+      taskId: item.id,
+      title: item.title,
+      minutes: item.focusMinutes
+    }))
+    .sort((left, right) => right.minutes - left.minutes)
+  const maxCompletedTaskMinutes = Math.max(...completedTaskDurations.map((item) => item.minutes), 1)
+  const halfHourlyPeak = Math.round(hourlyPeak / 2)
+  const yAxisTicks = [hourlyPeak > 0 ? `峰值 ${hourlyPeak}m` : '峰值 0m', `${halfHourlyPeak}m`, '0']
+  const summaryCards = [
+    { label: '专注时长', value: formatDurationLabel(focusTotal), meta: '今日累计' },
+    { label: '完成番茄', value: `${stats.today.completedPomodoros}`, meta: '已完成' },
+    { label: '任务完成数', value: `${stats.today.completedTasks}`, meta: '今日完成' },
+    { label: '休息时长', value: formatDurationLabel(breakTotal), meta: '短休 + 长休' }
+  ]
 
   return (
     <div className={styles.statsView}>
@@ -34,71 +59,97 @@ export const StatsView = ({ stats, taskTitleById }: StatsViewProps): ReactElemen
 
       <div className={styles.statsLayout}>
         <aside className={styles.statsNumbers}>
-          <div className={styles.metricCard}>
-            <span>专注时长</span>
-            <strong>{formatDurationLabel(stats.today.focusMinutes)}</strong>
-          </div>
-          <div>
-            <span>完成番茄钟</span>
-            <strong>{stats.today.completedPomodoros}</strong>
-          </div>
-          <div>
-            <span>任务完成数</span>
-            <strong>{stats.today.completedTasks}</strong>
-          </div>
-          <div>
-            <span>专注次数</span>
-            <strong>{stats.today.completedPomodoros}</strong>
-          </div>
+          {summaryCards.map((card, index) => (
+            <div className={index === 0 ? styles.metricCard : ''} key={card.label}>
+              <span>{card.label}</span>
+              <strong>{card.value}</strong>
+              <small>{card.meta}</small>
+            </div>
+          ))}
         </aside>
 
         <section className={styles.chartPanel}>
-          <h2>今日专注时长分布</h2>
-          <div className={styles.hourChart}>
-            {stats.hourlyFocusMinutes.map((minutes, hour) => (
-              <div className={styles.hourSlot} key={hour}>
-                <div style={{ height: getHourBarHeight(minutes, maxHourly) }} />
-              </div>
-            ))}
+          <div className={styles.statsPanelHeader}>
+            <h2>今日专注时长分布</h2>
+            <span>{hourlyPeak > 0 ? `峰值 ${hourlyPeak}m` : '暂无专注'}</span>
           </div>
-          <div className={styles.chartAxis}>
-            <span>00:00</span>
-            <span>06:00</span>
-            <span>12:00</span>
-            <span>18:00</span>
-            <span>24:00</span>
+          <div className={styles.hourChartFrame}>
+            <div className={styles.yAxisTicks} aria-label="今日专注分布刻度">
+              {yAxisTicks.map((tick) => (
+                <span key={tick}>{tick}</span>
+              ))}
+            </div>
+            <div className={styles.hourChart}>
+              {stats.hourlyFocusMinutes.map((minutes, hour) => (
+                <div aria-label={`${hour}:00 ${minutes}m`} className={styles.hourSlot} key={hour}>
+                  <div style={{ height: getHourBarHeight(minutes, maxHourly) }} />
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className={styles.chartAxisRow}>
+            <span aria-hidden="true" />
+            <div className={styles.chartAxis}>
+              <span>00:00</span>
+              <span>06:00</span>
+              <span>12:00</span>
+              <span>18:00</span>
+              <span>24:00</span>
+            </div>
           </div>
         </section>
 
-        <section className={styles.donutPanel}>
-          <div
-            className={styles.donut}
-            style={{ '--focus': `${focusPercent}%`, '--break': `${breakPercent}%` } as CSSProperties}
-          />
-          <div className={styles.legendList}>
-            <span>
-              <b />专注 {stats.today.focusMinutes}m
-            </span>
-            <span>
-              <b />短休息 {shortBreakMinutes}m
-            </span>
-            <span>
-              <b />长休息 {longBreakMinutes}m
-            </span>
+        <section className={styles.compositionPanel}>
+          <div className={styles.statsPanelHeader}>
+            <h2>时间构成</h2>
+            <span>{totalTrackedRaw > 0 ? `${totalTrackedRaw}m` : '无记录'}</span>
+          </div>
+          <div className={styles.compositionBody}>
+            <div
+              className={styles.donut}
+              style={{ '--focus': `${focusPercent}%`, '--break': `${breakPercent}%` } as CSSProperties}
+            />
+            <div className={styles.legendList}>
+              <span>
+                <b />
+                <em>专注</em>
+                <strong>{focusTotal}m</strong>
+              </span>
+              <span>
+                <b />
+                <em>短休息</em>
+                <strong>{shortBreakMinutes}m</strong>
+              </span>
+              <span>
+                <b />
+                <em>长休息</em>
+                <strong>{longBreakMinutes}m</strong>
+              </span>
+            </div>
           </div>
         </section>
 
         <section className={styles.rankPanel}>
-          <h2>专注时长（按任务）</h2>
-          {stats.taskFocusMinutes.length === 0 ? (
-            <div className={styles.statsEmptyState}>暂无专注记录</div>
+          <div className={styles.statsPanelHeader}>
+            <h2>任务时长</h2>
+            <span>今日已完成</span>
+          </div>
+          {completedTaskDurations.length === 0 ? (
+            <div className={styles.statsEmptyState}>今天还没有已完成任务时长</div>
           ) : (
-            stats.taskFocusMinutes.slice(0, 5).map((item) => (
-              <div key={item.taskId}>
-                <span>{taskTitleById[item.taskId] ?? '已删除任务'}</span>
-                <strong>{item.minutes}m</strong>
-              </div>
-            ))
+            <div className={styles.rankList}>
+              {completedTaskDurations.slice(0, 5).map((item) => (
+                <div className={styles.rankRow} key={item.taskId}>
+                  <div className={styles.rankRowTop}>
+                    <span>{item.title}</span>
+                    <strong>{item.minutes}m</strong>
+                  </div>
+                  <div className={styles.rankTrack}>
+                    <span style={{ width: getRankBarWidth(item.minutes, maxCompletedTaskMinutes) }} />
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
         </section>
       </div>

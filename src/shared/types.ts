@@ -101,7 +101,9 @@ export interface DailyTrendPoint {
 
 export interface TaskFocusPoint {
   taskId: string
+  title: string
   minutes: number
+  status: 'active' | 'completed'
 }
 
 export interface FocusStats {
