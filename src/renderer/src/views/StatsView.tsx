@@ -8,11 +8,16 @@ interface StatsViewProps {
   taskTitleById: Record<string, string>
 }
 
+export const getHourBarHeight = (minutes: number, maxHourly: number): string => {
+  if (minutes <= 0) return '0%'
+  return `${(minutes / maxHourly) * 100}%`
+}
+
 export const StatsView = ({ stats, taskTitleById }: StatsViewProps): ReactElement => {
   const maxHourly = Math.max(...stats.hourlyFocusMinutes, 1)
   const focusTotal = Math.max(stats.today.focusMinutes, 0)
-  const shortBreakMinutes = Math.round(focusTotal * 0.23)
-  const longBreakMinutes = Math.round(focusTotal * 0.12)
+  const shortBreakMinutes = Math.max(stats.today.shortBreakMinutes, 0)
+  const longBreakMinutes = Math.max(stats.today.longBreakMinutes, 0)
   const totalTracked = Math.max(focusTotal + shortBreakMinutes + longBreakMinutes, 1)
   const focusPercent = Math.round((focusTotal / totalTracked) * 100)
   const breakPercent = Math.round(((focusTotal + shortBreakMinutes) / totalTracked) * 100)
@@ -52,7 +57,7 @@ export const StatsView = ({ stats, taskTitleById }: StatsViewProps): ReactElemen
           <div className={styles.hourChart}>
             {stats.hourlyFocusMinutes.map((minutes, hour) => (
               <div className={styles.hourSlot} key={hour}>
-                <div style={{ height: `${Math.max(4, (minutes / maxHourly) * 100)}%` }} />
+                <div style={{ height: getHourBarHeight(minutes, maxHourly) }} />
               </div>
             ))}
           </div>

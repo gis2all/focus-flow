@@ -6,6 +6,7 @@ const api: FocusFlowApi = {
   timer: {
     getSnapshot: () => ipcRenderer.invoke(IPC_CHANNELS.timer.getSnapshot),
     start: (request) => ipcRenderer.invoke(IPC_CHANNELS.timer.start, request),
+    bindCurrentTask: (taskId) => ipcRenderer.invoke(IPC_CHANNELS.timer.bindCurrentTask, taskId),
     pause: () => ipcRenderer.invoke(IPC_CHANNELS.timer.pause),
     resume: () => ipcRenderer.invoke(IPC_CHANNELS.timer.resume),
     skip: () => ipcRenderer.invoke(IPC_CHANNELS.timer.skip),

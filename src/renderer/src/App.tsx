@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactElement } from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactElement } from 'react'
 import { createIdleTimer, deriveTimerSnapshot } from '@core/timer/timerState'
 import { defaultSettings } from '@shared/defaults'
 import type { AppSettings, FocusStats, TaskBoardSnapshot, TimerPhase, TimerSnapshot } from '@shared/types'
@@ -8,13 +8,15 @@ import { StatsView } from './views/StatsView'
 import { TasksView } from './views/TasksView'
 import { TimerView } from './views/TimerView'
 import type { ViewKey } from './types'
-import { buildTaskTitleById, resolveEffectiveTheme, resolveSelectedTaskId } from './viewModel'
+import { buildTaskTitleById, resolveCurrentTaskTitle, resolveEffectiveTheme } from './viewModel'
 
 const fallbackSnapshot = deriveTimerSnapshot(createIdleTimer(defaultSettings, Date.now()), Date.now())
 
 const fallbackStats: FocusStats = {
   today: {
     focusMinutes: 0,
+    shortBreakMinutes: 0,
+    longBreakMinutes: 0,
     completedPomodoros: 0,
     completedTasks: 0
   },
@@ -41,23 +43,43 @@ export const App = (): ReactElement => {
   const [stats, setStats] = useState<FocusStats>(fallbackStats)
   const [systemTheme, setSystemTheme] = useState<'light' | 'dark'>('light')
   const [newTaskTitle, setNewTaskTitle] = useState('')
-  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null)
+  const previousSnapshotRef = useRef<TimerSnapshot>(fallbackSnapshot)
+
+  const refreshTaskBoard = async (): Promise<void> => {
+    setTaskBoard(await window.focusFlow.tasks.getBoard())
+  }
+
+  const refreshTaskBoardAndStats = async (): Promise<void> => {
+    const [nextTaskBoard, nextStats] = await Promise.all([window.focusFlow.tasks.getBoard(), window.focusFlow.stats.get()])
+    setTaskBoard(nextTaskBoard)
+    setStats(nextStats)
+  }
 
   useEffect(() => {
     void Promise.all([
-      window.focusFlow.timer.getSnapshot().then(setSnapshot),
-      window.focusFlow.tasks.getBoard().then((value) => {
-        setTaskBoard(value)
-        setSelectedTaskId(resolveSelectedTaskId(value, null))
-      }),
+      window.focusFlow.timer.getSnapshot(),
+      window.focusFlow.tasks.getBoard(),
       window.focusFlow.settings.get().then(setSettings),
       window.focusFlow.stats.get().then(setStats),
       window.focusFlow.system.getTheme().then(setSystemTheme)
-    ])
+    ]).then(([nextSnapshot, nextTaskBoard]) => {
+      previousSnapshotRef.current = nextSnapshot
+      setSnapshot(nextSnapshot)
+      setTaskBoard(nextTaskBoard)
+    })
 
     return window.focusFlow.timer.onSnapshot((value) => {
+      const previousSnapshot = previousSnapshotRef.current
+      previousSnapshotRef.current = value
       setSnapshot(value)
-      void window.focusFlow.stats.get().then(setStats)
+
+      const shouldRefreshTaskBoard =
+        previousSnapshot.sessionId !== value.sessionId ||
+        (previousSnapshot.status !== 'completed' && value.status === 'completed')
+
+      if (shouldRefreshTaskBoard) {
+        void refreshTaskBoardAndStats()
+      }
     })
   }, [])
 
@@ -67,49 +89,47 @@ export const App = (): ReactElement => {
 
   const activeTheme = resolveEffectiveTheme(settings.themePreference, systemTheme)
   const progressPercent = Math.round(snapshot.progress * 100)
-  const selectedTask = taskBoard.activeItems.find((task) => task.id === selectedTaskId) ?? null
   const taskTitleById = useMemo(() => buildTaskTitleById(taskBoard), [taskBoard])
-  const currentTaskTitle = snapshot.taskId
-    ? taskTitleById[snapshot.taskId] ?? '已删除任务'
-    : selectedTask?.title ?? '选择一个任务开始专注'
-
-  const refreshTaskBoardAndStats = async (preferredTaskId = selectedTaskId): Promise<void> => {
-    const [nextTaskBoard, nextStats] = await Promise.all([window.focusFlow.tasks.getBoard(), window.focusFlow.stats.get()])
-    setTaskBoard(nextTaskBoard)
-    setStats(nextStats)
-    setSelectedTaskId(resolveSelectedTaskId(nextTaskBoard, preferredTaskId ?? null))
-  }
+  const currentTaskTitle = resolveCurrentTaskTitle(snapshot, taskTitleById)
 
   const createTask = async (): Promise<void> => {
     if (!newTaskTitle.trim()) return
-    const task = await window.focusFlow.tasks.create({ title: newTaskTitle })
+    await window.focusFlow.tasks.create({ title: newTaskTitle })
     setNewTaskTitle('')
-    await refreshTaskBoardAndStats(task.id)
+    await refreshTaskBoardAndStats()
   }
 
   const updateTask = async (id: string, title: string): Promise<void> => {
-    const task = await window.focusFlow.tasks.update({ id, title })
-    await refreshTaskBoardAndStats(task.id)
+    await window.focusFlow.tasks.update({ id, title })
+    await refreshTaskBoard()
   }
 
   const completeTask = async (id: string): Promise<void> => {
     await window.focusFlow.tasks.complete(id)
-    await refreshTaskBoardAndStats(selectedTaskId === id ? null : selectedTaskId)
+    await refreshTaskBoardAndStats()
   }
 
   const restoreTask = async (id: string): Promise<void> => {
-    const task = await window.focusFlow.tasks.restore(id)
-    await refreshTaskBoardAndStats(task.id)
+    await window.focusFlow.tasks.restore(id)
+    await refreshTaskBoardAndStats()
   }
 
   const reorderTasks = async (ids: string[]): Promise<void> => {
     await window.focusFlow.tasks.reorder({ ids })
-    await refreshTaskBoardAndStats(selectedTaskId)
+    await refreshTaskBoard()
   }
 
   const deleteTask = async (id: string): Promise<void> => {
     await window.focusFlow.tasks.delete(id)
-    await refreshTaskBoardAndStats(selectedTaskId === id ? null : selectedTaskId)
+    await refreshTaskBoardAndStats()
+  }
+
+  const bindCurrentTask = async (taskId: string | null): Promise<void> => {
+    setSnapshot(await window.focusFlow.timer.bindCurrentTask(taskId))
+  }
+
+  const startFocusWithTask = async (taskId: string): Promise<void> => {
+    setSnapshot(await window.focusFlow.timer.start({ phase: 'focus', taskId }))
   }
 
   const updateSettings = async (patch: Partial<AppSettings>): Promise<void> => {
@@ -118,7 +138,7 @@ export const App = (): ReactElement => {
   }
 
   const startTimer = async (phase: TimerPhase): Promise<void> => {
-    setSnapshot(await window.focusFlow.timer.start({ phase, taskId: phase === 'focus' ? selectedTaskId : null }))
+    setSnapshot(await window.focusFlow.timer.start({ phase }))
   }
 
   const renderActiveView = (): ReactElement => {
@@ -138,16 +158,17 @@ export const App = (): ReactElement => {
     if (activeView === 'tasks') {
       return (
         <TasksView
+          bindCurrentTask={bindCurrentTask}
+          canBindCurrentTask={snapshot.status === 'running' && snapshot.phase === 'focus'}
+          startFocusWithTask={startFocusWithTask}
           completeTask={completeTask}
+          currentTimerTaskId={snapshot.taskId}
           createTask={createTask}
           deleteTask={deleteTask}
           newTaskTitle={newTaskTitle}
           restoreTask={restoreTask}
           reorderTasks={reorderTasks}
-          selectedTaskId={selectedTaskId}
-          selectedTaskTitle={selectedTask?.title ?? null}
           setNewTaskTitle={setNewTaskTitle}
-          setSelectedTaskId={setSelectedTaskId}
           taskBoard={taskBoard}
           updateTask={updateTask}
         />

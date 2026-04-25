@@ -13,6 +13,7 @@ export const IPC_CHANNELS = {
     snapshot: 'timer:snapshot',
     getSnapshot: 'timer:get-snapshot',
     start: 'timer:start',
+    bindCurrentTask: 'timer:bind-current-task',
     pause: 'timer:pause',
     resume: 'timer:resume',
     skip: 'timer:skip',
@@ -71,6 +72,7 @@ export interface FocusFlowApi {
   timer: {
     getSnapshot(): Promise<TimerSnapshot>
     start(request?: StartTimerRequest): Promise<TimerSnapshot>
+    bindCurrentTask(taskId: string | null): Promise<TimerSnapshot>
     pause(): Promise<TimerSnapshot>
     resume(): Promise<TimerSnapshot>
     skip(): Promise<TimerSnapshot>

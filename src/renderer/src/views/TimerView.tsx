@@ -64,7 +64,7 @@ export const TimerView = ({
           <div className={styles.focusDialCard}>
             <div className={styles.focusDial} style={{ '--progress': `${progressPercent}%` } as CSSProperties}>
               <div className={styles.focusDialContent}>
-                <span>专注进度</span>
+                <span>长休进度</span>
                 <strong>{Math.max(1, snapshot.focusCount || 1)}/4</strong>
               </div>
             </div>

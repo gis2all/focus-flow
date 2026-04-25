@@ -102,6 +102,61 @@ describe('sqlite repositories', () => {
     expect(await sessions.list()).toHaveLength(1)
   })
 
+  test('updates the bound task of an existing timer session', async () => {
+    const sessions = new SqliteTimerSessionRepository(database)
+
+    const created = await sessions.create({
+      phase: 'focus',
+      taskId: 'task-1',
+      startedAt: '2026-04-25T09:00:00.000',
+      durationMs: 25 * 60_000
+    })
+
+    await sessions.updateTask({
+      id: created.id,
+      taskId: 'task-2',
+      updatedAt: '2026-04-25T09:05:00.000'
+    })
+
+    expect(await sessions.findActive()).toMatchObject({
+      id: created.id,
+      taskId: 'task-2',
+      updatedAt: '2026-04-25T09:05:00.000'
+    })
+  })
+
+  test('throws when deleting a task that does not exist', async () => {
+    const tasks = new SqliteTaskRepository(database)
+
+    await expect(tasks.delete('missing-task')).rejects.toThrow('Task not found: missing-task')
+  })
+
+  test('throws when finishing a session that does not exist', async () => {
+    const sessions = new SqliteTimerSessionRepository(database)
+
+    await expect(
+      sessions.finish({
+        id: 'missing-session',
+        endedAt: '2026-04-25T09:25:00.000',
+        actualDurationMs: 25 * 60_000,
+        completed: true,
+        completionReason: 'completed'
+      })
+    ).rejects.toThrow('Timer session not found: missing-session')
+  })
+
+  test('throws when updating the task of a session that does not exist', async () => {
+    const sessions = new SqliteTimerSessionRepository(database)
+
+    await expect(
+      sessions.updateTask({
+        id: 'missing-session',
+        taskId: 'task-1',
+        updatedAt: '2026-04-25T09:25:00.000'
+      })
+    ).rejects.toThrow('Timer session not found: missing-session')
+  })
+
   test('persists settings as merged application settings', async () => {
     const settings = new SqliteSettingsRepository(database)
 

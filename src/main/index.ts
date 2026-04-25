@@ -104,6 +104,7 @@ app.whenReady().then(async () => {
     settings: settingsRepository,
     runtime: runtimeRepository,
     events: eventRepository,
+    tasks: taskRepository,
     clock,
     notifier: new ElectronNotificationAdapter(),
     sound: new ElectronSoundAdapter()

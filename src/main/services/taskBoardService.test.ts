@@ -67,6 +67,9 @@ describe('TaskBoardService', () => {
       finish: async () => {
         throw new Error('not used')
       },
+      updateTask: async () => {
+        throw new Error('not used')
+      },
       findActive: async () => null
     }
     const service = new TaskBoardService(tasks, sessions)

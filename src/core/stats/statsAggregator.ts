@@ -19,6 +19,8 @@ const minutesFromMs = (value: number | null): number => Math.round((value ?? 0) 
 
 export const aggregateStats = (input: AggregateStatsInput): FocusStats => {
   const completedFocusSessions = input.sessions.filter((session) => session.phase === 'focus' && session.completed)
+  const completedShortBreakSessions = input.sessions.filter((session) => session.phase === 'shortBreak' && session.completed)
+  const completedLongBreakSessions = input.sessions.filter((session) => session.phase === 'longBreak' && session.completed)
   const todayKey = localDateKey(input.now)
   const hourlyFocusMinutes = Array.from({ length: 24 }, () => 0)
   const taskTotals = new Map<string, number>()
@@ -31,6 +33,8 @@ export const aggregateStats = (input: AggregateStatsInput): FocusStats => {
   }
 
   let todayFocusMinutes = 0
+  let todayShortBreakMinutes = 0
+  let todayLongBreakMinutes = 0
   let todayCompletedPomodoros = 0
 
   for (const session of completedFocusSessions) {
@@ -55,9 +59,25 @@ export const aggregateStats = (input: AggregateStatsInput): FocusStats => {
     }
   }
 
+  for (const session of completedShortBreakSessions) {
+    const started = new Date(session.startedAt)
+    if (localDateKey(started) === todayKey) {
+      todayShortBreakMinutes += minutesFromMs(session.actualDurationMs)
+    }
+  }
+
+  for (const session of completedLongBreakSessions) {
+    const started = new Date(session.startedAt)
+    if (localDateKey(started) === todayKey) {
+      todayLongBreakMinutes += minutesFromMs(session.actualDurationMs)
+    }
+  }
+
   return {
     today: {
       focusMinutes: todayFocusMinutes,
+      shortBreakMinutes: todayShortBreakMinutes,
+      longBreakMinutes: todayLongBreakMinutes,
       completedPomodoros: todayCompletedPomodoros,
       completedTasks: input.completedTasks ?? 0
     },

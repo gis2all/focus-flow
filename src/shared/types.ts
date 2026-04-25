@@ -87,6 +87,8 @@ export interface TimerSnapshot extends TimerState {
 
 export interface TodayStats {
   focusMinutes: number
+  shortBreakMinutes: number
+  longBreakMinutes: number
   completedPomodoros: number
   completedTasks: number
 }

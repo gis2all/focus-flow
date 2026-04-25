@@ -40,6 +40,12 @@ describe('stats aggregator', () => {
           actualDurationMs: 5 * 60_000
         }),
         session({
+          id: 'today-long-break',
+          phase: 'longBreak',
+          startedAt: '2026-04-25T18:00:00.000',
+          actualDurationMs: 15 * 60_000
+        }),
+        session({
           id: 'yesterday-focus',
           phase: 'focus',
           taskId: 'writing',
@@ -59,6 +65,8 @@ describe('stats aggregator', () => {
     })
 
     expect(stats.today.focusMinutes).toBe(45)
+    expect(stats.today.shortBreakMinutes).toBe(5)
+    expect(stats.today.longBreakMinutes).toBe(15)
     expect(stats.today.completedPomodoros).toBe(2)
     expect(stats.hourlyFocusMinutes[9]).toBe(25)
     expect(stats.hourlyFocusMinutes[10]).toBe(20)

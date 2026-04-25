@@ -28,4 +28,29 @@ describe('SettingsService', () => {
 
     await expect(service.update({ shortBreakMinutes: 0 })).rejects.toThrow('shortBreakMinutes must be at least 1')
   })
+
+  test('rejects invalid theme preferences from renderer payloads', async () => {
+    const settingsRepository: SettingsRepository = {
+      get: async () => defaultSettings,
+      update: async (patch) => ({ ...defaultSettings, ...patch })
+    }
+    const autoLaunch = { setOpenAtLogin: vi.fn() }
+    const service = new SettingsService(settingsRepository, autoLaunch)
+
+    await expect(service.update({ themePreference: 'neon' as never })).rejects.toThrow(
+      'themePreference must be one of system, light, dark'
+    )
+  })
+
+  test('rejects non-boolean toggle payloads from renderer IPC', async () => {
+    const settingsRepository: SettingsRepository = {
+      get: async () => defaultSettings,
+      update: async (patch) => ({ ...defaultSettings, ...patch })
+    }
+    const autoLaunch = { setOpenAtLogin: vi.fn() }
+    const service = new SettingsService(settingsRepository, autoLaunch)
+
+    await expect(service.update({ closeToTray: 'yes' as never })).rejects.toThrow('closeToTray must be a boolean')
+    await expect(service.update({ openAtLogin: 1 as never })).rejects.toThrow('openAtLogin must be a boolean')
+  })
 })

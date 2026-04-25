@@ -10,6 +10,12 @@ const localDateKey = (date: Date): string => {
   return `${year}-${month}-${day}`
 }
 
+const countCompletedTasksForLocalDay = (
+  tasks: Awaited<ReturnType<TaskRepository['list']>>,
+  now: Date
+): number =>
+  tasks.filter((task) => task.completedAt && localDateKey(new Date(task.completedAt)) === localDateKey(now)).length
+
 export class StatsService {
   constructor(
     private readonly sessions: TimerSessionRepository,
@@ -19,10 +25,11 @@ export class StatsService {
 
   async get(): Promise<FocusStats> {
     const now = new Date(this.clock.now())
+    const tasks = await this.tasks.list()
     return aggregateStats({
       now,
       sessions: await this.sessions.list(),
-      completedTasks: await this.tasks.countCompletedOn(localDateKey(now))
+      completedTasks: countCompletedTasksForLocalDay(tasks, now)
     })
   }
 }

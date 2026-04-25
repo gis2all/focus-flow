@@ -7,6 +7,7 @@ import type {
   FinishTimerSessionInput,
   SettingsRepository,
   TaskRepository,
+  UpdateTimerSessionTaskInput,
   TimerRuntimeRepository,
   TimerSessionRepository
 } from '@main/ports/repositories'
@@ -155,7 +156,10 @@ export class SqliteTaskRepository implements TaskRepository {
   }
 
   async delete(id: string): Promise<void> {
-    await this.database.run('DELETE FROM tasks WHERE id = ?', [id])
+    const changedRows = await this.database.run('DELETE FROM tasks WHERE id = ?', [id])
+    if (changedRows === 0) {
+      throw new Error(`Task not found: ${id}`)
+    }
   }
 
   async countCompletedOn(dateKey: string): Promise<number> {
@@ -199,7 +203,7 @@ export class SqliteTimerSessionRepository implements TimerSessionRepository {
   }
 
   async finish(input: FinishTimerSessionInput): Promise<void> {
-    await this.database.run(
+    const changedRows = await this.database.run(
       `UPDATE timer_sessions
        SET ended_at = ?, actual_duration_ms = ?, completed = ?, completion_reason = ?, updated_at = ?
        WHERE id = ?`,
@@ -212,6 +216,21 @@ export class SqliteTimerSessionRepository implements TimerSessionRepository {
         input.id
       ]
     )
+    if (changedRows === 0) {
+      throw new Error(`Timer session not found: ${input.id}`)
+    }
+  }
+
+  async updateTask(input: UpdateTimerSessionTaskInput): Promise<void> {
+    const changedRows = await this.database.run(
+      `UPDATE timer_sessions
+       SET task_id = ?, updated_at = ?
+       WHERE id = ?`,
+      [input.taskId, input.updatedAt, input.id]
+    )
+    if (changedRows === 0) {
+      throw new Error(`Timer session not found: ${input.id}`)
+    }
   }
 
   async findActive(): Promise<TimerSession | null> {
