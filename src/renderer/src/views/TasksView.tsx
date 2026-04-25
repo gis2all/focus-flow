@@ -313,11 +313,6 @@ export const TasksView = ({
         )}
       </div>
 
-      {canDragActiveRows ? <p className={styles.dragHint}>拖拽进行中任务可调整顺序。</p> : null}
-      {!canBindCurrentTask ? (
-        <p className={styles.bindHint}>点击“设为当前”会启动专注并绑定到该任务。</p>
-      ) : null}
-
       {confirmDialog ? (
         <div className={styles.modalOverlay} onClick={() => !confirmPending && setConfirmDialog(null)} role="presentation">
           <section

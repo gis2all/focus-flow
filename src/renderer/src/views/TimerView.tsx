@@ -42,9 +42,6 @@ export const TimerView = ({
       </div>
 
       <div className={styles.timerHero}>
-        <div className={styles.timerHeroBackdrop}>
-          <div className={styles.mountainLayer} />
-        </div>
         <div className={styles.timerClockWrap}>
           <div className={styles.timerDigits}>
             <span className={styles.timerDigitsGroup}>{displayMinutes}</span>

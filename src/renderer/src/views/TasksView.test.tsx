@@ -78,7 +78,7 @@ describe('TasksView', () => {
     expect(html).toContain('>删除<')
   })
 
-  test('非运行专注时显示设为当前与中文提示', () => {
+  test('非运行专注时显示设为当前且不显示底部提示', () => {
     const html = renderToStaticMarkup(
       <TasksView
         bindCurrentTask={noopAsync}
@@ -98,6 +98,7 @@ describe('TasksView', () => {
     )
 
     expect(html).toContain('>设为当前<')
-    expect(html).toContain('点击“设为当前”会启动专注并绑定到该任务。')
+    expect(html).not.toContain('点击“设为当前”会启动专注并绑定到该任务。')
+    expect(html).not.toContain('拖拽进行中任务可调整顺序。')
   })
 })

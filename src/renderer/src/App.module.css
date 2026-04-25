@@ -144,8 +144,46 @@
 }
 
 .timerView {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   grid-template-rows: auto minmax(0, 1fr) auto auto;
   gap: 10px;
+  background:
+    radial-gradient(circle at 48% 24%, var(--hero-glow), transparent 36%),
+    linear-gradient(180deg, var(--hero-top), var(--hero-bottom));
+}
+
+.timerView::before,
+.timerView::after {
+  position: absolute;
+  right: -4%;
+  left: -4%;
+  bottom: 40px;
+  z-index: 0;
+  height: 170px;
+  pointer-events: none;
+  content: "";
+  background:
+    radial-gradient(ellipse at 18% 58%, var(--mountain-a), transparent 36%),
+    radial-gradient(ellipse at 48% 68%, var(--mountain-b), transparent 33%),
+    radial-gradient(ellipse at 75% 64%, var(--mountain-c), transparent 31%),
+    linear-gradient(166deg, transparent 0 30%, var(--mountain-a) 30% 42%, transparent 42%),
+    linear-gradient(176deg, transparent 0 18%, var(--mountain-b) 18% 34%, transparent 34%),
+    linear-gradient(185deg, transparent 0 43%, var(--mountain-c) 43% 57%, transparent 57%);
+}
+
+.timerView::after {
+  bottom: -12px;
+  opacity: 0.72;
+  transform: scaleX(1.08);
+}
+
+.timerHeader,
+.timerHero,
+.timerActions {
+  position: relative;
+  z-index: 1;
 }
 
 .timerHeader {
@@ -216,48 +254,10 @@
   display: grid;
   grid-template-rows: minmax(0, 1fr) auto;
   min-height: 0;
-  border: 1px solid var(--line-soft);
+  border: 1px solid transparent;
   border-radius: 14px;
-  overflow: hidden;
-  background:
-    radial-gradient(circle at 48% 18%, var(--hero-glow), transparent 38%),
-    linear-gradient(180deg, var(--hero-top), var(--hero-bottom));
-}
-
-.timerHeroBackdrop {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-
-.mountainLayer {
-  position: absolute;
-  inset: auto 0 0;
-  height: 140px;
-  background:
-    radial-gradient(ellipse at 18% 58%, var(--mountain-a), transparent 36%),
-    radial-gradient(ellipse at 48% 68%, var(--mountain-b), transparent 33%),
-    radial-gradient(ellipse at 75% 64%, var(--mountain-c), transparent 31%);
-}
-
-.mountainLayer::before,
-.mountainLayer::after {
-  position: absolute;
-  right: -5%;
-  left: -5%;
-  bottom: 8px;
-  height: 92px;
-  content: "";
-  background:
-    linear-gradient(166deg, transparent 0 30%, var(--mountain-a) 30% 42%, transparent 42%),
-    linear-gradient(176deg, transparent 0 18%, var(--mountain-b) 18% 34%, transparent 34%),
-    linear-gradient(185deg, transparent 0 43%, var(--mountain-c) 43% 57%, transparent 57%);
-}
-
-.mountainLayer::after {
-  bottom: -6px;
-  opacity: 0.72;
-  transform: scaleX(1.08);
+  overflow: visible;
+  background: transparent;
 }
 
 .timerClockWrap {
@@ -511,6 +511,11 @@
   background: var(--surface);
 }
 
+.inlineTaskForm:focus-within {
+  border-color: var(--line-strong);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
 .inlineTaskForm input,
 .settingLine input[type="number"],
 .settingLine select {
@@ -521,9 +526,17 @@
   border: 0;
 }
 
-.inlineTaskForm input::placeholder {
+.inlineTaskForm input {
   color: var(--text-2);
-  opacity: 0.92;
+  outline: none;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.inlineTaskForm input::placeholder {
+  color: var(--text-3);
+  opacity: 0.68;
 }
 
 .inlineTaskForm button {
@@ -662,11 +675,17 @@
   min-height: 28px;
   padding: 0 8px;
   color: var(--text-1);
-  background: var(--window-bg);
-  border: 1px solid var(--accent);
+  background: color-mix(in srgb, var(--surface) 72%, transparent);
+  border: 1px solid var(--line-strong);
   border-radius: 6px;
+  outline: none;
   font-size: 12px;
   font-weight: 600;
+}
+
+.taskTitleInput:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 28%, transparent);
 }
 
 .taskStats {
@@ -763,19 +782,6 @@
   border-radius: 8px;
   font-size: 12px;
   text-align: center;
-}
-
-.dragHint,
-.selectedHint {
-  margin: 0;
-  color: var(--text-3);
-  font-size: 11px;
-}
-
-.bindHint {
-  margin: 0;
-  color: var(--text-3);
-  font-size: 11px;
 }
 
 .modalOverlay {
