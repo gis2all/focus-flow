@@ -8,7 +8,7 @@ export class TaskService {
     return this.tasks.list()
   }
 
-  create(title: string): Promise<Task> {
+  async create(title: string): Promise<Task> {
     const trimmed = title.trim()
     if (!trimmed) throw new Error('Task title is required')
     return this.tasks.create(trimmed)

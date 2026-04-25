@@ -28,6 +28,7 @@ export interface IpcServices {
 export const registerIpcHandlers = (services: IpcServices): void => {
   ipcMain.handle(IPC_CHANNELS.timer.getSnapshot, () => services.timer.getSnapshot())
   ipcMain.handle(IPC_CHANNELS.timer.start, (_event, request?: StartTimerRequest) => services.timer.start(request))
+  ipcMain.handle(IPC_CHANNELS.timer.bindCurrentTask, (_event, taskId: string | null) => services.timer.bindCurrentTask(taskId))
   ipcMain.handle(IPC_CHANNELS.timer.pause, () => services.timer.pause())
   ipcMain.handle(IPC_CHANNELS.timer.resume, () => services.timer.resume())
   ipcMain.handle(IPC_CHANNELS.timer.skip, () => services.timer.skip())

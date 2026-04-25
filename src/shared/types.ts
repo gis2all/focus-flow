@@ -87,6 +87,8 @@ export interface TimerSnapshot extends TimerState {
 
 export interface TodayStats {
   focusMinutes: number
+  shortBreakMinutes: number
+  longBreakMinutes: number
   completedPomodoros: number
   completedTasks: number
 }
@@ -99,7 +101,9 @@ export interface DailyTrendPoint {
 
 export interface TaskFocusPoint {
   taskId: string
+  title: string
   minutes: number
+  status: 'active' | 'completed'
 }
 
 export interface FocusStats {

@@ -10,6 +10,30 @@ const normalizePositiveInteger = (value: number, field: string): number => {
   return normalized
 }
 
+const booleanFields = [
+  'autoStartBreaks',
+  'autoStartFocus',
+  'notificationsEnabled',
+  'soundEnabled',
+  'openAtLogin',
+  'startToTray',
+  'closeToTray'
+] as const
+
+const validateBooleanField = (value: unknown, field: (typeof booleanFields)[number]): boolean => {
+  if (typeof value !== 'boolean') {
+    throw new Error(`${field} must be a boolean`)
+  }
+  return value
+}
+
+const validateThemePreference = (value: unknown): AppSettings['themePreference'] => {
+  if (value === 'system' || value === 'light' || value === 'dark') {
+    return value
+  }
+  throw new Error('themePreference must be one of system, light, dark')
+}
+
 export class SettingsService {
   constructor(
     private readonly settings: SettingsRepository,
@@ -23,6 +47,12 @@ export class SettingsService {
   async update(patch: Partial<AppSettings>): Promise<AppSettings> {
     const nextPatch: Partial<AppSettings> = { ...patch }
 
+    for (const field of booleanFields) {
+      if (field in patch) {
+        nextPatch[field] = validateBooleanField(patch[field], field)
+      }
+    }
+
     if (typeof patch.focusMinutes === 'number') {
       nextPatch.focusMinutes = normalizePositiveInteger(patch.focusMinutes, 'focusMinutes')
     }
@@ -34,6 +64,9 @@ export class SettingsService {
     }
     if (typeof patch.longBreakInterval === 'number') {
       nextPatch.longBreakInterval = normalizePositiveInteger(patch.longBreakInterval, 'longBreakInterval')
+    }
+    if ('themePreference' in patch) {
+      nextPatch.themePreference = validateThemePreference(patch.themePreference)
     }
 
     const updated = await this.settings.update(nextPatch)

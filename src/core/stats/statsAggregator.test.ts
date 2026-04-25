@@ -1,6 +1,14 @@
 import { describe, expect, test } from 'vitest'
 import { aggregateStats } from './statsAggregator'
-import type { TimerSession } from '@shared/types'
+import type { Task, TimerSession } from '@shared/types'
+
+const task = (input: Partial<Task> & Pick<Task, 'id' | 'title'>): Task => ({
+  sortOrder: 1,
+  completedAt: null,
+  createdAt: '2026-04-24T08:00:00.000Z',
+  updatedAt: '2026-04-24T08:00:00.000Z',
+  ...input
+})
 
 const session = (input: Partial<TimerSession> & Pick<TimerSession, 'id' | 'startedAt' | 'phase'>): TimerSession => ({
   taskId: null,
@@ -18,6 +26,11 @@ describe('stats aggregator', () => {
   test('aggregates today focus minutes, completed pomodoros, hourly distribution, weekly trend and task focus', () => {
     const stats = aggregateStats({
       now: new Date('2026-04-25T20:00:00.000'),
+      tasks: [
+        task({ id: 'design', title: 'Design' }),
+        task({ id: 'writing', title: 'Writing' }),
+        task({ id: 'done', title: 'Done', completedAt: '2026-04-25T16:00:00.000Z' })
+      ],
       sessions: [
         session({
           id: 'today-focus-1',
@@ -40,11 +53,31 @@ describe('stats aggregator', () => {
           actualDurationMs: 5 * 60_000
         }),
         session({
+          id: 'today-long-break',
+          phase: 'longBreak',
+          startedAt: '2026-04-25T18:00:00.000',
+          actualDurationMs: 15 * 60_000
+        }),
+        session({
           id: 'yesterday-focus',
           phase: 'focus',
           taskId: 'writing',
           startedAt: '2026-04-24T11:00:00.000',
           actualDurationMs: 30 * 60_000
+        }),
+        session({
+          id: 'today-completed-task-focus',
+          phase: 'focus',
+          taskId: 'done',
+          startedAt: '2026-04-25T14:00:00.000',
+          actualDurationMs: 10 * 60_000
+        }),
+        session({
+          id: 'today-deleted-task-focus',
+          phase: 'focus',
+          taskId: 'deleted',
+          startedAt: '2026-04-25T15:00:00.000',
+          actualDurationMs: 35 * 60_000
         }),
         session({
           id: 'skipped',
@@ -58,14 +91,16 @@ describe('stats aggregator', () => {
       ]
     })
 
-    expect(stats.today.focusMinutes).toBe(45)
-    expect(stats.today.completedPomodoros).toBe(2)
+    expect(stats.today.focusMinutes).toBe(90)
+    expect(stats.today.shortBreakMinutes).toBe(5)
+    expect(stats.today.longBreakMinutes).toBe(15)
+    expect(stats.today.completedPomodoros).toBe(4)
     expect(stats.hourlyFocusMinutes[9]).toBe(25)
     expect(stats.hourlyFocusMinutes[10]).toBe(20)
-    expect(stats.weeklyTrend.at(-1)?.focusMinutes).toBe(45)
+    expect(stats.weeklyTrend.at(-1)?.focusMinutes).toBe(90)
     expect(stats.taskFocusMinutes).toEqual([
-      { taskId: 'design', minutes: 45 },
-      { taskId: 'writing', minutes: 30 }
+      { taskId: 'design', title: 'Design', minutes: 45, status: 'active' },
+      { taskId: 'done', title: 'Done', minutes: 10, status: 'completed' }
     ])
   })
 })

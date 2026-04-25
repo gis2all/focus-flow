@@ -40,11 +40,23 @@
     "directories": {
       "output": "release"
     },
+    "extraResources": [
+      {
+        "from": "resources",
+        "to": "app-assets",
+        "filter": [
+          "focusflow-icon.png",
+          "focusflow-icon.ico",
+          "focusflow-tray.png"
+        ]
+      }
+    ],
     "files": [
       "out/**/*",
       "package.json"
     ],
     "win": {
+      "icon": "resources/focusflow-icon.ico",
       "signAndEditExecutable": false,
       "target": [
         "nsis",

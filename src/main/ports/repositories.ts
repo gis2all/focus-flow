@@ -15,6 +15,12 @@ export interface FinishTimerSessionInput {
   completionReason: CompletionReason
 }
 
+export interface UpdateTimerSessionTaskInput {
+  id: string
+  taskId: string | null
+  updatedAt: string
+}
+
 export interface TaskRepository {
   list(): Promise<Task[]>
   create(title: string, now?: string): Promise<Task>
@@ -30,6 +36,7 @@ export interface TimerSessionRepository {
   list(): Promise<TimerSession[]>
   create(input: CreateTimerSessionInput): Promise<TimerSession>
   finish(input: FinishTimerSessionInput): Promise<void>
+  updateTask(input: UpdateTimerSessionTaskInput): Promise<void>
   findActive(): Promise<TimerSession | null>
 }
 

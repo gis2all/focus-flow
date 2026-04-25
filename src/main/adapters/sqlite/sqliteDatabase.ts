@@ -8,7 +8,7 @@ import { sqliteSchema } from './schema'
 type SqlParams = SqlValue[]
 
 export interface SqliteAppDatabase {
-  run(sql: string, params?: SqlParams): Promise<void>
+  run(sql: string, params?: SqlParams): Promise<number>
   get<T extends Record<string, unknown>>(sql: string, params?: SqlParams): T | null
   all<T extends Record<string, unknown>>(sql: string, params?: SqlParams): T[]
   flush(): Promise<void>
@@ -31,9 +31,11 @@ class SqlJsAppDatabase implements SqliteAppDatabase {
     private readonly database: Database
   ) {}
 
-  async run(sql: string, params: SqlParams = []): Promise<void> {
+  async run(sql: string, params: SqlParams = []): Promise<number> {
     this.database.run(sql, params)
+    const changedRows = this.database.getRowsModified()
     await this.flush()
+    return changedRows
   }
 
   get<T extends Record<string, unknown>>(sql: string, params: SqlParams = []): T | null {

@@ -7,8 +7,8 @@ import {
   formatTimerClock,
   getTaskRowsForTab,
   reorderTaskIds,
-  resolveEffectiveTheme,
-  resolveSelectedTaskId
+  resolveCurrentTaskTitle,
+  resolveEffectiveTheme
 } from './viewModel'
 
 const boardItem = (input: Partial<TaskBoardItem> & Pick<TaskBoardItem, 'id' | 'title'>): TaskBoardItem => ({
@@ -45,32 +45,27 @@ describe('renderer view model', () => {
     expect(resolveEffectiveTheme('dark', 'light')).toBe('dark')
   })
 
-  test('builds dense task rows with selected and completed states', () => {
-    const rows = buildTaskRows(
-      [
-        boardItem({ id: 'a', title: '设计番茄钟 UI 原型', completedPomodoros: 2, focusMinutes: 50 }),
-        boardItem({
-          id: 'b',
-          title: '整理文档',
-          completedAt: '2026-04-25T10:00:00.000Z',
-          completedPomodoros: 1,
-          focusMinutes: 25
-        })
-      ],
-      'a'
-    )
+  test('builds dense task rows with completed states', () => {
+    const rows = buildTaskRows([
+      boardItem({ id: 'a', title: '任务 A', completedPomodoros: 2, focusMinutes: 50 }),
+      boardItem({
+        id: 'b',
+        title: '任务 B',
+        completedAt: '2026-04-25T10:00:00.000Z',
+        completedPomodoros: 1,
+        focusMinutes: 25
+      })
+    ])
 
     expect(rows).toEqual([
       expect.objectContaining({
         id: 'a',
-        isSelected: true,
         statusLabel: '进行中',
         completedPomodoros: 2,
         focusMinutes: 50
       }),
       expect.objectContaining({
         id: 'b',
-        isSelected: false,
         statusLabel: '已完成',
         completedPomodoros: 1,
         focusMinutes: 25
@@ -84,19 +79,9 @@ describe('renderer view model', () => {
       completedItems: [boardItem({ id: 'b', title: '任务 B', completedAt: '2026-04-25T10:00:00.000Z' })]
     })
 
-    expect(getTaskRowsForTab(snapshot, 'active', 'a').map((row) => row.id)).toEqual(['a'])
-    expect(getTaskRowsForTab(snapshot, 'completed', 'a').map((row) => row.id)).toEqual(['b'])
-    expect(getTaskRowsForTab(snapshot, 'all', 'a').map((row) => row.id)).toEqual(['a', 'b'])
-  })
-
-  test('resolves selected task from active items only', () => {
-    const snapshot = board({
-      activeItems: [boardItem({ id: 'a', title: '任务 A' }), boardItem({ id: 'b', title: '任务 B', sortOrder: 2 })]
-    })
-
-    expect(resolveSelectedTaskId(snapshot, 'b')).toBe('b')
-    expect(resolveSelectedTaskId(snapshot, 'missing')).toBe('a')
-    expect(resolveSelectedTaskId(board(), null)).toBeNull()
+    expect(getTaskRowsForTab(snapshot, 'active').map((row) => row.id)).toEqual(['a'])
+    expect(getTaskRowsForTab(snapshot, 'completed').map((row) => row.id)).toEqual(['b'])
+    expect(getTaskRowsForTab(snapshot, 'all').map((row) => row.id)).toEqual(['a', 'b'])
   })
 
   test('builds task title lookup and reorders active task ids', () => {
@@ -107,5 +92,14 @@ describe('renderer view model', () => {
 
     expect(buildTaskTitleById(snapshot)).toEqual({ a: '任务 A', b: '任务 B' })
     expect(reorderTaskIds(['a', 'b', 'c'], 'a', 'c')).toEqual(['b', 'c', 'a'])
+  })
+
+  test('resolves the timer task title from the running session instead of the selected task', () => {
+    expect(resolveCurrentTaskTitle({ taskId: 'a', phase: 'focus', status: 'running' }, { a: '任务 A' })).toBe('任务 A')
+    expect(resolveCurrentTaskTitle({ taskId: 'missing', phase: 'focus', status: 'running' }, {})).toBe('已删除任务')
+    expect(resolveCurrentTaskTitle({ taskId: null, phase: 'focus', status: 'idle' }, {})).toBe('当前尚未开始专注')
+    expect(resolveCurrentTaskTitle({ taskId: null, phase: 'shortBreak', status: 'running' }, {})).toBe(
+      '当前阶段未绑定任务'
+    )
   })
 })

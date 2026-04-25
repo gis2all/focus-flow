@@ -10,15 +10,22 @@ import {
   resumeTimer,
   startTimer
 } from '@core/timer/timerState'
-import type { AppSettings, CompletionReason, TimerPhase, TimerSnapshot, TimerState } from '@shared/types'
+import type { AppSettings, CompletionReason, TimerPhase, TimerSession, TimerSnapshot, TimerState } from '@shared/types'
 import type { ClockPort, NotificationPort, SoundPort } from '@main/ports/desktop'
-import type { AppEventRepository, SettingsRepository, TimerRuntimeRepository, TimerSessionRepository } from '@main/ports/repositories'
+import type {
+  AppEventRepository,
+  SettingsRepository,
+  TaskRepository,
+  TimerRuntimeRepository,
+  TimerSessionRepository
+} from '@main/ports/repositories'
 
 export interface TimerServiceDependencies {
   sessions: TimerSessionRepository
   settings: SettingsRepository
   runtime: TimerRuntimeRepository
   events: AppEventRepository
+  tasks: Pick<TaskRepository, 'list'>
   clock: ClockPort
   notifier: NotificationPort
   sound: SoundPort
@@ -28,6 +35,9 @@ export interface StartTimerCommand {
   phase?: TimerPhase
   taskId?: string | null
 }
+
+const isTimerPhase = (value: unknown): value is TimerPhase =>
+  value === 'focus' || value === 'shortBreak' || value === 'longBreak'
 
 export class TimerService {
   private readonly emitter = new EventEmitter()
@@ -89,7 +99,10 @@ export class TimerService {
       session: activeSession,
       now
     })
-    this.state = restore.state
+    this.state = {
+      ...restore.state,
+      focusCount: await this.getRestoredFocusCount(activeSession)
+    }
 
     await this.dependencies.events.record(
       'timer.restore',
@@ -116,14 +129,19 @@ export class TimerService {
 
   async start(command: StartTimerCommand = {}): Promise<TimerSnapshot> {
     const settings = await this.requireSettings()
-    const phase = command.phase ?? 'focus'
+    const requestedPhase = command.phase ?? 'focus'
+    if (!isTimerPhase(requestedPhase)) {
+      throw new Error(`Invalid timer phase: ${String(requestedPhase)}`)
+    }
+    const phase = requestedPhase
     const now = this.dependencies.clock.now()
+    const taskId = phase === 'focus' ? await this.resolveExplicitFocusTaskId(command.taskId) : null
 
     await this.finishCurrentSession('abandoned')
 
     const session = await this.dependencies.sessions.create({
       phase,
-      taskId: command.taskId ?? null,
+      taskId,
       startedAt: this.dependencies.clock.nowIso(),
       durationMs: phaseDurationMs(phase, settings)
     })
@@ -131,7 +149,7 @@ export class TimerService {
     this.state = startTimer(this.requireState(), {
       now,
       phase,
-      taskId: command.taskId ?? null,
+      taskId,
       sessionId: session.id,
       settings
     })
@@ -142,6 +160,31 @@ export class TimerService {
 
   async pause(): Promise<TimerSnapshot> {
     this.state = pauseTimer(this.requireState(), this.dependencies.clock.now())
+    await this.persistState()
+    return this.publish()
+  }
+
+  async bindCurrentTask(taskId: string | null): Promise<TimerSnapshot> {
+    const state = this.requireState()
+    if (state.status !== 'running' || state.phase !== 'focus' || !state.sessionId) {
+      throw new Error('Current timer is not a running focus session')
+    }
+
+    const resolvedTaskId = await this.resolveExplicitFocusTaskId(taskId)
+    const now = this.dependencies.clock.now()
+    const nowIso = this.dependencies.clock.nowIso()
+
+    await this.dependencies.sessions.updateTask({
+      id: state.sessionId,
+      taskId: resolvedTaskId,
+      updatedAt: nowIso
+    })
+
+    this.state = {
+      ...state,
+      taskId: resolvedTaskId,
+      updatedAt: now
+    }
     await this.persistState()
     return this.publish()
   }
@@ -207,7 +250,7 @@ export class TimerService {
     const shouldAutoStart = state.phase === 'focus' ? settings.autoStartBreaks : settings.autoStartFocus
 
     if (shouldAutoStart) {
-      return this.start({ phase: nextPhase, taskId: state.phase === 'focus' ? null : state.taskId })
+      return this.start({ phase: nextPhase, taskId: nextPhase === 'focus' ? undefined : null })
     }
 
     await this.persistState()
@@ -233,6 +276,19 @@ export class TimerService {
     }
   }
 
+  private async resolveExplicitFocusTaskId(taskId: string | null | undefined): Promise<string | null> {
+    if (taskId === undefined || taskId === null) {
+      return null
+    }
+
+    const activeTask = (await this.dependencies.tasks.list()).find((task) => task.id === taskId && !task.completedAt)
+    if (!activeTask) {
+      throw new Error('Selected task must be active')
+    }
+
+    return taskId
+  }
+
   private async requireSettings(): Promise<AppSettings> {
     if (!this.settingsValue) {
       this.settingsValue = await this.dependencies.settings.get()
@@ -241,7 +297,11 @@ export class TimerService {
   }
 
   private async persistState(): Promise<void> {
-    await this.dependencies.runtime.save(this.requireState())
+    try {
+      await this.dependencies.runtime.save(this.requireState())
+    } catch {
+      // Keep the in-memory timer running even when runtime persistence is temporarily unavailable.
+    }
   }
 
   private async finishCurrentSession(reason: Exclude<CompletionReason, 'completed' | 'needs-confirmation'>): Promise<void> {
@@ -257,6 +317,17 @@ export class TimerService {
       completed: false,
       completionReason: reason
     })
+  }
+
+  private async getRestoredFocusCount(activeSession: TimerSession): Promise<number> {
+    const sessions = await this.dependencies.sessions.list()
+    const activeStartedAt = new Date(activeSession.startedAt).getTime()
+
+    return sessions.filter((session) => {
+      if (session.id === activeSession.id) return false
+      if (session.phase !== 'focus' || !session.completed) return false
+      return new Date(session.startedAt).getTime() < activeStartedAt
+    }).length
   }
 
   private requireState(): TimerState {
