@@ -45,7 +45,7 @@ export const StatsView = ({ stats, taskBoard }: StatsViewProps): ReactElement =>
     .sort((left, right) => right.minutes - left.minutes)
   const maxCompletedTaskMinutes = Math.max(...completedTaskDurations.map((item) => item.minutes), 1)
   const halfHourlyPeak = Math.round(hourlyPeak / 2)
-  const yAxisTicks = [hourlyPeak > 0 ? `峰值 ${hourlyPeak}m` : '峰值 0m', `${halfHourlyPeak}m`, '0']
+  const yAxisTicks = [hourlyPeak > 0 ? `${hourlyPeak}m` : '0m', `${halfHourlyPeak}m`, '0']
   const summaryCards = [
     {
       label: '专注时长',

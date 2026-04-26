@@ -99,6 +99,7 @@ describe('StatsView', () => {
     expect(html).toContain('任务时长')
     expect(html).toContain('今日已完成')
     expect(html).toContain('峰值 50m')
+    expect(html).toContain('aria-label="今日专注分布刻度"><span>50m</span><span>25m</span><span>0</span>')
     expect(html).toContain('25m')
     expect(html).toContain('0')
     expect(html).toContain('任务 B')
