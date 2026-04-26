@@ -102,7 +102,6 @@ export const TimerView = ({
             <span aria-hidden="true" className={styles.timerDigitsSeparator} />
             <span className={styles.timerDigitsGroup}>{displaySeconds}</span>
           </div>
-          <p className={styles.timerQuote}>“沉浸专注，时间为你而在”</p>
         </div>
         <div className={styles.timerMetaRow}>
           <div className={styles.currentTaskCard}>

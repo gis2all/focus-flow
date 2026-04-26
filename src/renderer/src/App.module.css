@@ -363,6 +363,12 @@
     transform 140ms ease;
 }
 
+.autoSwitch input {
+  width: 36px;
+  height: 20px;
+  padding: 2px;
+}
+
 .autoSwitch input::after,
 .settingLine input[type="checkbox"]::after {
   position: absolute;
@@ -375,6 +381,12 @@
   border-radius: 50%;
   box-shadow: 0 3px 8px rgba(31, 73, 129, 0.22);
   transition: transform 140ms ease;
+}
+
+.autoSwitch input::after {
+  width: 16px;
+  height: 16px;
+  transform: translateX(0);
 }
 
 .autoSwitch input:not(:checked),
@@ -401,7 +413,7 @@
 
 .autoSwitch input:checked::after,
 .settingLine input[type="checkbox"]:checked::after {
-  transform: translateX(18px);
+  transform: translateX(16px);
 }
 
 .timerHero {
@@ -484,16 +496,6 @@
   transform: translate(-50%, calc(-50% + 14px));
 }
 
-.timerQuote {
-  position: relative;
-  z-index: 1;
-  margin: 18px 0 0;
-  color: var(--text-3);
-  font-size: 15px;
-  font-weight: 720;
-  text-align: center;
-}
-
 .timerMetaRow {
   position: relative;
   z-index: 1;
@@ -553,24 +555,25 @@
   color: var(--text-2);
   overflow: hidden;
   border-radius: 50%;
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.38);
-  backdrop-filter: blur(18px) saturate(145%);
+  background: color-mix(in srgb, var(--window-bg) 5%, transparent);
+  border: 0;
+  backdrop-filter: blur(2px) saturate(145%);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.54),
-    inset 0 -12px 18px rgba(255, 255, 255, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.34),
+    inset 0 -12px 18px rgba(255, 255, 255, 0.05),
     0 12px 24px rgba(95, 127, 182, 0.12);
   transform: translateY(2px);
 }
 
-.focusDial::after {
+.focusDial::before {
   position: absolute;
   top: 10px;
   right: 20px;
   left: 20px;
+  z-index: 0;
   height: 28px;
   content: "";
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.52), rgba(255, 255, 255, 0));
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.46), rgba(255, 255, 255, 0));
   border-radius: 999px;
   filter: blur(1.5px);
   pointer-events: none;
@@ -580,7 +583,7 @@
   position: absolute;
   inset: 0;
   overflow: visible;
-  transform: rotate(-72deg);
+  transform: rotate(-90deg);
 }
 
 .focusDialTrack,
@@ -590,11 +593,11 @@
 }
 
 .focusDialTrack {
-  stroke: rgba(236, 242, 251, 0.78);
+  stroke: #ecf2fb;
 }
 
 .focusDialProgress {
-  stroke: rgba(65, 134, 255, 0.96);
+  stroke: #4186ff;
   stroke-linecap: round;
   stroke-dasharray: var(--progress-value) 100;
   filter:
@@ -932,9 +935,11 @@
   font-size: 12px;
 }
 
+.tabLine span,
 .tabLine strong {
   position: relative;
   color: var(--text-1);
+  font-weight: 800;
 }
 
 .tabLine strong::after {
@@ -1988,7 +1993,7 @@
   position: relative;
   display: grid;
   align-content: start;
-  gap: 18px;
+  gap: 14px;
   min-height: 100%;
   padding: 0 0 26px;
   overflow: visible;
@@ -2001,8 +2006,8 @@
 
 .settingsGroup {
   display: grid;
-  gap: 8px;
-  padding-top: 18px;
+  gap: 4px;
+  padding-top: 14px;
   border-top: 1px solid color-mix(in srgb, var(--line) 82%, transparent);
 }
 
@@ -2015,29 +2020,25 @@
   position: relative;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 0;
   margin: 0;
+  margin-bottom: 10px;
   color: var(--text-1);
   font-size: 12px;
   font-weight: 800;
 }
 
 .settingsGroup h2::before {
-  display: block;
-  width: 3px;
-  height: 16px;
-  content: "";
-  background: var(--accent);
-  border-radius: 999px;
+  display: none;
 }
 
 .settingLine {
   position: relative;
   display: grid;
-  grid-template-columns: 32px minmax(0, 1fr) 178px;
+  grid-template-columns: 28px minmax(0, 1fr) 152px;
   align-items: center;
-  column-gap: 12px;
-  min-height: 38px;
+  column-gap: 10px;
+  min-height: 30px;
   color: var(--text-2);
   font-size: 13px;
 }
@@ -2048,11 +2049,11 @@
   display: grid;
   justify-self: start;
   place-items: center;
-  width: 30px;
-  height: 30px;
+  width: 26px;
+  height: 26px;
   color: var(--accent);
   background: linear-gradient(180deg, rgba(236, 246, 255, 0.98), rgba(226, 239, 255, 0.94));
-  border-radius: 8px;
+  border-radius: 7px;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.95),
     0 6px 14px rgba(59, 103, 182, 0.07);
@@ -2071,8 +2072,8 @@
 }
 
 .settingIconSvg {
-  width: 17px;
-  height: 17px;
+  width: 15px;
+  height: 15px;
   flex: 0 0 auto;
 }
 
@@ -2081,14 +2082,14 @@
   grid-row: 1;
   display: grid;
   align-content: center;
+  justify-items: start;
   min-width: 0;
 }
 
 .settingLabel {
   overflow: hidden;
   color: var(--text-1);
-  font-size: 12px;
-  font-weight: 700;
+  font: 400 11px/1 var(--font-ui);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -2109,8 +2110,8 @@
   display: grid;
   align-items: center;
   justify-self: end;
-  width: 42px;
-  height: 24px;
+  width: 36px;
+  height: 20px;
   padding: 2px;
   background: linear-gradient(180deg, #2d87ff, var(--accent-strong));
   border-radius: 999px;
@@ -2124,12 +2125,12 @@
 }
 
 .settingSwitchTrack span {
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
   background: #fff;
   border-radius: 50%;
   box-shadow: 0 3px 8px rgba(31, 73, 129, 0.22);
-  transform: translateX(18px);
+  transform: translateX(16px);
   transition: transform 140ms ease;
 }
 
@@ -2153,14 +2154,14 @@
 
 .settingSwitchInput:focus-visible + .settingSwitchTrack {
   outline: 2px solid color-mix(in srgb, var(--accent) 28%, transparent);
-  outline-offset: 3px;
+  outline-offset: 2px;
 }
 
 .settingsSelect,
 .settingStepper {
   grid-column: 3;
   grid-row: 1;
-  width: 158px;
+  width: 152px;
   justify-self: end;
 }
 
@@ -2170,22 +2171,25 @@
 
 .settingsSelectButton {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 28px;
+  grid-template-columns: minmax(0, 1fr) 48px;
   align-items: center;
   gap: 0;
   width: 100%;
-  min-height: 32px;
-  padding: 0 0 0 11px;
+  min-height: 28px;
+  padding: 0 0 0 10px;
   color: var(--text-1);
   text-align: left;
-  background: linear-gradient(180deg, color-mix(in srgb, var(--window-bg) 92%, transparent), color-mix(in srgb, var(--surface-2) 68%, transparent));
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--window-bg) 92%, transparent),
+    color-mix(in srgb, var(--surface-2) 68%, transparent)
+  );
   border: 0;
-  border-radius: 8px;
+  border-radius: 7px;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.9),
     0 8px 16px rgba(66, 111, 184, 0.06);
-  font-size: 12px;
-  font-weight: 700;
+  font: 400 11px/1 var(--font-ui);
   transition:
     background 140ms ease,
     box-shadow 140ms ease,
@@ -2210,14 +2214,29 @@
 }
 
 .settingsSelectChevron {
+  position: relative;
   display: grid;
   align-self: stretch;
   place-items: center;
+  width: 100%;
   color: var(--text-2);
   border-left: 0;
-  font-size: 10px;
-  font-weight: 800;
-  line-height: 0.8;
+  font-size: 0;
+  line-height: 0;
+}
+
+.settingsSelectChevron::before {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: block;
+  width: 0;
+  height: 0;
+  content: "";
+  border-top: 8px solid currentColor;
+  border-right: 6px solid transparent;
+  border-left: 6px solid transparent;
+  transform: translate(-50%, -50%);
 }
 
 .settingsSelectButtonOpen .settingsSelectChevron {
@@ -2228,25 +2247,26 @@
 .settingsSelectMenu {
   position: absolute;
   z-index: 20;
-  top: calc(100% + 4px);
+  top: calc(100% + 3px);
   right: 0;
   width: 100%;
   overflow: hidden;
   background: color-mix(in srgb, var(--window-bg) 94%, transparent);
   border: 0;
-  border-radius: 8px;
+  border-radius: 7px;
   box-shadow: 0 14px 28px rgba(45, 86, 140, 0.18);
   backdrop-filter: blur(16px) saturate(145%);
 }
 
 .settingsSelectOption {
   width: 100%;
-  min-height: 36px;
-  padding: 0 14px;
-  color: var(--text-2);
+  min-height: 32px;
+  padding: 0 12px;
+  color: var(--text-1);
   text-align: left;
   background: transparent;
   border: 0;
+  font: 400 11px/1 var(--font-ui);
   transition:
     color 140ms ease,
     background 140ms ease,
@@ -2274,12 +2294,16 @@
 
 .settingStepper {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 28px;
-  min-height: 32px;
+  grid-template-columns: minmax(0, 1fr) 24px;
+  min-height: 28px;
   overflow: hidden;
-  background: linear-gradient(180deg, color-mix(in srgb, var(--window-bg) 92%, transparent), color-mix(in srgb, var(--surface-2) 68%, transparent));
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--window-bg) 92%, transparent),
+    color-mix(in srgb, var(--surface-2) 68%, transparent)
+  );
   border: 0;
-  border-radius: 8px;
+  border-radius: 7px;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.9),
     0 8px 16px rgba(66, 111, 184, 0.06);
@@ -2301,14 +2325,13 @@
 .stepperValueButton,
 .stepperEditInput {
   min-width: 0;
-  padding: 0 8px 0 11px;
+  padding: 0 7px 0 10px;
   color: var(--text-1);
   text-align: left;
   background: transparent;
   border: 0;
   outline: none;
-  font-size: 12px;
-  font-weight: 700;
+  font: 400 11px/1 var(--font-ui);
 }
 
 .stepperEditInput {
@@ -2317,20 +2340,21 @@
 
 .stepperButtons {
   display: grid;
-  grid-template-rows: 1fr 1fr;
+  grid-template-rows: 10px 10px;
+  align-content: center;
   border-left: 0;
 }
 
 .stepperButtons button {
+  position: relative;
   display: grid;
   place-items: center;
   padding: 0;
   color: var(--text-2);
   background: transparent;
   border: 0;
-  font-size: 8px;
-  font-weight: 800;
-  line-height: 0.8;
+  font-size: 0;
+  line-height: 0;
   transition:
     color 140ms ease,
     background 140ms ease,
@@ -2340,6 +2364,36 @@
 
 .stepperButtons button:first-child {
   border-bottom: 0;
+}
+
+.stepperButtons button::before {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: block;
+  width: 0;
+  height: 0;
+  content: "";
+  border-right: 6px solid transparent;
+  border-left: 6px solid transparent;
+  transform: translate(-50%, -50%);
+}
+
+.stepperButtons button:first-child::before {
+  border-bottom: 8px solid currentColor;
+}
+
+.stepperButtons button:last-child::before {
+  border-top: 8px solid currentColor;
+}
+
+:root[data-theme="light"] .settingsSelectButton:not(.settingsSelectButtonOpen) .settingsSelectChevron,
+:root[data-theme="light"] .stepperButtons button {
+  color: color-mix(in srgb, var(--text-2) 34%, white 66%);
+}
+
+:root[data-theme="light"] .settingsSelectButtonOpen .settingsSelectChevron {
+  color: var(--accent);
 }
 
 .stepperButtons button:hover:not(:disabled),

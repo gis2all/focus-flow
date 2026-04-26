@@ -59,6 +59,7 @@ describe('TimerView', () => {
     )
 
     expect(html).toContain('自动切换专注/休息')
+    expect(html).not.toContain('沉浸专注，时间为你而在')
     expect(html).not.toContain('>开<')
     expect(html).not.toContain('>关<')
   })
