@@ -99,9 +99,7 @@ export const TimerView = ({
         <div className={styles.timerClockWrap}>
           <div className={styles.timerDigits}>
             <span className={styles.timerDigitsGroup}>{displayMinutes}</span>
-            <span aria-hidden="true" className={styles.timerDigitsSeparator}>
-              :
-            </span>
+            <span aria-hidden="true" className={styles.timerDigitsSeparator} />
             <span className={styles.timerDigitsGroup}>{displaySeconds}</span>
           </div>
           <p className={styles.timerQuote}>“沉浸专注，时间为你而在”</p>
