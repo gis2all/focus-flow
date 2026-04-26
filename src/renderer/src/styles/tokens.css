@@ -65,6 +65,13 @@
   --scrollbar-thumb-hover: rgba(120, 160, 210, 0.42);
   --glass-shadow: 0 18px 44px rgba(0, 0, 0, 0.28);
   --blue-shadow: 0 18px 44px rgba(23, 103, 239, 0.24);
+  --dark-control-bg: rgba(8, 27, 44, 0.78);
+  --dark-control-bg-strong: rgba(11, 35, 58, 0.92);
+  --dark-card-border: rgba(102, 139, 184, 0.3);
+  --dark-card-border-strong: rgba(119, 160, 212, 0.42);
+  --dark-glass-highlight: rgba(177, 205, 236, 0.1);
+  --dark-icon-bg: rgba(221, 237, 255, 0.12);
+  --dark-panel-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
 }
 
 * {

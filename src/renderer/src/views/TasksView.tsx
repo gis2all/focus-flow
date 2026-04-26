@@ -181,6 +181,7 @@ export const TasksView = ({
       <div className={styles.taskListShell}>
         <div className={styles.taskListHeader}>
           <span>完成</span>
+          <span>状态</span>
           <span>任务</span>
           <span>统计</span>
           <span>绑定</span>
@@ -240,6 +241,14 @@ export const TasksView = ({
                     {row.isCompleted ? '↩' : ''}
                   </button>
 
+                  <span
+                    className={`${styles.taskStatusText} ${
+                      row.isCompleted ? styles.taskStatusTextDone : styles.taskStatusTextActive
+                    }`}
+                  >
+                    {row.statusLabel}
+                  </span>
+
                   <div className={styles.taskMain}>
                     {isEditing ? (
                       <input
@@ -266,18 +275,10 @@ export const TasksView = ({
                         {row.title}
                       </button>
                     )}
-                    <span
-                      className={`${styles.taskStatusBadge} ${
-                        row.isCompleted ? styles.taskStatusBadgeDone : styles.taskStatusBadgeActive
-                      }`}
-                    >
-                      {row.statusLabel}
-                    </span>
                   </div>
 
                   <div className={styles.taskStats}>
-                    <span className={styles.taskStatPill}>{row.completedPomodoros} 个番茄钟</span>
-                    <span className={`${styles.taskStatPill} ${styles.taskStatPillMuted}`}>{row.focusMinutes}m</span>
+                    <span className={styles.taskStatsInline}>{`${row.focusMinutes}m | ${row.completedPomodoros}个番茄钟`}</span>
                   </div>
 
                   <div className={styles.taskBindCell}>
