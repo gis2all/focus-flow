@@ -141,7 +141,7 @@ export const ActionArrowIcon = (props: IconProps): ReactElement => (
 )
 
 export const PlayControlIcon = (props: IconProps): ReactElement => (
-  <svg {...timerActionProps} {...props}>
+  <svg {...timerActionProps} fill="currentColor" stroke="none" {...props}>
     <path d="M8 5.5v13l10-6.5z" />
   </svg>
 )
