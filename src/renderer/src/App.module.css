@@ -1239,12 +1239,27 @@
 .taskStatsInline {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
   min-width: 0;
   color: var(--text-2);
   white-space: nowrap;
   font-size: 11px;
   font-weight: 700;
+}
+
+.taskStatsValue {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.taskStatsSeparator {
+  flex: 0 0 auto;
+  width: 1px;
+  height: 8px;
+  margin: 0 12px;
+  background: color-mix(in srgb, var(--text-2) 56%, transparent);
+  border-radius: 999px;
+  opacity: 0.74;
 }
 
 .taskBindCell {
@@ -1258,7 +1273,7 @@
   padding: 0 10px;
   color: var(--accent);
   background: color-mix(in srgb, var(--window-bg) 76%, transparent);
-  border: 1px solid color-mix(in srgb, var(--line-strong) 96%, white 4%);
+  border: 0;
   border-radius: 8px;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.94),
@@ -1268,7 +1283,6 @@
   transition:
     color 140ms ease,
     background 140ms ease,
-    border-color 140ms ease,
     box-shadow 140ms ease,
     transform 140ms ease;
 }
@@ -1278,14 +1292,13 @@
   background:
     radial-gradient(circle at 70% 10%, rgba(113, 179, 255, 0.58), transparent 30%),
     linear-gradient(180deg, #2d87ff, var(--accent-strong));
-  border-color: transparent;
+  border: 0;
   box-shadow: var(--blue-shadow);
 }
 
 .taskBindButton:hover,
 .taskBindButton:focus-visible {
   color: var(--text-1);
-  border-color: var(--hover-border);
   background: linear-gradient(180deg, var(--hover-surface), var(--hover-surface-strong));
   box-shadow:
     inset 0 1px 0 var(--hover-glass),
@@ -1297,7 +1310,6 @@
 .taskBindButtonActive:hover,
 .taskBindButtonActive:focus-visible {
   color: #fff;
-  border-color: transparent;
   background:
     radial-gradient(circle at 18% 12%, rgba(170, 214, 255, 0.72), transparent 30%),
     linear-gradient(180deg, #2d87ff, var(--accent-strong));
@@ -1308,7 +1320,6 @@
 
 .taskBindButton:disabled {
   color: var(--text-3);
-  border-color: var(--line);
   cursor: not-allowed;
 }
 
@@ -1324,7 +1335,7 @@
   padding: 0 8px;
   color: #de6157;
   background: color-mix(in srgb, var(--window-bg) 74%, transparent);
-  border: 1px solid rgba(222, 97, 87, 0.3);
+  border: 0;
   border-radius: 8px;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.94);
   font-size: 11px;
@@ -1332,19 +1343,28 @@
   transition:
     color 140ms ease,
     background 140ms ease,
-    border-color 140ms ease,
     box-shadow 140ms ease,
     transform 140ms ease;
 }
 
 .taskDangerButton:hover,
 .taskDangerButton:focus-visible {
-  color: #fff;
-  background: #de6157;
-  border-color: #de6157;
-  box-shadow: 0 10px 18px color-mix(in srgb, #de6157 22%, transparent);
+  color: #de6157;
+  background: color-mix(in srgb, #de6157 8%, var(--window-bg) 92%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.94),
+    0 8px 16px rgba(222, 97, 87, 0.08);
   transform: var(--hover-lift);
   outline: none;
+}
+
+:root[data-theme="light"] .taskDangerButton:hover,
+:root[data-theme="light"] .taskDangerButton:focus-visible {
+  color: #de6157;
+  background: color-mix(in srgb, #de6157 7%, var(--window-bg) 93%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.94),
+    0 8px 16px rgba(222, 97, 87, 0.08);
 }
 
 .tomatoBadge,
@@ -2158,15 +2178,16 @@
   padding: 0 0 0 11px;
   color: var(--text-1);
   text-align: left;
-  background: color-mix(in srgb, var(--window-bg) 82%, transparent);
-  border: 1px solid color-mix(in srgb, var(--line-strong) 72%, white 28%);
-  border-radius: 6px;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.86);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--window-bg) 92%, transparent), color-mix(in srgb, var(--surface-2) 68%, transparent));
+  border: 0;
+  border-radius: 8px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 8px 16px rgba(66, 111, 184, 0.06);
   font-size: 12px;
   font-weight: 700;
   transition:
     background 140ms ease,
-    border-color 140ms ease,
     box-shadow 140ms ease,
     transform 140ms ease;
 }
@@ -2174,7 +2195,6 @@
 .settingsSelectButton:hover,
 .settingsSelectButton:focus-visible,
 .settingsSelectButtonOpen {
-  border-color: var(--hover-border);
   background: linear-gradient(180deg, var(--hover-surface), var(--hover-surface-strong));
   box-shadow:
     inset 0 1px 0 var(--hover-glass),
@@ -2213,7 +2233,7 @@
   width: 100%;
   overflow: hidden;
   background: color-mix(in srgb, var(--window-bg) 94%, transparent);
-  border: 1px solid color-mix(in srgb, var(--line-strong) 78%, white 22%);
+  border: 0;
   border-radius: 8px;
   box-shadow: 0 14px 28px rgba(45, 86, 140, 0.18);
   backdrop-filter: blur(16px) saturate(145%);
@@ -2257,20 +2277,20 @@
   grid-template-columns: minmax(0, 1fr) 28px;
   min-height: 32px;
   overflow: hidden;
-  background: color-mix(in srgb, var(--window-bg) 82%, transparent);
-  border: 1px solid color-mix(in srgb, var(--line-strong) 72%, white 28%);
-  border-radius: 6px;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.86);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--window-bg) 92%, transparent), color-mix(in srgb, var(--surface-2) 68%, transparent));
+  border: 0;
+  border-radius: 8px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 8px 16px rgba(66, 111, 184, 0.06);
   transition:
     background 140ms ease,
-    border-color 140ms ease,
     box-shadow 140ms ease,
     transform 140ms ease;
 }
 
 .settingStepper:focus-within,
 .settingStepper:hover {
-  border-color: var(--hover-border);
   background: linear-gradient(180deg, var(--hover-surface), var(--hover-surface-strong));
   box-shadow:
     inset 0 1px 0 var(--hover-glass),
@@ -2347,18 +2367,8 @@
 }
 
 :root[data-theme="light"] .taskStateButton:hover,
-:root[data-theme="light"] .taskStateButton:focus-visible,
-:root[data-theme="light"] .taskBindButton:hover,
-:root[data-theme="light"] .taskBindButton:focus-visible {
+:root[data-theme="light"] .taskStateButton:focus-visible {
   border-color: color-mix(in srgb, var(--line-strong) 92%, white 8%);
-}
-
-:root[data-theme="light"] .settingsSelectButton:hover,
-:root[data-theme="light"] .settingsSelectButton:focus-visible,
-:root[data-theme="light"] .settingsSelectButtonOpen,
-:root[data-theme="light"] .settingStepper:hover,
-:root[data-theme="light"] .settingStepper:focus-within {
-  border-color: color-mix(in srgb, var(--line-strong) 72%, white 28%);
 }
 
 :root[data-theme="dark"] .timerActionButton:not(.startButton) {
@@ -2436,12 +2446,57 @@
 :root[data-theme="dark"] .taskStateButton,
 :root[data-theme="dark"] .checkButton,
 :root[data-theme="dark"] .taskTitleInput,
-:root[data-theme="dark"] .taskBindButton,
-:root[data-theme="dark"] .taskDangerButton,
 :root[data-theme="dark"] .taskEmptyState {
   background: var(--dark-control-bg);
   border-color: var(--dark-card-border);
   box-shadow: inset 0 1px 0 rgba(177, 205, 236, 0.08);
+}
+
+:root[data-theme="dark"] .taskBindButton,
+:root[data-theme="dark"] .taskDangerButton {
+  background: var(--dark-control-bg);
+  box-shadow: inset 0 1px 0 rgba(177, 205, 236, 0.08);
+}
+
+:root[data-theme="dark"] .taskBindButtonActive {
+  color: #fff;
+  background:
+    radial-gradient(circle at 70% 10%, rgba(113, 179, 255, 0.58), transparent 30%),
+    linear-gradient(180deg, #2d87ff, var(--accent-strong));
+  box-shadow: var(--blue-shadow);
+}
+
+:root[data-theme="dark"] .taskBindButton:hover,
+:root[data-theme="dark"] .taskBindButton:focus-visible {
+  color: #eef5ff;
+  background: linear-gradient(180deg, rgba(14, 47, 76, 0.94), rgba(9, 31, 50, 0.9));
+  box-shadow:
+    inset 0 1px 0 rgba(189, 214, 240, 0.12),
+    0 10px 20px rgba(0, 0, 0, 0.22);
+  transform: var(--hover-lift);
+  outline: none;
+}
+
+:root[data-theme="dark"] .taskBindButtonActive:hover,
+:root[data-theme="dark"] .taskBindButtonActive:focus-visible {
+  color: #fff;
+  background:
+    radial-gradient(circle at 18% 12%, rgba(170, 214, 255, 0.72), transparent 30%),
+    linear-gradient(180deg, #2d87ff, var(--accent-strong));
+  box-shadow: var(--hover-shadow-strong);
+  transform: var(--hover-lift);
+  outline: none;
+}
+
+:root[data-theme="dark"] .taskDangerButton:hover,
+:root[data-theme="dark"] .taskDangerButton:focus-visible {
+  color: #ff8a81;
+  background: linear-gradient(180deg, rgba(58, 22, 27, 0.94), rgba(31, 14, 18, 0.9));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 224, 221, 0.08),
+    0 10px 20px rgba(0, 0, 0, 0.24);
+  transform: var(--hover-lift);
+  outline: none;
 }
 
 :root[data-theme="dark"] .taskTitleInput:focus {
@@ -2457,7 +2512,6 @@
 
 :root[data-theme="dark"] .taskDangerButton {
   color: #ff7d74;
-  border-color: rgba(255, 125, 116, 0.28);
 }
 
 :root[data-theme="dark"] .taskEmptyState {
@@ -2490,13 +2544,13 @@
 :root[data-theme="dark"] .settingsSelectButton,
 :root[data-theme="dark"] .settingStepper {
   background: var(--dark-control-bg);
-  border-color: var(--dark-card-border);
+  border: 0;
   box-shadow: inset 0 1px 0 rgba(177, 205, 236, 0.08);
 }
 
 :root[data-theme="dark"] .settingsSelectMenu {
   background: var(--dark-control-bg-strong);
-  border-color: var(--dark-card-border-strong);
+  border: 0;
   box-shadow: 0 16px 32px rgba(0, 0, 0, 0.28);
 }
 

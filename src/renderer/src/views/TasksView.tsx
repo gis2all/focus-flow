@@ -278,7 +278,11 @@ export const TasksView = ({
                   </div>
 
                   <div className={styles.taskStats}>
-                    <span className={styles.taskStatsInline}>{`${row.focusMinutes}m | ${row.completedPomodoros}个番茄钟`}</span>
+                    <span className={styles.taskStatsInline}>
+                      <span className={styles.taskStatsValue}>{`${row.focusMinutes}m`}</span>
+                      <span aria-hidden="true" className={styles.taskStatsSeparator} />
+                      <span className={styles.taskStatsValue}>{`${row.completedPomodoros}个番茄钟`}</span>
+                    </span>
                   </div>
 
                   <div className={styles.taskBindCell}>
@@ -299,13 +303,6 @@ export const TasksView = ({
                           }
                           void bindCurrentTask(row.id)
                         }}
-                        title={
-                          canBindCurrentTask
-                            ? isBoundToCurrentTimer
-                              ? `点击解绑任务「${row.title}」`
-                              : `绑定当前专注到任务「${row.title}」`
-                            : `启动专注并绑定到任务「${row.title}」`
-                        }
                         type="button"
                       >
                         {isBoundToCurrentTimer ? '已绑定' : canBindCurrentTask ? '绑定' : '设为当前'}
@@ -321,7 +318,6 @@ export const TasksView = ({
                         event.stopPropagation()
                         setConfirmDialog({ kind: 'delete', taskId: row.id, taskTitle: row.title })
                       }}
-                      title={`删除任务「${row.title}」`}
                       type="button"
                     >
                       删除
