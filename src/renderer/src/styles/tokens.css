@@ -36,6 +36,13 @@
   --scrollbar-thumb-hover: rgba(60, 90, 130, 0.34);
   --glass-shadow: 0 18px 44px rgba(43, 104, 201, 0.13);
   --blue-shadow: 0 18px 44px rgba(31, 116, 255, 0.28);
+  --hover-surface: color-mix(in srgb, var(--surface) 88%, white 12%);
+  --hover-surface-strong: color-mix(in srgb, var(--surface-2) 84%, white 16%);
+  --hover-border: color-mix(in srgb, var(--line-strong) 92%, white 8%);
+  --hover-glass: rgba(255, 255, 255, 0.86);
+  --hover-shadow: 0 10px 20px rgba(66, 111, 184, 0.1);
+  --hover-shadow-strong: 0 12px 24px rgba(66, 111, 184, 0.14);
+  --hover-lift: translateY(-1px);
 }
 
 :root[data-theme="dark"] {
@@ -72,6 +79,13 @@
   --dark-glass-highlight: rgba(177, 205, 236, 0.1);
   --dark-icon-bg: rgba(221, 237, 255, 0.12);
   --dark-panel-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
+  --hover-surface: rgba(13, 43, 70, 0.88);
+  --hover-surface-strong: rgba(8, 29, 48, 0.92);
+  --hover-border: color-mix(in srgb, var(--accent) 48%, var(--dark-card-border));
+  --hover-glass: rgba(177, 205, 236, 0.12);
+  --hover-shadow: 0 14px 28px rgba(0, 0, 0, 0.24);
+  --hover-shadow-strong: 0 16px 32px rgba(0, 0, 0, 0.28);
+  --hover-lift: translateY(-1px);
 }
 
 * {
