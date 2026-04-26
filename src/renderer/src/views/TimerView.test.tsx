@@ -3,6 +3,7 @@ import { describe, expect, test } from 'vitest'
 import { defaultSettings } from '@shared/defaults'
 import type { TimerSnapshot } from '@shared/types'
 import { TimerView, getPrimaryTimerAction } from './TimerView'
+import { getSmoothedTimerProgress } from '../viewModel'
 
 const createSnapshot = (input: Partial<TimerSnapshot> = {}): TimerSnapshot => ({
   status: 'idle',
@@ -23,6 +24,61 @@ const createSnapshot = (input: Partial<TimerSnapshot> = {}): TimerSnapshot => ({
 const noopAsync = async (): Promise<void> => undefined
 
 describe('TimerView', () => {
+  test('computes smooth timer progress linearly while running', () => {
+    const snapshot = createSnapshot({
+      status: 'running',
+      startedAt: 1_000,
+      targetEndAt: 11_000,
+      durationMs: 10_000,
+      progress: 0.1
+    })
+
+    expect(getSmoothedTimerProgress(snapshot, 1_000)).toBe(0)
+    expect(getSmoothedTimerProgress(snapshot, 6_000)).toBe(0.5)
+    expect(getSmoothedTimerProgress(snapshot, 13_000)).toBe(1)
+  })
+
+  test('keeps progress after resume instead of restarting from zero', () => {
+    const resumedSnapshot = createSnapshot({
+      status: 'running',
+      startedAt: 6_000,
+      targetEndAt: 11_000,
+      durationMs: 10_000,
+      remainingMs: 5_000,
+      progress: 0.5
+    })
+
+    expect(getSmoothedTimerProgress(resumedSnapshot, 6_000)).toBe(0.5)
+    expect(getSmoothedTimerProgress(resumedSnapshot, 8_500)).toBe(0.75)
+  })
+
+  test('falls back to snapshot progress for paused or incomplete timer state', () => {
+    expect(
+      getSmoothedTimerProgress(
+        createSnapshot({
+          status: 'paused',
+          progress: 0.35,
+          startedAt: 1_000,
+          targetEndAt: 11_000,
+          durationMs: 10_000
+        }),
+        6_000
+      )
+    ).toBe(0.35)
+
+    expect(
+      getSmoothedTimerProgress(
+        createSnapshot({
+          status: 'running',
+          progress: 0.4,
+          startedAt: null,
+          targetEndAt: null
+        }),
+        6_000
+      )
+    ).toBe(0.4)
+  })
+
   test('derives the primary action label from timer status and phase', () => {
     expect(getPrimaryTimerAction(createSnapshot({ status: 'idle', phase: 'focus' }))).toMatchObject({
       label: '开始专注',
@@ -94,5 +150,20 @@ describe('TimerView', () => {
     )
 
     expect(idleHtml).toContain('开始专注')
+  })
+
+  test('renders the dial progress style from non-rounded progress values', () => {
+    const html = renderToStaticMarkup(
+      <TimerView
+        currentTaskTitle="当前阶段未绑定任务"
+        progressPercent={33.3333}
+        settings={defaultSettings}
+        snapshot={createSnapshot({ status: 'running', phase: 'focus', progress: 0.333333 })}
+        startTimer={noopAsync}
+        updateSettings={noopAsync}
+      />
+    )
+
+    expect(html).toContain('--progress-value:33.3333')
   })
 })

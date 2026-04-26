@@ -8,7 +8,7 @@ import { StatsView } from './views/StatsView'
 import { TasksView } from './views/TasksView'
 import { TimerView } from './views/TimerView'
 import type { ViewKey } from './types'
-import { buildTaskTitleById, resolveCurrentTaskTitle, resolveEffectiveTheme } from './viewModel'
+import { buildTaskTitleById, getSmoothedTimerProgress, resolveCurrentTaskTitle, resolveEffectiveTheme } from './viewModel'
 
 const fallbackSnapshot = deriveTimerSnapshot(createIdleTimer(defaultSettings, Date.now()), Date.now())
 
@@ -43,6 +43,7 @@ export const App = (): ReactElement => {
   const [stats, setStats] = useState<FocusStats>(fallbackStats)
   const [systemTheme, setSystemTheme] = useState<'light' | 'dark'>('light')
   const [newTaskTitle, setNewTaskTitle] = useState('')
+  const [displayProgress, setDisplayProgress] = useState(fallbackSnapshot.progress)
   const previousSnapshotRef = useRef<TimerSnapshot>(fallbackSnapshot)
 
   const refreshTaskBoard = async (): Promise<void> => {
@@ -65,6 +66,7 @@ export const App = (): ReactElement => {
     ]).then(([nextSnapshot, nextTaskBoard]) => {
       previousSnapshotRef.current = nextSnapshot
       setSnapshot(nextSnapshot)
+      setDisplayProgress(nextSnapshot.progress)
       setTaskBoard(nextTaskBoard)
     })
 
@@ -72,6 +74,7 @@ export const App = (): ReactElement => {
       const previousSnapshot = previousSnapshotRef.current
       previousSnapshotRef.current = value
       setSnapshot(value)
+      setDisplayProgress(value.progress)
 
       const shouldRefreshTaskBoard =
         previousSnapshot.sessionId !== value.sessionId ||
@@ -87,8 +90,28 @@ export const App = (): ReactElement => {
     document.documentElement.dataset.theme = resolveEffectiveTheme(settings.themePreference, systemTheme)
   }, [settings.themePreference, systemTheme])
 
+  useEffect(() => {
+    if (snapshot.status !== 'running') {
+      setDisplayProgress(snapshot.progress)
+      return
+    }
+
+    let frameId = 0
+
+    const updateFrame = () => {
+      setDisplayProgress(getSmoothedTimerProgress(snapshot, Date.now()))
+      frameId = window.requestAnimationFrame(updateFrame)
+    }
+
+    updateFrame()
+
+    return () => {
+      window.cancelAnimationFrame(frameId)
+    }
+  }, [snapshot])
+
   const activeTheme = resolveEffectiveTheme(settings.themePreference, systemTheme)
-  const progressPercent = Math.round(snapshot.progress * 100)
+  const progressPercent = displayProgress * 100
   const taskTitleById = useMemo(() => buildTaskTitleById(taskBoard), [taskBoard])
   const currentTaskTitle = resolveCurrentTaskTitle(snapshot, taskTitleById)
 

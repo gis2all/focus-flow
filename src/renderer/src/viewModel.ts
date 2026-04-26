@@ -24,6 +24,21 @@ export const formatDurationLabel = (minutes: number): string => {
   return `${hours}h ${rest}m`
 }
 
+export const clampProgress = (value: number): number => Math.min(1, Math.max(0, value))
+
+export const getSmoothedTimerProgress = (
+  snapshot: Pick<TimerSnapshot, 'status' | 'startedAt' | 'targetEndAt' | 'durationMs' | 'progress'>,
+  now: number
+): number => {
+  if (snapshot.status !== 'running' || snapshot.targetEndAt === null || snapshot.durationMs <= 0) {
+    return clampProgress(snapshot.progress)
+  }
+
+  const remainingMs = Math.max(0, snapshot.targetEndAt - now)
+  const elapsedMs = Math.min(snapshot.durationMs, Math.max(0, snapshot.durationMs - remainingMs))
+  return clampProgress(elapsedMs / snapshot.durationMs)
+}
+
 export const resolveEffectiveTheme = (
   preference: ThemePreference,
   systemTheme: 'light' | 'dark'
