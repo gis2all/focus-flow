@@ -50,8 +50,8 @@ const createTrayImage = () => {
 const createMainWindow = (startHidden: boolean): BrowserWindow => {
   const shouldStartHidden = process.argv.includes('--hidden') || startHidden
   const window = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: 1536,
+    height: 1384,
     minWidth: 800,
     minHeight: 600,
     show: !shouldStartHidden,

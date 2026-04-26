@@ -170,7 +170,7 @@ export const TasksView = ({
             <input
               aria-label="任务标题"
               onChange={(event) => setNewTaskTitle(event.target.value)}
-              placeholder="新增任务"
+              placeholder="新任务"
               value={newTaskTitle}
             />
             <button type="submit">新增任务</button>
