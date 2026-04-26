@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactElement } from 'react'
+import { useState, type CSSProperties, type ReactElement } from 'react'
 import type { AppSettings, TimerPhase, TimerSnapshot } from '@shared/types'
 import { phaseLabel } from '../appConfig'
 import {
@@ -8,6 +8,8 @@ import {
   PlayControlIcon,
   SkipNextIcon
 } from '../components/AppIcons'
+import { ConfirmModal } from '../components/ConfirmModal'
+import { getTimerActionConfirmation, shouldConfirmTimerAction, type TimerActionConfirmationRequest } from '../timerActionConfirmation'
 import { formatTimerClock } from '../viewModel'
 import styles from '../App.module.css'
 
@@ -49,6 +51,8 @@ export const TimerView = ({
   startTimer,
   updateSettings
 }: TimerViewProps): ReactElement => {
+  const [confirmAction, setConfirmAction] = useState<TimerActionConfirmationRequest | null>(null)
+  const [confirmPending, setConfirmPending] = useState(false)
   const autoSwitchEnabled = settings.autoStartBreaks || settings.autoStartFocus
   const [displayMinutes = '00', displaySeconds = '00'] = formatTimerClock(snapshot.remainingMs).split(':')
   const primaryAction = getPrimaryTimerAction(snapshot)
@@ -64,13 +68,53 @@ export const TimerView = ({
   const longBreakProgress =
     snapshot.focusCount === 0 ? 1 : completedInCycle === 0 ? longBreakInterval : completedInCycle
 
+  const runTimerAction = async (action: TimerActionConfirmationRequest): Promise<void> => {
+    switch (action.kind) {
+      case 'startFocus':
+        await startTimer('focus')
+        return
+      case 'skip':
+        await window.focusFlow.timer.skip()
+        return
+      case 'startShortBreak':
+        await startTimer('shortBreak')
+        return
+      case 'startLongBreak':
+        await startTimer('longBreak')
+        return
+      case 'startFocusWithTask':
+        return
+    }
+  }
+
+  const openOrRunTimerAction = (action: TimerActionConfirmationRequest): void => {
+    if (shouldConfirmTimerAction(snapshot)) {
+      setConfirmAction(action)
+      return
+    }
+
+    void runTimerAction(action)
+  }
+
+  const handleConfirmAction = async (): Promise<void> => {
+    if (!confirmAction || confirmPending) return
+    setConfirmPending(true)
+
+    try {
+      await runTimerAction(confirmAction)
+      setConfirmAction(null)
+    } finally {
+      setConfirmPending(false)
+    }
+  }
+
   const handlePrimaryAction = (): void => {
     if (primaryAction.action === 'resume') {
       void window.focusFlow.timer.resume()
       return
     }
 
-    void startTimer('focus')
+    openOrRunTimerAction({ kind: 'startFocus' })
   }
 
   return (
@@ -133,19 +177,41 @@ export const TimerView = ({
           <PauseControlIcon className={styles.timerActionIcon} />
           <b>暂停</b>
         </button>
-        <button className={styles.timerActionButton} disabled={!canSkip} onClick={() => void window.focusFlow.timer.skip()} type="button">
+        <button
+          className={styles.timerActionButton}
+          disabled={!canSkip}
+          onClick={() => openOrRunTimerAction({ kind: 'skip' })}
+          type="button"
+        >
           <SkipNextIcon className={styles.timerActionIcon} />
           <b>跳过</b>
         </button>
-        <button className={styles.timerActionButton} onClick={() => void startTimer('shortBreak')} type="button">
+        <button
+          className={styles.timerActionButton}
+          onClick={() => openOrRunTimerAction({ kind: 'startShortBreak', minutes: settings.shortBreakMinutes })}
+          type="button"
+        >
           <CoffeeCupIcon className={styles.timerActionIcon} />
           <b>{`短休 · ${settings.shortBreakMinutes} 分钟`}</b>
         </button>
-        <button className={styles.timerActionButton} onClick={() => void startTimer('longBreak')} type="button">
+        <button
+          className={styles.timerActionButton}
+          onClick={() => openOrRunTimerAction({ kind: 'startLongBreak', minutes: settings.longBreakMinutes })}
+          type="button"
+        >
           <LoungeChairIcon className={styles.timerActionIcon} />
           <b>{`长休 · ${settings.longBreakMinutes} 分钟`}</b>
         </button>
       </div>
+
+      {confirmAction ? (
+        <ConfirmModal
+          {...getTimerActionConfirmation(confirmAction)}
+          onCancel={() => !confirmPending && setConfirmAction(null)}
+          onConfirm={() => void handleConfirmAction()}
+          pending={confirmPending}
+        />
+      ) : null}
     </div>
   )
 }

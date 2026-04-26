@@ -193,6 +193,7 @@ export const App = (): ReactElement => {
           reorderTasks={reorderTasks}
           setNewTaskTitle={setNewTaskTitle}
           taskBoard={taskBoard}
+          timerContext={{ status: snapshot.status, phase: snapshot.phase }}
           updateTask={updateTask}
         />
       )

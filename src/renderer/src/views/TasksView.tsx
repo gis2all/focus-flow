@@ -1,6 +1,8 @@
 import { useMemo, useState, type DragEvent, type KeyboardEvent, type ReactElement } from 'react'
-import type { TaskBoardSnapshot } from '@shared/types'
+import type { TaskBoardSnapshot, TimerSnapshot } from '@shared/types'
 import styles from '../App.module.css'
+import { ConfirmModal } from '../components/ConfirmModal'
+import { getTimerActionConfirmation, shouldConfirmTimerAction } from '../timerActionConfirmation'
 import { getTaskRowsForTab, reorderTaskIds, type TaskRowModel, type TaskViewTab } from '../viewModel'
 
 interface TasksViewProps {
@@ -16,12 +18,14 @@ interface TasksViewProps {
   setNewTaskTitle(value: string): void
   startFocusWithTask(taskId: string): Promise<void>
   taskBoard: TaskBoardSnapshot
+  timerContext: Pick<TimerSnapshot, 'status' | 'phase'>
   updateTask(id: string, title: string): Promise<void>
 }
 
 type ConfirmDialogState =
   | { kind: 'unbind'; taskTitle: string }
   | { kind: 'delete'; taskId: string; taskTitle: string }
+  | { kind: 'startFocusWithTask'; taskId: string; taskTitle: string }
   | null
 
 const tabLabel: Record<TaskViewTab, string> = {
@@ -49,6 +53,7 @@ export const TasksView = ({
   setNewTaskTitle,
   startFocusWithTask,
   taskBoard,
+  timerContext,
   updateTask
 }: TasksViewProps): ReactElement => {
   const [activeTab, setActiveTab] = useState<TaskViewTab>('active')
@@ -124,6 +129,8 @@ export const TasksView = ({
     try {
       if (confirmDialog.kind === 'unbind') {
         await bindCurrentTask(null)
+      } else if (confirmDialog.kind === 'startFocusWithTask') {
+        await startFocusWithTask(confirmDialog.taskId)
       } else {
         await deleteTask(confirmDialog.taskId)
       }
@@ -298,6 +305,10 @@ export const TasksView = ({
                             return
                           }
                           if (!canBindCurrentTask) {
+                            if (shouldConfirmTimerAction(timerContext)) {
+                              setConfirmDialog({ kind: 'startFocusWithTask', taskId: row.id, taskTitle: row.title })
+                              return
+                            }
                             void startFocusWithTask(row.id)
                             return
                           }
@@ -331,48 +342,52 @@ export const TasksView = ({
       </div>
 
       {confirmDialog ? (
-        <div className={styles.modalOverlay} onClick={() => !confirmPending && setConfirmDialog(null)} role="presentation">
-          <section
-            aria-label="确认对话框"
-            className={styles.confirmModal}
-            onClick={(event) => event.stopPropagation()}
-          >
-            <header className={styles.confirmModalHeader}>
-              <strong>FocusFlow</strong>
-              <span>{confirmDialog.kind === 'unbind' ? '解绑确认' : '删除确认'}</span>
-            </header>
-            <p className={styles.confirmModalTitle}>
-              {confirmDialog.kind === 'unbind'
-                ? `确认解绑任务「${confirmDialog.taskTitle}」吗？`
-                : `确认删除任务「${confirmDialog.taskTitle}」吗？`}
-            </p>
-            <p className={styles.confirmModalBody}>
-              {confirmDialog.kind === 'unbind'
-                ? '解绑后当前专注将不再关联该任务。'
-                : '删除后任务会从列表移除，历史专注统计会按“已删除任务”展示。'}
-            </p>
-            <div className={styles.confirmModalActions}>
-              <button
-                className={styles.confirmModalCancel}
-                disabled={confirmPending}
-                onClick={() => setConfirmDialog(null)}
-                type="button"
-              >
-                取消
-              </button>
-              <button
-                className={
-                  confirmDialog.kind === 'unbind' ? styles.confirmModalPrimary : styles.confirmModalDanger
-                }
-                disabled={confirmPending}
-                onClick={() => void handleConfirmAction()}
-                type="button"
-              >
-                {confirmDialog.kind === 'unbind' ? '确认解绑' : '确认删除'}
-              </button>
-            </div>
-          </section>
-        </div>
+        <ConfirmModal
+          body={
+            confirmDialog.kind === 'unbind'
+              ? '解绑后当前专注将不再关联该任务。'
+              : confirmDialog.kind === 'delete'
+                ? '删除后任务会从列表移除，历史专注统计会按“已删除任务”展示。'
+                : getTimerActionConfirmation({
+                    kind: 'startFocusWithTask',
+                    taskTitle: confirmDialog.taskTitle
+                  }).body
+          }
+          confirmLabel={
+            confirmDialog.kind === 'unbind'
+              ? '确认解绑'
+              : confirmDialog.kind === 'delete'
+                ? '确认删除'
+                : getTimerActionConfirmation({
+                    kind: 'startFocusWithTask',
+                    taskTitle: confirmDialog.taskTitle
+                  }).confirmLabel
+          }
+          onCancel={() => !confirmPending && setConfirmDialog(null)}
+          onConfirm={() => void handleConfirmAction()}
+          pending={confirmPending}
+          subtitle={
+            confirmDialog.kind === 'unbind'
+              ? '解绑确认'
+              : confirmDialog.kind === 'delete'
+                ? '删除确认'
+                : getTimerActionConfirmation({
+                    kind: 'startFocusWithTask',
+                    taskTitle: confirmDialog.taskTitle
+                  }).subtitle
+          }
+          title={
+            confirmDialog.kind === 'unbind'
+              ? `确认解绑任务「${confirmDialog.taskTitle}」吗？`
+              : confirmDialog.kind === 'delete'
+                ? `确认删除任务「${confirmDialog.taskTitle}」吗？`
+                : getTimerActionConfirmation({
+                    kind: 'startFocusWithTask',
+                    taskTitle: confirmDialog.taskTitle
+                  }).title
+          }
+          tone={confirmDialog.kind === 'unbind' ? 'primary' : 'danger'}
+        />
       ) : null}
     </div>
   )

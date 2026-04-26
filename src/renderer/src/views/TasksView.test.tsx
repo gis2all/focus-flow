@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, test } from 'vitest'
-import type { TaskBoardSnapshot } from '@shared/types'
+import type { TaskBoardSnapshot, TimerPhase, TimerStatus } from '@shared/types'
 import { TasksView } from './TasksView'
 
 const createBoard = (): TaskBoardSnapshot => ({
@@ -46,6 +46,7 @@ const createBoard = (): TaskBoardSnapshot => ({
 })
 
 const noopAsync = async (): Promise<void> => undefined
+const createTimerContext = (status: TimerStatus, phase: TimerPhase) => ({ status, phase })
 
 describe('TasksView', () => {
   test('渲染清晰的任务区列结构和当前绑定操作', () => {
@@ -63,6 +64,7 @@ describe('TasksView', () => {
         setNewTaskTitle={() => undefined}
         startFocusWithTask={noopAsync}
         taskBoard={createBoard()}
+        timerContext={createTimerContext('running', 'focus')}
         updateTask={async () => undefined}
       />
     )
@@ -105,6 +107,7 @@ describe('TasksView', () => {
         setNewTaskTitle={() => undefined}
         startFocusWithTask={noopAsync}
         taskBoard={createBoard()}
+        timerContext={createTimerContext('paused', 'shortBreak')}
         updateTask={async () => undefined}
       />
     )
