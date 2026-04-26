@@ -50,10 +50,10 @@ const createTrayImage = () => {
 const createMainWindow = (startHidden: boolean): BrowserWindow => {
   const shouldStartHidden = process.argv.includes('--hidden') || startHidden
   const window = new BrowserWindow({
-    width: 1536,
-    height: 1384,
-    minWidth: 800,
-    minHeight: 600,
+    width: 888,
+    height: 752,
+    minWidth: 888,
+    minHeight: 752,
     show: !shouldStartHidden,
     frame: false,
     title: 'FocusFlow',

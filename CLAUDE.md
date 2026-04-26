@@ -6,9 +6,9 @@
 - 定位：本地优先的 Windows 桌面番茄钟客户端
 - 技术栈：`Electron + Vite + React + TypeScript + SQLite(sql.js)`
 - 包管理器：`npm`
-- 当前分支：`feature`
+- 当前分支：`ui`
 - 远端仓库：`git@github.com:gis2all/focus-flow.git`
-- 最近一次提交：`994966a chore: polish windows tray and app icon setup`
+- 最近一次提交：请以 `git log -1 --oneline` 的实时结果为准
 
 当前阶段的工作重点仍然是：
 
@@ -202,11 +202,12 @@ SQLite 当前核心表：
 
 ### 主窗口
 
-- 默认窗口尺寸：`800x600`
-- 最小尺寸：`800x600`
+- 当前启动尺寸（`BrowserWindow` 逻辑尺寸）：`888x752`
+- 当前最小尺寸（`BrowserWindow` 逻辑尺寸）：`888x752`
 - 当前使用无原生边框窗口：`frame: false`
 - 窗口标题：`FocusFlow`
 - 自定义窗口控制按钮在渲染层实现
+- 注意：Electron 主窗口尺寸使用逻辑单位，不等同于屏幕物理像素
 
 ### 托盘
 
@@ -305,7 +306,7 @@ Windows / PowerShell 注意事项：
 
 - 如果 Electron 误以 Node 模式启动，先执行：`Remove-Item Env:ELECTRON_RUN_AS_NODE -ErrorAction SilentlyContinue`
 - 编辑 `md / ts / tsx / json` 时优先用安全 UTF-8 写法，避免 PowerShell 编码问题
-- `scripts/` 当前已加入 `.gitignore`，默认不提交
+- 本地辅助目录当前已加入 `.gitignore`，默认不提交：`.learnings`、`.codex-log`、`.codex-logs`、`.superpowers`、`scripts/`、`docs/`
 
 ## 测试现状
 

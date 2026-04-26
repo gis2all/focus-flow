@@ -1,10 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" fill="none">
   <path
-    d="M 870.110 352.559
-       A 392.000 392.000 0 1 1 753.339 203.100"
+    d="M 892.035 342.798
+       A 416.000 416.000 0 1 1 768.115 184.188"
     stroke="#2A7DFF"
-    stroke-width="112"
+    stroke-width="76"
     stroke-linecap="round"
   />
-  <circle cx="512.0" cy="512.0" r="108" fill="#1767EF" />
+  <circle cx="512.0" cy="512.0" r="162" fill="#1767EF" />
 </svg>

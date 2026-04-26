@@ -8,6 +8,8 @@ coverage
 *.sqlite-shm
 *.sqlite-wal
 .learnings
+.codex-log
+.codex-logs
 scripts/
 docs/
 .superpowers/
