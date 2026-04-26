@@ -32,6 +32,13 @@ describe('StatsView', () => {
   test('renders top summary cards and actual break totals', () => {
     const html = renderToStaticMarkup(<StatsView stats={createStats()} taskBoard={createTaskBoard()} />)
 
+    expect(html).toContain('aria-label="统计时间范围"')
+    expect(html).toContain('data-summary-surface="white-card"')
+    expect(html).toContain('data-summary-icon="focus"')
+    expect(html).toContain('data-summary-icon="pomodoros"')
+    expect(html).toContain('data-summary-icon="tasks"')
+    expect(html).toContain('data-summary-icon="breaks"')
+    expect(html.match(/data-summary-surface="white-card"/g)?.length).toBe(4)
     expect(html).toContain('专注时长')
     expect(html).toContain('完成番茄')
     expect(html).toContain('任务完成数')

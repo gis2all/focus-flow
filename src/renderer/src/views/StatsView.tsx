@@ -1,5 +1,11 @@
 import type { CSSProperties, ReactElement } from 'react'
 import type { FocusStats, TaskBoardSnapshot } from '@shared/types'
+import {
+  StatsSummaryClipboardIcon,
+  StatsSummaryClockIcon,
+  StatsSummaryCupIcon,
+  StatsSummaryRocketIcon
+} from '../components/AppIcons'
 import { formatDurationLabel } from '../viewModel'
 import styles from '../App.module.css'
 
@@ -41,16 +47,40 @@ export const StatsView = ({ stats, taskBoard }: StatsViewProps): ReactElement =>
   const halfHourlyPeak = Math.round(hourlyPeak / 2)
   const yAxisTicks = [hourlyPeak > 0 ? `峰值 ${hourlyPeak}m` : '峰值 0m', `${halfHourlyPeak}m`, '0']
   const summaryCards = [
-    { label: '专注时长', value: formatDurationLabel(focusTotal), meta: '今日累计' },
-    { label: '完成番茄', value: `${stats.today.completedPomodoros}`, meta: '已完成' },
-    { label: '任务完成数', value: `${stats.today.completedTasks}`, meta: '今日完成' },
-    { label: '休息时长', value: formatDurationLabel(breakTotal), meta: '短休 + 长休' }
+    {
+      label: '专注时长',
+      value: formatDurationLabel(focusTotal),
+      meta: '今日累计',
+      icon: StatsSummaryClockIcon,
+      iconKey: 'focus'
+    },
+    {
+      label: '完成番茄',
+      value: `${stats.today.completedPomodoros}`,
+      meta: '已完成',
+      icon: StatsSummaryRocketIcon,
+      iconKey: 'pomodoros'
+    },
+    {
+      label: '任务完成数',
+      value: `${stats.today.completedTasks}`,
+      meta: '今日完成',
+      icon: StatsSummaryClipboardIcon,
+      iconKey: 'tasks'
+    },
+    {
+      label: '休息时长',
+      value: formatDurationLabel(breakTotal),
+      meta: '短休 + 长休',
+      icon: StatsSummaryCupIcon,
+      iconKey: 'breaks'
+    }
   ]
 
   return (
     <div className={styles.statsView}>
       <div className={styles.pageTopper}>
-        <div className={styles.tabLine}>
+        <div aria-label="统计时间范围" className={styles.tabLine}>
           <strong>今天</strong>
           <span>日历</span>
           <span>周视图</span>
@@ -59,13 +89,21 @@ export const StatsView = ({ stats, taskBoard }: StatsViewProps): ReactElement =>
 
       <div className={styles.statsLayout}>
         <aside className={styles.statsNumbers}>
-          {summaryCards.map((card, index) => (
-            <div className={index === 0 ? styles.metricCard : ''} key={card.label}>
-              <span>{card.label}</span>
-              <strong>{card.value}</strong>
-              <small>{card.meta}</small>
-            </div>
-          ))}
+          {summaryCards.map((card) => {
+            const Icon = card.icon
+            return (
+              <div className={styles.statsSummaryCard} data-summary-surface="white-card" key={card.label}>
+                <div className={styles.statsSummaryContent}>
+                  <span>{card.label}</span>
+                  <strong>{card.value}</strong>
+                  <small>{card.meta}</small>
+                </div>
+                <div className={styles.statsSummaryIcon} data-summary-icon={card.iconKey}>
+                  <Icon className={styles.statsSummaryIconSvg} />
+                </div>
+              </div>
+            )
+          })}
         </aside>
 
         <section className={styles.chartPanel}>
