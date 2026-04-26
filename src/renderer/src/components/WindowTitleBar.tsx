@@ -1,4 +1,5 @@
 import type { ReactElement } from 'react'
+import appIconUrl from '../../../../resources/focusflow-icon.svg'
 import styles from '../App.module.css'
 import { CloseIcon, MaximizeIcon, MinimizeIcon, MoonIcon, SunIcon } from './AppIcons'
 
@@ -11,7 +12,7 @@ export const WindowTitleBar = ({ activeTheme, onToggleTheme }: WindowTitleBarPro
   <header className={styles.titleBar}>
     <div className={styles.titleBrand}>
       <span className={styles.titleBrandMark} aria-hidden="true">
-        F
+        <img alt="" src={appIconUrl} />
       </span>
       <strong>FocusFlow</strong>
     </div>

@@ -1,5 +1,16 @@
 import { useState, type FocusEvent, type KeyboardEvent, type ReactElement } from 'react'
 import type { AppSettings, ThemePreference } from '@shared/types'
+import {
+  SettingsBedIcon,
+  SettingsBellIcon,
+  SettingsClockIcon,
+  SettingsCupIcon,
+  SettingsMoonIcon,
+  SettingsRefreshIcon,
+  SettingsUserIcon,
+  SettingsVolumeIcon,
+  SettingsWindowIcon
+} from '../components/AppIcons'
 import styles from '../App.module.css'
 
 interface SettingsViewProps {
@@ -16,6 +27,8 @@ type SelectOption<T extends string> = {
 type StepperDirection = 'up' | 'down'
 
 type NumericSettingKey = 'focusMinutes' | 'shortBreakMinutes' | 'longBreakMinutes' | 'longBreakInterval'
+
+type SettingIconComponent = (props: { className?: string }) => ReactElement
 
 export const getNextStepperValue = (value: number, direction: StepperDirection): number =>
   Math.max(1, direction === 'up' ? value + 1 : value - 1)
@@ -44,27 +57,54 @@ const themeOptions: Array<SelectOption<ThemePreference>> = [
   { value: 'dark', label: '黑暗模式' }
 ]
 
-const timerSteppers: Array<{ key: NumericSettingKey; label: string; unit: string }> = [
-  { key: 'focusMinutes', label: '专注时长', unit: '分钟' },
-  { key: 'shortBreakMinutes', label: '短休时长', unit: '分钟' },
-  { key: 'longBreakMinutes', label: '长休时长', unit: '分钟' },
-  { key: 'longBreakInterval', label: '长休间隔', unit: '轮' }
+const timerSteppers: Array<{ key: NumericSettingKey; label: string; unit: string; icon: SettingIconComponent }> = [
+  { key: 'focusMinutes', label: '专注时长', unit: '分钟', icon: SettingsClockIcon },
+  { key: 'shortBreakMinutes', label: '短休时长', unit: '分钟', icon: SettingsCupIcon },
+  { key: 'longBreakMinutes', label: '长休时长', unit: '分钟', icon: SettingsBedIcon },
+  { key: 'longBreakInterval', label: '长休间隔', unit: '轮', icon: SettingsRefreshIcon }
 ]
+
+const SettingIdentity = ({
+  icon: Icon,
+  label
+}: {
+  icon: SettingIconComponent
+  label: string
+}): ReactElement => (
+  <>
+    <span className={styles.settingIconBox}>
+      <Icon className={styles.settingIconSvg} />
+    </span>
+    <span className={styles.settingCopy}>
+      <span className={styles.settingLabel}>{label}</span>
+    </span>
+  </>
+)
 
 interface SettingSwitchProps {
   checked: boolean
+  icon: SettingIconComponent
   label: string
   onChange(value: boolean): void
 }
 
-const SettingSwitch = ({ checked, label, onChange }: SettingSwitchProps): ReactElement => (
+const SettingSwitch = ({ checked, icon, label, onChange }: SettingSwitchProps): ReactElement => (
   <label className={styles.settingLine}>
-    <span>{label}</span>
-    <input checked={checked} onChange={(event) => onChange(event.target.checked)} type="checkbox" />
+    <SettingIdentity icon={icon} label={label} />
+    <input
+      checked={checked}
+      className={styles.settingSwitchInput}
+      onChange={(event) => onChange(event.target.checked)}
+      type="checkbox"
+    />
+    <span aria-hidden="true" className={styles.settingSwitchTrack}>
+      <span />
+    </span>
   </label>
 )
 
 interface SettingSelectProps<T extends string> {
+  icon: SettingIconComponent
   label: string
   options: Array<SelectOption<T>>
   value: T
@@ -72,6 +112,7 @@ interface SettingSelectProps<T extends string> {
 }
 
 const SettingSelect = <T extends string>({
+  icon,
   label,
   options,
   value,
@@ -89,7 +130,7 @@ const SettingSelect = <T extends string>({
 
   return (
     <div className={styles.settingLine}>
-      <span>{label}</span>
+      <SettingIdentity icon={icon} label={label} />
       <div className={styles.settingsSelect} onBlur={closeOnFocusLeave}>
         <button
           aria-expanded={isOpen}
@@ -130,13 +171,14 @@ const SettingSelect = <T extends string>({
 }
 
 interface SettingStepperProps {
+  icon: SettingIconComponent
   label: string
   unit: string
   value: number
   onChange(value: number): void
 }
 
-const SettingStepper = ({ label, unit, value, onChange }: SettingStepperProps): ReactElement => {
+const SettingStepper = ({ icon, label, unit, value, onChange }: SettingStepperProps): ReactElement => {
   const [isEditing, setIsEditing] = useState(false)
   const [draft, setDraft] = useState(`${value}`)
 
@@ -169,7 +211,7 @@ const SettingStepper = ({ label, unit, value, onChange }: SettingStepperProps): 
 
   return (
     <div className={styles.settingLine}>
-      <span>{label}</span>
+      <SettingIdentity icon={icon} label={label} />
       <div className={styles.settingStepper}>
         {isEditing ? (
           <input
@@ -224,16 +266,19 @@ export const SettingsView = ({ settings, updateSettings }: SettingsViewProps): R
           <h2>基础体验</h2>
           <SettingSwitch
             checked={settings.notificationsEnabled}
+            icon={SettingsBellIcon}
             label="显示系统通知"
             onChange={(value) => void updateSettings({ notificationsEnabled: value })}
           />
           <SettingSwitch
             checked={settings.soundEnabled}
+            icon={SettingsVolumeIcon}
             label="播放提示音"
             onChange={(value) => void updateSettings({ soundEnabled: value })}
           />
           <SettingSwitch
             checked={settings.closeToTray}
+            icon={SettingsWindowIcon}
             label="关闭窗口后继续运行"
             onChange={(value) => void updateSettings({ closeToTray: value })}
           />
@@ -244,6 +289,7 @@ export const SettingsView = ({ settings, updateSettings }: SettingsViewProps): R
           {timerSteppers.map((item) => (
             <SettingStepper
               key={item.key}
+              icon={item.icon}
               label={item.label}
               onChange={(value) => void updateSettings({ [item.key]: value } as Partial<AppSettings>)}
               unit={item.unit}
@@ -255,12 +301,14 @@ export const SettingsView = ({ settings, updateSettings }: SettingsViewProps): R
         <div className={styles.settingsGroup}>
           <h2>阶段切换</h2>
           <SettingSelect
+            icon={SettingsUserIcon}
             label="完成专注后"
             onChange={(value) => void updateSettings({ autoStartBreaks: value === 'autoBreak' })}
             options={manualBreakOptions}
             value={settings.autoStartBreaks ? 'autoBreak' : 'manualBreak'}
           />
           <SettingSelect
+            icon={SettingsRefreshIcon}
             label="完成短休 / 长休后"
             onChange={(value) => void updateSettings({ autoStartFocus: value === 'autoFocus' })}
             options={manualFocusOptions}
@@ -272,11 +320,13 @@ export const SettingsView = ({ settings, updateSettings }: SettingsViewProps): R
           <h2>启动与窗口</h2>
           <SettingSwitch
             checked={settings.openAtLogin}
+            icon={SettingsWindowIcon}
             label="开机自启"
             onChange={(value) => void updateSettings({ openAtLogin: value })}
           />
           <SettingSwitch
             checked={settings.startToTray}
+            icon={SettingsWindowIcon}
             label="启动到托盘"
             onChange={(value) => void updateSettings({ startToTray: value })}
           />
@@ -285,6 +335,7 @@ export const SettingsView = ({ settings, updateSettings }: SettingsViewProps): R
         <div className={styles.settingsGroup}>
           <h2>外观</h2>
           <SettingSelect
+            icon={SettingsMoonIcon}
             label="主题模式"
             onChange={(value) => void updateSettings({ themePreference: value })}
             options={themeOptions}

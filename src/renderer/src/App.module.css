@@ -104,20 +104,17 @@
 .titleBrandMark {
   display: grid;
   place-items: center;
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   color: #fff;
-  font-size: 20px;
-  font-weight: 900;
-  line-height: 1;
-  letter-spacing: -0.08em;
-  background:
-    radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.4), transparent 24%),
-    linear-gradient(145deg, #2f85ff, var(--accent-strong));
-  border-radius: 7px;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.42),
-    0 8px 18px color-mix(in srgb, var(--accent) 24%, transparent);
+  line-height: 0;
+}
+
+.titleBrandMark img {
+  display: block;
+  width: 28px;
+  height: 28px;
+  filter: drop-shadow(0 5px 10px color-mix(in srgb, var(--accent) 20%, transparent));
 }
 
 .titleBrand strong {
@@ -595,8 +592,8 @@
 }
 
 .timerActionIcon {
-  width: 18px;
-  height: 18px;
+  width: 22px;
+  height: 22px;
   color: var(--accent);
 }
 
@@ -1676,19 +1673,28 @@
 }
 
 .settingsView {
+  position: relative;
+  isolation: isolate;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   min-height: 0;
+  padding: 14px 16px 12px;
+  background:
+    radial-gradient(circle at 48% 0%, rgba(72, 144, 255, 0.08), transparent 34%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0), rgba(237, 245, 255, 0.16));
 }
 
 .settingsBody {
   min-height: 0;
   overflow: auto;
+  padding: 0 16px 0 0;
   scrollbar-gutter: stable;
+  scrollbar-color: auto;
+  scrollbar-width: auto;
 }
 
 .settingsBody::-webkit-scrollbar {
-  width: 8px;
+  width: 10px;
 }
 
 .settingsBody::-webkit-scrollbar-track {
@@ -1698,13 +1704,15 @@
 .settingsBody::-webkit-scrollbar-thumb {
   background: var(--scrollbar-thumb);
   background-clip: content-box;
-  border: 2px solid transparent;
-  border-radius: 4px;
+  border: 3px solid transparent;
+  border-radius: 999px;
 }
 
 .settingsBody::-webkit-scrollbar-thumb:hover {
   background: var(--scrollbar-thumb-hover);
   background-clip: content-box;
+  border: 3px solid transparent;
+  border-radius: 999px;
 }
 
 .settingsBody::-webkit-scrollbar-button,
@@ -1715,17 +1723,25 @@
 }
 
 .settingsPanel {
+  position: relative;
   display: grid;
   align-content: start;
   gap: 18px;
-  padding: 20px 28px 34px;
+  min-height: 100%;
+  padding: 0 0 26px;
+  overflow: visible;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  backdrop-filter: none;
 }
 
 .settingsGroup {
   display: grid;
-  gap: 10px;
+  gap: 8px;
   padding-top: 18px;
-  border-top: 1px solid var(--line);
+  border-top: 1px solid color-mix(in srgb, var(--line) 82%, transparent);
 }
 
 .settingsGroup:first-child {
@@ -1734,31 +1750,133 @@
 }
 
 .settingsGroup h2 {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
   margin: 0;
   color: var(--text-1);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 800;
 }
 
-.settingsGroup p {
-  margin: 0;
-  color: var(--text-3);
-  font-size: 11px;
+.settingsGroup h2::before {
+  display: block;
+  width: 3px;
+  height: 16px;
+  content: "";
+  background: var(--accent);
+  border-radius: 999px;
 }
 
 .settingLine {
+  position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 220px;
+  grid-template-columns: 32px minmax(0, 1fr) 178px;
   align-items: center;
-  gap: 24px;
+  column-gap: 12px;
   min-height: 38px;
   color: var(--text-2);
+  font-size: 13px;
+}
+
+.settingIconBox {
+  grid-column: 1;
+  grid-row: 1;
+  display: grid;
+  justify-self: start;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  color: var(--accent);
+  background: linear-gradient(180deg, rgba(236, 246, 255, 0.98), rgba(226, 239, 255, 0.94));
+  border-radius: 8px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    0 6px 14px rgba(59, 103, 182, 0.07);
+}
+
+.settingIconSvg {
+  width: 17px;
+  height: 17px;
+  flex: 0 0 auto;
+}
+
+.settingCopy {
+  grid-column: 2;
+  grid-row: 1;
+  display: grid;
+  align-content: center;
+  min-width: 0;
+}
+
+.settingLabel {
+  overflow: hidden;
+  color: var(--text-1);
   font-size: 12px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.settingSwitchInput {
+  position: absolute;
+  grid-column: 3;
+  grid-row: 1;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.settingSwitchTrack {
+  grid-column: 3;
+  grid-row: 1;
+  display: grid;
+  align-items: center;
+  justify-self: end;
+  width: 42px;
+  height: 24px;
+  padding: 2px;
+  background: linear-gradient(180deg, #2d87ff, var(--accent-strong));
+  border-radius: 999px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.38),
+    0 8px 14px rgba(31, 116, 255, 0.18);
+  transition:
+    background-color 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.settingSwitchTrack span {
+  width: 20px;
+  height: 20px;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 3px 8px rgba(31, 73, 129, 0.22);
+  transform: translateX(18px);
+  transition: transform 140ms ease;
+}
+
+.settingSwitchInput:not(:checked) + .settingSwitchTrack {
+  background: color-mix(in srgb, var(--switch-off) 76%, white 24%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.52);
+}
+
+.settingSwitchInput:not(:checked) + .settingSwitchTrack span {
+  transform: translateX(0);
+}
+
+.settingSwitchInput:focus-visible + .settingSwitchTrack {
+  outline: 2px solid color-mix(in srgb, var(--accent) 28%, transparent);
+  outline-offset: 3px;
 }
 
 .settingsSelect,
 .settingStepper {
-  width: 220px;
+  grid-column: 3;
+  grid-row: 1;
+  width: 178px;
   justify-self: end;
 }
 
@@ -1768,17 +1886,20 @@
 
 .settingsSelectButton {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 38px;
+  grid-template-columns: minmax(0, 1fr) 30px;
   align-items: center;
   gap: 0;
   width: 100%;
-  min-height: 40px;
-  padding: 0 0 0 14px;
+  min-height: 32px;
+  padding: 0 0 0 11px;
   color: var(--text-1);
   text-align: left;
-  background: color-mix(in srgb, var(--surface) 78%, var(--window-bg) 22%);
-  border: 1px solid var(--line-strong);
-  border-radius: 4px;
+  background: color-mix(in srgb, var(--window-bg) 82%, transparent);
+  border: 1px solid color-mix(in srgb, var(--line-strong) 72%, white 28%);
+  border-radius: 6px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.86);
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .settingsSelectButton:hover,
@@ -1800,7 +1921,7 @@
   align-self: stretch;
   place-items: center;
   color: var(--text-2);
-  border-left: 1px solid var(--line);
+  border-left: 1px solid color-mix(in srgb, var(--line) 86%, transparent);
   font-size: 13px;
   font-weight: 800;
   line-height: 1;
@@ -1818,10 +1939,11 @@
   right: 0;
   width: 100%;
   overflow: hidden;
-  background: var(--surface);
-  border: 1px solid var(--line-strong);
-  border-radius: 4px;
-  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.22);
+  background: color-mix(in srgb, var(--window-bg) 94%, transparent);
+  border: 1px solid color-mix(in srgb, var(--line-strong) 78%, white 22%);
+  border-radius: 8px;
+  box-shadow: 0 14px 28px rgba(45, 86, 140, 0.18);
+  backdrop-filter: blur(16px) saturate(145%);
 }
 
 .settingsSelectOption {
@@ -1854,12 +1976,13 @@
 
 .settingStepper {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 38px;
-  min-height: 40px;
+  grid-template-columns: minmax(0, 1fr) 30px;
+  min-height: 32px;
   overflow: hidden;
-  background: color-mix(in srgb, var(--surface) 78%, var(--window-bg) 22%);
-  border: 1px solid var(--line-strong);
-  border-radius: 4px;
+  background: color-mix(in srgb, var(--window-bg) 82%, transparent);
+  border: 1px solid color-mix(in srgb, var(--line-strong) 72%, white 28%);
+  border-radius: 6px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.86);
 }
 
 .settingStepper:focus-within,
@@ -1871,12 +1994,13 @@
 .stepperValueButton,
 .stepperEditInput {
   min-width: 0;
-  padding: 0 10px 0 14px;
+  padding: 0 8px 0 11px;
   color: var(--text-1);
   text-align: left;
   background: transparent;
   border: 0;
   outline: none;
+  font-size: 12px;
   font-weight: 700;
 }
 
@@ -1887,7 +2011,7 @@
 .stepperButtons {
   display: grid;
   grid-template-rows: 1fr 1fr;
-  border-left: 1px solid var(--line);
+  border-left: 1px solid color-mix(in srgb, var(--line) 86%, transparent);
 }
 
 .stepperButtons button {
