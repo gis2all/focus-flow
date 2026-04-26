@@ -1,8 +1,9 @@
-import { app, BrowserWindow, dialog, Menu, nativeImage, Tray, type MessageBoxSyncOptions } from 'electron'
+import { app, BrowserWindow, dialog, Menu, nativeImage, nativeTheme, Tray, type MessageBoxSyncOptions } from 'electron'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import log from 'electron-log'
 import { IPC_CHANNELS } from '@shared/contracts'
+import type { AppSettings } from '@shared/types'
 import { createSqliteAppDatabase } from '@main/adapters/sqlite/sqliteDatabase'
 import {
   ElectronAutoLaunchAdapter,
@@ -34,17 +35,25 @@ let mainWindow: BrowserWindow | null = null
 let tray: Tray | null = null
 let isQuitting = false
 
-const createTrayImage = () => {
-  const image = nativeImage.createFromPath(getRuntimeAssetPath('focusflow-icon.ico'))
-  if (!image.isEmpty()) {
-    return image.resize({ width: 16, height: 16, quality: 'best' })
-  }
+const loadTrayImage = (filename: string) => {
+  const image = nativeImage.createFromPath(getRuntimeAssetPath(filename))
+  if (image.isEmpty()) return null
 
-  return nativeImage.createFromPath(getRuntimeAssetPath('focusflow-tray.png')).resize({
+  return image.resize({
     width: 16,
     height: 16,
     quality: 'best'
   })
+}
+
+const createTrayImage = (shouldUseDarkColors: boolean) =>
+  loadTrayImage(shouldUseDarkColors ? 'focusflow-tray-dark.png' : 'focusflow-tray.png') ??
+  loadTrayImage('focusflow-tray.png') ??
+  loadTrayImage('focusflow-icon.ico') ??
+  nativeImage.createEmpty()
+
+const applyNativeThemePreference = (preference: AppSettings['themePreference']) => {
+  nativeTheme.themeSource = preference
 }
 
 const createMainWindow = (startHidden: boolean): BrowserWindow => {
@@ -119,6 +128,7 @@ app.whenReady().then(async () => {
   await timer.initialize()
 
   const startupSettings = await settings.get()
+  applyNativeThemePreference(startupSettings.themePreference)
   mainWindow = createMainWindow(process.argv.includes('--hidden') && startupSettings.startToTray)
 
   const requestQuit = (): void => {
@@ -141,6 +151,17 @@ app.whenReady().then(async () => {
     app.quit()
   }
 
+  const buildTrayMenu = () =>
+    Menu.buildFromTemplate([
+      { label: '显示主窗口', click: () => mainWindow?.show() },
+      { type: 'separator' },
+      { label: '开始专注', click: () => void timer.start({ phase: 'focus' }).catch((error) => log.error(error)) },
+      { label: '暂停计时', click: () => void timer.pause().catch((error) => log.error(error)) },
+      { label: '跳过当前阶段', click: () => void timer.skip().catch((error) => log.error(error)) },
+      { type: 'separator' },
+      { label: '退出', click: requestQuit }
+    ])
+
   registerIpcHandlers({
     timer,
     tasks,
@@ -149,23 +170,24 @@ app.whenReady().then(async () => {
     stats,
     theme,
     getWindow: () => mainWindow,
-    quit: requestQuit
+    quit: requestQuit,
+    onSettingsUpdated: (updated) => {
+      applyNativeThemePreference(updated.themePreference)
+      if (!tray) return
+      tray.setImage(createTrayImage(nativeTheme.shouldUseDarkColors))
+      tray.setContextMenu(buildTrayMenu())
+    }
   })
 
-  tray = new Tray(createTrayImage())
+  tray = new Tray(createTrayImage(nativeTheme.shouldUseDarkColors))
   tray.setToolTip('FocusFlow')
-  tray.setContextMenu(
-    Menu.buildFromTemplate([
-      { label: '显示 FocusFlow', click: () => mainWindow?.show() },
-      { type: 'separator' },
-      { label: '开始专注', click: () => timer.start({ phase: 'focus' }).catch((error) => log.error(error)) },
-      { label: '暂停计时', click: () => timer.pause().catch((error) => log.error(error)) },
-      { label: '跳过当前阶段', click: () => timer.skip().catch((error) => log.error(error)) },
-      { type: 'separator' },
-      { label: '退出', click: requestQuit }
-    ])
-  )
+  tray.setContextMenu(buildTrayMenu())
   tray.on('click', () => mainWindow?.show())
+  nativeTheme.on('updated', () => {
+    if (!tray) return
+    tray.setImage(createTrayImage(nativeTheme.shouldUseDarkColors))
+    tray.setContextMenu(buildTrayMenu())
+  })
 
   mainWindow.on('close', (event) => {
     if (isQuitting) return

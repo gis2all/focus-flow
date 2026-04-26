@@ -7,6 +7,7 @@ import {
   type UpdateSettingsRequest,
   type UpdateTaskRequest
 } from '@shared/contracts'
+import type { AppSettings } from '@shared/types'
 import type { SystemThemePort } from '@main/ports/desktop'
 import type { SettingsService } from '@main/services/settingsService'
 import type { StatsService } from '@main/services/statsService'
@@ -23,6 +24,7 @@ export interface IpcServices {
   theme: SystemThemePort
   getWindow(): BrowserWindow | null
   quit(): void
+  onSettingsUpdated?(settings: AppSettings): void | Promise<void>
 }
 
 export const registerIpcHandlers = (services: IpcServices): void => {
@@ -49,6 +51,7 @@ export const registerIpcHandlers = (services: IpcServices): void => {
   ipcMain.handle(IPC_CHANNELS.settings.update, async (_event, request: UpdateSettingsRequest) => {
     const updated = await services.settings.update(request.patch)
     await services.timer.applySettings(updated)
+    await services.onSettingsUpdated?.(updated)
     return updated
   })
   ipcMain.handle(IPC_CHANNELS.stats.get, () => services.stats.get())
