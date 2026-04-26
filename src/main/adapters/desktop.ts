@@ -1,6 +1,7 @@
 import { app, nativeTheme, Notification, shell } from 'electron'
 import type { TimerSnapshot } from '@shared/types'
 import type { AutoLaunchPort, ClockPort, NotificationPort, SoundPort, SystemThemePort } from '@main/ports/desktop'
+import { showTimerFinishedNotification } from './notificationHelpers'
 
 export class SystemClock implements ClockPort {
   now(): number {
@@ -13,11 +14,22 @@ export class SystemClock implements ClockPort {
 }
 
 export class ElectronNotificationAdapter implements NotificationPort {
+  constructor(
+    private readonly options: {
+      iconPath: string
+      onClick?: () => void
+    }
+  ) {}
+
   async showTimerFinished(snapshot: TimerSnapshot): Promise<void> {
     if (!Notification.isSupported()) return
-    const title = snapshot.phase === 'focus' ? 'Focus session complete' : 'Break complete'
-    const body = snapshot.phase === 'focus' ? 'Time to take a short reset.' : 'Ready for the next focus block.'
-    new Notification({ title, body }).show()
+
+    showTimerFinishedNotification({
+      snapshot,
+      iconPath: this.options.iconPath,
+      onClick: this.options.onClick,
+      createNotification: (notificationOptions) => new Notification(notificationOptions)
+    })
   }
 }
 

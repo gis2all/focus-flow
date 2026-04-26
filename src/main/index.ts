@@ -12,6 +12,7 @@ import {
   ElectronSystemThemeAdapter,
   SystemClock
 } from '@main/adapters/desktop'
+import { resolveWindowsAppUserModelId } from '@main/adapters/notificationHelpers'
 import { registerIpcHandlers } from '@main/ipc/registerIpcHandlers'
 import {
   SqliteAppEventRepository,
@@ -35,6 +36,15 @@ let mainWindow: BrowserWindow | null = null
 let tray: Tray | null = null
 let isQuitting = false
 
+const showAndFocusMainWindow = (): void => {
+  if (!mainWindow) return
+  if (mainWindow.isMinimized()) {
+    mainWindow.restore()
+  }
+  mainWindow.show()
+  mainWindow.focus()
+}
+
 const loadTrayImage = (filename: string) => {
   const image = nativeImage.createFromPath(getRuntimeAssetPath(filename))
   if (image.isEmpty()) return null
@@ -54,6 +64,10 @@ const createTrayImage = (shouldUseDarkColors: boolean) =>
 
 const applyNativeThemePreference = (preference: AppSettings['themePreference']) => {
   nativeTheme.themeSource = preference
+}
+
+if (process.platform === 'win32') {
+  app.setAppUserModelId(resolveWindowsAppUserModelId(app.isPackaged, process.execPath))
 }
 
 const createMainWindow = (startHidden: boolean): BrowserWindow => {
@@ -121,7 +135,10 @@ app.whenReady().then(async () => {
     events: eventRepository,
     tasks: taskRepository,
     clock,
-    notifier: new ElectronNotificationAdapter(),
+    notifier: new ElectronNotificationAdapter({
+      iconPath: getRuntimeAssetPath('focusflow-icon.png'),
+      onClick: showAndFocusMainWindow
+    }),
     sound: new ElectronSoundAdapter()
   })
 
@@ -153,7 +170,7 @@ app.whenReady().then(async () => {
 
   const buildTrayMenu = () =>
     Menu.buildFromTemplate([
-      { label: '显示主窗口', click: () => mainWindow?.show() },
+      { label: '显示主窗口', click: () => showAndFocusMainWindow() },
       { type: 'separator' },
       { label: '开始专注', click: () => void timer.start({ phase: 'focus' }).catch((error) => log.error(error)) },
       { label: '暂停计时', click: () => void timer.pause().catch((error) => log.error(error)) },
@@ -182,7 +199,7 @@ app.whenReady().then(async () => {
   tray = new Tray(createTrayImage(nativeTheme.shouldUseDarkColors))
   tray.setToolTip('FocusFlow')
   tray.setContextMenu(buildTrayMenu())
-  tray.on('click', () => mainWindow?.show())
+  tray.on('click', () => showAndFocusMainWindow())
   nativeTheme.on('updated', () => {
     if (!tray) return
     tray.setImage(createTrayImage(nativeTheme.shouldUseDarkColors))
