@@ -68,6 +68,12 @@ describe('TasksView', () => {
     )
 
     expect(html).not.toContain('下一轮任务')
+    expect(html).toContain('aria-label="任务筛选"')
+    expect(html).toContain('aria-label="任务列表"')
+    expect(html).toContain('role="list"')
+    expect(html).toContain('data-task-surface="floating-card"')
+    expect(html).toContain('data-current-task="true"')
+    expect(html).toContain('aria-pressed="true"')
     expect(html).toContain('>完成<')
     expect(html).toContain('>任务<')
     expect(html).toContain('>统计<')
@@ -97,6 +103,8 @@ describe('TasksView', () => {
       />
     )
 
+    expect(html).toContain('aria-label="新增任务"')
+    expect(html).toContain('data-current-task="false"')
     expect(html).toContain('>设为当前<')
     expect(html).not.toContain('点击“设为当前”会启动专注并绑定到该任务。')
     expect(html).not.toContain('拖拽进行中任务可调整顺序。')

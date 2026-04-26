@@ -135,182 +135,202 @@ export const TasksView = ({
 
   return (
     <div className={styles.listView}>
-      <div className={styles.pageTopper}>
-        <div className={styles.pageTopperLeft}>
-          <div className={styles.taskTabs}>
-            {(['all', 'active', 'completed'] as TaskViewTab[]).map((tab) => (
-              <button
-                className={`${styles.taskTabButton} ${activeTab === tab ? styles.taskTabActive : ''}`}
-                key={tab}
-                onClick={() => {
-                  stopEditing()
-                  setDragSourceTaskId(null)
-                  setDragTargetTaskId(null)
-                  setActiveTab(tab)
-                }}
-                type="button"
-              >
-                {tabLabel[tab]} {taskBoard.counts[tab === 'all' ? 'all' : tab]}
-              </button>
-            ))}
-          </div>
-        </div>
-        <form
-          className={styles.inlineTaskForm}
-          onSubmit={(event) => {
-            event.preventDefault()
-            void createTask()
-          }}
-        >
-          <input onChange={(event) => setNewTaskTitle(event.target.value)} placeholder="新增任务" value={newTaskTitle} />
-          <button type="submit">新增任务</button>
-        </form>
-      </div>
-
-      <div className={styles.taskListHeader}>
-        <span>完成</span>
-        <span>任务</span>
-        <span>统计</span>
-        <span>绑定</span>
-        <span>操作</span>
-      </div>
-
-      <div className={styles.denseList}>
-        {rows.length === 0 ? (
-          <div className={styles.taskEmptyState}>{emptyStateByTab[activeTab]}</div>
-        ) : (
-          rows.map((row) => {
-            const isEditing = editingTaskId === row.id
-            const isDragEnabled = canDragActiveRows && !row.isCompleted && !isEditing
-            const isBoundToCurrentTimer = canBindCurrentTask && !row.isCompleted && row.id === currentTimerTaskId
-
-            return (
-              <div
-                className={`${styles.taskLine} ${row.isCompleted ? styles.taskLineDone : ''} ${
-                  isDragEnabled ? styles.taskDraggable : ''
-                } ${dragTargetTaskId === row.id ? styles.taskDropTarget : ''}`}
-                draggable={isDragEnabled}
-                key={row.id}
-                onDragEnd={() => {
-                  setDragSourceTaskId(null)
-                  setDragTargetTaskId(null)
-                }}
-                onDragOver={(event) => {
-                  if (!canDragActiveRows || !dragSourceTaskId || row.isCompleted) return
-                  event.preventDefault()
-                  setDragTargetTaskId(row.id)
-                }}
-                onDragStart={(event) => handleDragStart(event, row.id)}
-                onDrop={(event) => {
-                  if (!canDragActiveRows || row.isCompleted) return
-                  event.preventDefault()
-                  handleDrop(row.id)
-                }}
-              >
+      <div className={styles.taskControls}>
+        <div className={styles.pageTopper}>
+          <div className={styles.pageTopperLeft}>
+            <div aria-label="任务筛选" className={styles.taskTabs} role="tablist">
+              {(['all', 'active', 'completed'] as TaskViewTab[]).map((tab) => (
                 <button
-                  aria-label={row.isCompleted ? `恢复任务 ${row.title}` : `完成任务 ${row.title}`}
-                  className={`${styles.taskStateButton} ${row.isCompleted ? styles.taskRestoreButton : styles.checkButton}`}
-                  onClick={(event) => {
-                    event.stopPropagation()
-                    if (row.isCompleted) {
-                      void restoreTask(row.id)
-                      return
-                    }
-                    void completeTask(row.id)
+                  aria-selected={activeTab === tab}
+                  className={`${styles.taskTabButton} ${activeTab === tab ? styles.taskTabActive : ''}`}
+                  key={tab}
+                  onClick={() => {
+                    stopEditing()
+                    setDragSourceTaskId(null)
+                    setDragTargetTaskId(null)
+                    setActiveTab(tab)
                   }}
+                  role="tab"
                   type="button"
                 >
-                  {row.isCompleted ? '↩' : ''}
+                  <span>{tabLabel[tab]}</span>
+                  <b>{taskBoard.counts[tab === 'all' ? 'all' : tab]}</b>
                 </button>
+              ))}
+            </div>
+          </div>
+          <form
+            aria-label="新增任务"
+            className={styles.inlineTaskForm}
+            onSubmit={(event) => {
+              event.preventDefault()
+              void createTask()
+            }}
+          >
+            <input
+              aria-label="任务标题"
+              onChange={(event) => setNewTaskTitle(event.target.value)}
+              placeholder="新增任务"
+              value={newTaskTitle}
+            />
+            <button type="submit">新增任务</button>
+          </form>
+        </div>
+      </div>
 
-                <div className={styles.taskMain}>
-                  {isEditing ? (
-                    <input
-                      autoFocus
-                      className={styles.taskTitleInput}
-                      onBlur={() => saveEditing(row.id)}
-                      onChange={(event) => setDraftTitle(event.target.value)}
-                      onClick={(event) => event.stopPropagation()}
-                      onKeyDown={(event) => handleEditKeyDown(event, row.id)}
-                      value={draftTitle}
-                    />
-                  ) : (
-                    <button
-                      className={styles.taskNameButton}
-                      onClick={(event) => {
-                        event.stopPropagation()
-                      }}
-                      onDoubleClick={(event) => {
-                        event.stopPropagation()
-                        startEditing(row)
-                      }}
-                      type="button"
-                    >
-                      {row.title}
-                    </button>
-                  )}
-                  <span
-                    className={`${styles.taskStatusBadge} ${
-                      row.isCompleted ? styles.taskStatusBadgeDone : styles.taskStatusBadgeActive
-                    }`}
-                  >
-                    {row.statusLabel}
-                  </span>
-                </div>
+      <div className={styles.taskListShell}>
+        <div className={styles.taskListHeader}>
+          <span>完成</span>
+          <span>任务</span>
+          <span>统计</span>
+          <span>绑定</span>
+          <span>操作</span>
+        </div>
 
-                <div className={styles.taskStats}>
-                  <span className={styles.tomatoBadge}>{row.completedPomodoros} 个番茄钟</span>
-                  <span className={styles.taskFocusBadge}>{row.focusMinutes}m</span>
-                </div>
+        <div aria-label="任务列表" className={styles.denseList} role="list">
+          {rows.length === 0 ? (
+            <div className={styles.taskEmptyState}>{emptyStateByTab[activeTab]}</div>
+          ) : (
+            rows.map((row) => {
+              const isEditing = editingTaskId === row.id
+              const isDragEnabled = canDragActiveRows && !row.isCompleted && !isEditing
+              const isBoundToCurrentTimer = canBindCurrentTask && !row.isCompleted && row.id === currentTimerTaskId
 
-                <div className={styles.taskBindCell}>
-                  {!row.isCompleted ? (
-                    <button
-                      className={`${styles.taskBindButton} ${isBoundToCurrentTimer ? styles.taskBindButtonActive : ''}`}
-                      onClick={(event) => {
-                        event.stopPropagation()
-                        if (isBoundToCurrentTimer) {
-                          setConfirmDialog({ kind: 'unbind', taskTitle: row.title })
-                          return
-                        }
-                        if (!canBindCurrentTask) {
-                          void startFocusWithTask(row.id)
-                          return
-                        }
-                        void bindCurrentTask(row.id)
-                      }}
-                      title={
-                        canBindCurrentTask
-                          ? isBoundToCurrentTimer
-                            ? `点击解绑任务「${row.title}」`
-                            : `绑定当前专注到任务「${row.title}」`
-                          : `启动专注并绑定到任务「${row.title}」`
-                      }
-                      type="button"
-                    >
-                      {isBoundToCurrentTimer ? '已绑定' : canBindCurrentTask ? '绑定' : '设为当前'}
-                    </button>
-                  ) : null}
-                </div>
-
-                <div className={styles.taskDangerCell}>
+              return (
+                <div
+                  className={`${styles.taskLine} ${row.isCompleted ? styles.taskLineDone : ''} ${
+                    isDragEnabled ? styles.taskDraggable : ''
+                  } ${dragTargetTaskId === row.id ? styles.taskDropTarget : ''} ${
+                    isBoundToCurrentTimer ? styles.taskLineCurrent : ''
+                  }`}
+                  data-current-task={isBoundToCurrentTimer ? 'true' : 'false'}
+                  data-task-surface="floating-card"
+                  draggable={isDragEnabled}
+                  key={row.id}
+                  onDragEnd={() => {
+                    setDragSourceTaskId(null)
+                    setDragTargetTaskId(null)
+                  }}
+                  onDragOver={(event) => {
+                    if (!canDragActiveRows || !dragSourceTaskId || row.isCompleted) return
+                    event.preventDefault()
+                    setDragTargetTaskId(row.id)
+                  }}
+                  onDragStart={(event) => handleDragStart(event, row.id)}
+                  onDrop={(event) => {
+                    if (!canDragActiveRows || row.isCompleted) return
+                    event.preventDefault()
+                    handleDrop(row.id)
+                  }}
+                  role="listitem"
+                >
                   <button
-                    aria-label={`删除任务 ${row.title}`}
-                    className={styles.taskDangerButton}
+                    aria-label={row.isCompleted ? `恢复任务 ${row.title}` : `完成任务 ${row.title}`}
+                    className={`${styles.taskStateButton} ${row.isCompleted ? styles.taskRestoreButton : styles.checkButton}`}
                     onClick={(event) => {
                       event.stopPropagation()
-                      setConfirmDialog({ kind: 'delete', taskId: row.id, taskTitle: row.title })
+                      if (row.isCompleted) {
+                        void restoreTask(row.id)
+                        return
+                      }
+                      void completeTask(row.id)
                     }}
-                    title={`删除任务「${row.title}」`}
                     type="button"
                   >
-                    删除
+                    {row.isCompleted ? '↩' : ''}
                   </button>
+
+                  <div className={styles.taskMain}>
+                    {isEditing ? (
+                      <input
+                        autoFocus
+                        className={styles.taskTitleInput}
+                        onBlur={() => saveEditing(row.id)}
+                        onChange={(event) => setDraftTitle(event.target.value)}
+                        onClick={(event) => event.stopPropagation()}
+                        onKeyDown={(event) => handleEditKeyDown(event, row.id)}
+                        value={draftTitle}
+                      />
+                    ) : (
+                      <button
+                        className={styles.taskNameButton}
+                        onClick={(event) => {
+                          event.stopPropagation()
+                        }}
+                        onDoubleClick={(event) => {
+                          event.stopPropagation()
+                          startEditing(row)
+                        }}
+                        type="button"
+                      >
+                        {row.title}
+                      </button>
+                    )}
+                    <span
+                      className={`${styles.taskStatusBadge} ${
+                        row.isCompleted ? styles.taskStatusBadgeDone : styles.taskStatusBadgeActive
+                      }`}
+                    >
+                      {row.statusLabel}
+                    </span>
+                  </div>
+
+                  <div className={styles.taskStats}>
+                    <span className={styles.taskStatPill}>{row.completedPomodoros} 个番茄钟</span>
+                    <span className={`${styles.taskStatPill} ${styles.taskStatPillMuted}`}>{row.focusMinutes}m</span>
+                  </div>
+
+                  <div className={styles.taskBindCell}>
+                    {!row.isCompleted ? (
+                      <button
+                        aria-label={isBoundToCurrentTimer ? `当前已绑定任务 ${row.title}` : `绑定任务 ${row.title}`}
+                        aria-pressed={isBoundToCurrentTimer}
+                        className={`${styles.taskBindButton} ${isBoundToCurrentTimer ? styles.taskBindButtonActive : ''}`}
+                        onClick={(event) => {
+                          event.stopPropagation()
+                          if (isBoundToCurrentTimer) {
+                            setConfirmDialog({ kind: 'unbind', taskTitle: row.title })
+                            return
+                          }
+                          if (!canBindCurrentTask) {
+                            void startFocusWithTask(row.id)
+                            return
+                          }
+                          void bindCurrentTask(row.id)
+                        }}
+                        title={
+                          canBindCurrentTask
+                            ? isBoundToCurrentTimer
+                              ? `点击解绑任务「${row.title}」`
+                              : `绑定当前专注到任务「${row.title}」`
+                            : `启动专注并绑定到任务「${row.title}」`
+                        }
+                        type="button"
+                      >
+                        {isBoundToCurrentTimer ? '已绑定' : canBindCurrentTask ? '绑定' : '设为当前'}
+                      </button>
+                    ) : null}
+                  </div>
+
+                  <div className={styles.taskDangerCell}>
+                    <button
+                      aria-label={`删除任务 ${row.title}`}
+                      className={styles.taskDangerButton}
+                      onClick={(event) => {
+                        event.stopPropagation()
+                        setConfirmDialog({ kind: 'delete', taskId: row.id, taskTitle: row.title })
+                      }}
+                      title={`删除任务「${row.title}」`}
+                      type="button"
+                    >
+                      删除
+                    </button>
+                  </div>
                 </div>
-              </div>
-            )
-          })
-        )}
+              )
+            })
+          )}
+        </div>
       </div>
 
       {confirmDialog ? (
