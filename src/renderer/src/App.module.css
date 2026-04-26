@@ -404,21 +404,21 @@
 .timerDigitsSeparator::before,
 .timerDigitsSeparator::after {
   position: absolute;
+  top: 50%;
   left: 50%;
   width: clamp(12px, 1.5vw, 16px);
   height: clamp(12px, 1.5vw, 16px);
   content: "";
   background: currentColor;
   border-radius: 999px;
-  transform: translateX(-50%);
 }
 
 .timerDigitsSeparator::before {
-  top: 27%;
+  transform: translate(-50%, calc(-50% - 14px));
 }
 
 .timerDigitsSeparator::after {
-  bottom: 27%;
+  transform: translate(-50%, calc(-50% + 14px));
 }
 
 .timerQuote {
@@ -488,14 +488,29 @@
   width: 140px;
   height: 140px;
   color: var(--text-2);
+  overflow: hidden;
   border-radius: 50%;
   background: transparent;
-  box-shadow: none;
+  border: 1px solid rgba(255, 255, 255, 0.38);
+  backdrop-filter: blur(18px) saturate(145%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.54),
+    inset 0 -12px 18px rgba(255, 255, 255, 0.08),
+    0 12px 24px rgba(95, 127, 182, 0.12);
   transform: translateY(2px);
 }
 
 .focusDial::after {
-  content: none;
+  position: absolute;
+  top: 10px;
+  right: 20px;
+  left: 20px;
+  height: 28px;
+  content: "";
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.52), rgba(255, 255, 255, 0));
+  border-radius: 999px;
+  filter: blur(1.5px);
+  pointer-events: none;
 }
 
 .focusDialSvg {
@@ -508,20 +523,20 @@
 .focusDialTrack,
 .focusDialProgress {
   fill: none;
-  stroke-width: 10;
+  stroke-width: 5;
 }
 
 .focusDialTrack {
-  stroke: rgba(229, 235, 244, 0.92);
+  stroke: rgba(236, 242, 251, 0.78);
 }
 
 .focusDialProgress {
-  stroke: #4b91ff;
+  stroke: rgba(65, 134, 255, 0.96);
   stroke-linecap: round;
   stroke-dasharray: var(--progress-value) 100;
   filter:
     drop-shadow(0 1px 0 rgba(255, 255, 255, 0.45))
-    drop-shadow(0 4px 8px rgba(70, 136, 255, 0.22));
+    drop-shadow(0 4px 10px rgba(70, 136, 255, 0.24));
 }
 
 .focusDialContent {
