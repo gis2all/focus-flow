@@ -494,44 +494,14 @@
   grid-template-rows: 30px minmax(0, 1fr) 68px;
   gap: 10px;
   padding: 18px 24px 18px;
-  background:
-    radial-gradient(circle at 52% 24%, color-mix(in srgb, var(--hero-glow) 88%, transparent), transparent 34%),
-    linear-gradient(180deg, var(--hero-top) 0%, var(--hero-top) 58%, var(--hero-bottom) 100%);
+  background: var(--window-bg);
   border: 0;
   border-radius: 22px 0 0 0;
 }
 
 .timerView::before,
 .timerView::after {
-  position: absolute;
-  right: -8%;
-  left: -7%;
-  bottom: 4px;
-  z-index: 0;
-  height: 188px;
-  pointer-events: none;
-  content: "";
-  background:
-    radial-gradient(ellipse at 12% 77%, var(--mountain-a) 0 31%, transparent 32%),
-    radial-gradient(ellipse at 42% 82%, var(--mountain-b) 0 30%, transparent 31%),
-    radial-gradient(ellipse at 73% 76%, var(--mountain-c) 0 34%, transparent 35%),
-    linear-gradient(166deg, transparent 0 29%, var(--mountain-a) 29% 43%, transparent 43%),
-    linear-gradient(176deg, transparent 0 20%, var(--mountain-c) 20% 38%, transparent 38%),
-    linear-gradient(152deg, transparent 0 57%, var(--mountain-b) 57% 75%, transparent 75%);
-}
-
-.timerView::after {
-  right: 22px;
-  left: auto;
-  top: 118px;
-  bottom: auto;
-  width: 118px;
-  height: 118px;
-  opacity: 0.28;
-  transform: none;
-  background-image: radial-gradient(circle, color-mix(in srgb, var(--accent) 20%, transparent) 1px, transparent 1.6px);
-  background-size: 10px 10px;
-  mask-image: radial-gradient(circle, #000 0 62%, transparent 74%);
+  content: none;
 }
 
 .timerHeader,
@@ -1025,17 +995,12 @@
   grid-template-rows: auto minmax(0, 1fr);
   gap: 14px;
   padding: 14px 16px 12px;
-  background:
-    radial-gradient(circle at 50% 6%, color-mix(in srgb, var(--hero-glow) 92%, transparent), transparent 34%),
-    linear-gradient(180deg, var(--hero-top) 0%, color-mix(in srgb, var(--hero-bottom) 88%, white 12%) 100%);
+  background: var(--window-bg);
   border-radius: 22px 0 0 0;
 }
 
 :root[data-theme="dark"] .listView {
-  background:
-    radial-gradient(circle at 50% 8%, rgba(42, 125, 255, 0.1), transparent 34%),
-    radial-gradient(circle at 92% 96%, rgba(4, 12, 22, 0.46), transparent 38%),
-    linear-gradient(180deg, rgba(8, 24, 40, 0.98), rgba(5, 14, 25, 0.99));
+  background: var(--window-bg);
 }
 
 .listView::before,
@@ -1047,29 +1012,11 @@
 }
 
 .listView::before {
-  right: -10%;
-  left: -7%;
-  bottom: 0;
-  height: 180px;
-  background:
-    radial-gradient(ellipse at 12% 77%, var(--mountain-a) 0 31%, transparent 32%),
-    radial-gradient(ellipse at 42% 82%, var(--mountain-b) 0 30%, transparent 31%),
-    radial-gradient(ellipse at 73% 76%, var(--mountain-c) 0 34%, transparent 35%),
-    linear-gradient(166deg, transparent 0 29%, var(--mountain-a) 29% 43%, transparent 43%),
-    linear-gradient(176deg, transparent 0 20%, var(--mountain-c) 20% 38%, transparent 38%),
-    linear-gradient(152deg, transparent 0 57%, var(--mountain-b) 57% 75%, transparent 75%);
-  opacity: 0.78;
+  content: none;
 }
 
 .listView::after {
-  top: 102px;
-  right: 28px;
-  width: 104px;
-  height: 104px;
-  opacity: 0.24;
-  background-image: radial-gradient(circle, color-mix(in srgb, var(--accent) 18%, transparent) 1px, transparent 1.6px);
-  background-size: 10px 10px;
-  mask-image: radial-gradient(circle, #000 0 62%, transparent 74%);
+  content: none;
 }
 
 .taskControls,
@@ -1764,30 +1711,15 @@
   isolation: isolate;
   grid-template-rows: auto minmax(0, 1fr);
   gap: 10px;
-  background:
-    radial-gradient(circle at 46% 0%, color-mix(in srgb, var(--hero-glow) 86%, transparent), transparent 34%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0), rgba(237, 245, 255, 0.18));
+  background: var(--window-bg);
 }
 
 :root[data-theme="dark"] .statsView {
-  background:
-    radial-gradient(circle at 46% 8%, rgba(42, 125, 255, 0.1), transparent 34%),
-    radial-gradient(circle at 94% 96%, rgba(4, 12, 22, 0.42), transparent 40%),
-    linear-gradient(180deg, rgba(8, 24, 40, 0.98), rgba(5, 14, 25, 0.99));
+  background: var(--window-bg);
 }
 
 .statsView::after {
-  position: absolute;
-  top: 118px;
-  right: 18px;
-  width: 100px;
-  height: 100px;
-  opacity: 0.18;
-  content: "";
-  background-image: radial-gradient(circle, color-mix(in srgb, var(--accent) 20%, transparent) 1px, transparent 1.6px);
-  background-size: 10px 10px;
-  mask-image: radial-gradient(circle, #000 0 62%, transparent 74%);
-  pointer-events: none;
+  content: none;
 }
 
 .statsLayout {
@@ -2205,16 +2137,11 @@
   grid-template-columns: minmax(0, 1fr);
   min-height: 0;
   padding: 14px 16px 12px;
-  background:
-    radial-gradient(circle at 48% 0%, rgba(72, 144, 255, 0.08), transparent 34%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0), rgba(237, 245, 255, 0.16));
+  background: var(--window-bg);
 }
 
 :root[data-theme="dark"] .settingsView {
-  background:
-    radial-gradient(circle at 48% 8%, rgba(42, 125, 255, 0.1), transparent 36%),
-    radial-gradient(circle at 94% 96%, rgba(4, 12, 22, 0.44), transparent 40%),
-    linear-gradient(180deg, rgba(8, 24, 40, 0.98), rgba(5, 14, 25, 0.99));
+  background: var(--window-bg);
 }
 
 .settingsBody {
