@@ -1,10 +1,18 @@
-import type { FocusStats, Task, TimerSession } from '@shared/types'
+import type { CalendarDayStats, FocusStats, MonthStats, MonthStatsSummary, Task, TimerSession } from '@shared/types'
 
 export interface AggregateStatsInput {
   now: Date
   sessions: TimerSession[]
   tasks?: Task[]
   completedTasks?: number
+}
+
+export interface AggregateMonthStatsInput {
+  now: Date
+  year: number
+  month: number
+  sessions: TimerSession[]
+  tasks?: Task[]
 }
 
 const localDateKey = (date: Date): string => {
@@ -17,6 +25,32 @@ const localDateKey = (date: Date): string => {
 const startOfLocalDay = (date: Date): Date => new Date(date.getFullYear(), date.getMonth(), date.getDate())
 
 const minutesFromMs = (value: number | null): number => Math.round((value ?? 0) / 60_000)
+
+const createEmptyMonthSummary = (): MonthStatsSummary => ({
+  focusMinutes: 0,
+  completedPomodoros: 0,
+  completedTasks: 0,
+  shortBreakMinutes: 0,
+  longBreakMinutes: 0
+})
+
+const createMonthDayBuckets = (year: number, month: number, now: Date): Map<string, CalendarDayStats> => {
+  const dayCount = new Date(year, month, 0).getDate()
+  const todayKey = localDateKey(now)
+  const buckets = new Map<string, CalendarDayStats>()
+
+  for (let day = 1; day <= dayCount; day += 1) {
+    const date = new Date(year, month - 1, day)
+    const dateKey = localDateKey(date)
+    buckets.set(dateKey, {
+      date: dateKey,
+      ...createEmptyMonthSummary(),
+      isFuture: dateKey > todayKey
+    })
+  }
+
+  return buckets
+}
 
 export const aggregateStats = (input: AggregateStatsInput): FocusStats => {
   const completedFocusSessions = input.sessions.filter((session) => session.phase === 'focus' && session.completed)
@@ -107,5 +141,59 @@ export const aggregateStats = (input: AggregateStatsInput): FocusStats => {
       })
       .sort((left, right) => right.minutes - left.minutes),
     unboundFocusMinutes: todayUnboundFocusMinutes
+  }
+}
+
+export const aggregateMonthStats = (input: AggregateMonthStatsInput): MonthStats => {
+  const dayBuckets = createMonthDayBuckets(input.year, input.month, input.now)
+  const summary = createEmptyMonthSummary()
+  const tasks = input.tasks ?? []
+  const todayKey = localDateKey(input.now)
+
+  for (const task of tasks) {
+    if (!task.completedAt) continue
+    const completedKey = localDateKey(new Date(task.completedAt))
+    const day = dayBuckets.get(completedKey)
+    if (!day || day.isFuture) continue
+    day.completedTasks += 1
+    summary.completedTasks += 1
+  }
+
+  for (const session of input.sessions) {
+    if (!session.completed) continue
+    const sessionKey = localDateKey(new Date(session.startedAt))
+    const day = dayBuckets.get(sessionKey)
+    if (!day || day.isFuture || sessionKey > todayKey) continue
+
+    const minutes = minutesFromMs(session.actualDurationMs)
+
+    if (session.phase === 'focus') {
+      day.focusMinutes += minutes
+      day.completedPomodoros += 1
+      summary.focusMinutes += minutes
+      summary.completedPomodoros += 1
+      continue
+    }
+
+    if (session.phase === 'shortBreak') {
+      day.shortBreakMinutes += minutes
+      summary.shortBreakMinutes += minutes
+      continue
+    }
+
+    if (session.phase === 'longBreak') {
+      day.longBreakMinutes += minutes
+      summary.longBreakMinutes += minutes
+    }
+  }
+
+  const days = Array.from(dayBuckets.values())
+
+  return {
+    year: input.year,
+    month: input.month,
+    summary,
+    days,
+    maxFocusMinutes: Math.max(...days.filter((day) => !day.isFuture).map((day) => day.focusMinutes), 0)
   }
 }

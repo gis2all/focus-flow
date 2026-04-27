@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, test } from 'vitest'
-import type { FocusStats } from '@shared/types'
+import type { CalendarDayStats, FocusStats, MonthStats } from '@shared/types'
 import { StatsView, getHourBarHeight, getRankBarWidth } from './StatsView'
 
 type StatsWithUnboundFocus = FocusStats & { unboundFocusMinutes: number }
@@ -20,9 +20,58 @@ const createStats = (input: Partial<StatsWithUnboundFocus> = {}): StatsWithUnbou
   ...input
 })
 
+const createCalendarDays = (year: number, month: number): CalendarDayStats[] => {
+  const dayCount = new Date(year, month, 0).getDate()
+  return Array.from({ length: dayCount }, (_, index) => {
+    const date = `${year}-${String(month).padStart(2, '0')}-${String(index + 1).padStart(2, '0')}`
+    return {
+      date,
+      focusMinutes: 0,
+      completedPomodoros: 0,
+      completedTasks: 0,
+      shortBreakMinutes: 0,
+      longBreakMinutes: 0,
+      isFuture: false
+    }
+  })
+}
+
+const createMonthStats = (input: Partial<MonthStats> = {}): MonthStats => ({
+  year: 2026,
+  month: 4,
+  summary: {
+    focusMinutes: 0,
+    completedPomodoros: 0,
+    completedTasks: 0,
+    shortBreakMinutes: 0,
+    longBreakMinutes: 0
+  },
+  days: createCalendarDays(2026, 4),
+  maxFocusMinutes: 0,
+  ...input
+})
+
+const noop = (): void => undefined
+
+const renderStatsView = (
+  stats: FocusStats = createStats(),
+  input: Partial<Parameters<typeof StatsView>[0]> = {}
+): string =>
+  renderToStaticMarkup(
+    <StatsView
+      activeStatsTab="today"
+      canGoToNextMonth={false}
+      monthStats={createMonthStats()}
+      onCalendarMonthChange={noop}
+      onStatsTabChange={noop}
+      stats={stats}
+      {...input}
+    />
+  )
+
 describe('StatsView', () => {
   test('renders top summary cards and actual break totals', () => {
-    const html = renderToStaticMarkup(<StatsView stats={createStats()} />)
+    const html = renderStatsView(createStats())
 
     expect(html).toContain('aria-label="统计时间范围"')
     expect(html).toContain('data-summary-surface="white-card"')
@@ -43,9 +92,8 @@ describe('StatsView', () => {
   })
 
   test('renders all ranked task duration rows, sorts unbound focus in order, and shows y-axis ticks', () => {
-    const html = renderToStaticMarkup(
-      <StatsView
-        stats={createStats({
+    const html = renderStatsView(
+      createStats({
           hourlyFocusMinutes: [0, 25, 50, ...Array.from({ length: 21 }, () => 0)],
           taskFocusMinutes: [
             {
@@ -86,8 +134,7 @@ describe('StatsView', () => {
             }
           ],
           unboundFocusMinutes: 30
-        })}
-      />
+        })
     )
 
     expect(html).toContain('专注时长')
@@ -125,7 +172,7 @@ describe('StatsView', () => {
   })
 
   test('renders a clear focus-duration empty state when tasks and unbound focus are both empty', () => {
-    const html = renderToStaticMarkup(<StatsView stats={createStats({ taskFocusMinutes: [], unboundFocusMinutes: 0 })} />)
+    const html = renderStatsView(createStats({ taskFocusMinutes: [], unboundFocusMinutes: 0 }))
 
     expect(html).toContain('今天还没有专注时长记录')
   })
@@ -138,5 +185,73 @@ describe('StatsView', () => {
   test('scales task ranking bars by the largest task total', () => {
     expect(getRankBarWidth(0, 50)).toBe('0%')
     expect(getRankBarWidth(25, 50)).toBe('50%')
+  })
+
+  test('renders the calendar tab with monthly summary cards, monday-first grid, heat levels, and disabled next month', () => {
+    const days = createCalendarDays(2026, 4)
+    days[0] = { ...days[0], focusMinutes: 20, completedPomodoros: 1, completedTasks: 1, shortBreakMinutes: 5 }
+    days[9] = { ...days[9], focusMinutes: 80, completedPomodoros: 3, completedTasks: 2, longBreakMinutes: 15 }
+    days[25] = { ...days[25], isFuture: true }
+    const html = renderStatsView(createStats(), {
+      activeStatsTab: 'calendar',
+      canGoToNextMonth: false,
+      monthStats: createMonthStats({
+        summary: {
+          focusMinutes: 100,
+          completedPomodoros: 4,
+          completedTasks: 3,
+          shortBreakMinutes: 5,
+          longBreakMinutes: 15
+        },
+        days,
+        maxFocusMinutes: 80
+      })
+    })
+
+    expect(html).toContain('aria-selected="true"')
+    expect(html).toContain('日历')
+    expect(html).toContain('2026年 4月')
+    expect(html).not.toContain('专注日历')
+    expect(html).toContain('本月累计')
+    expect(html).toContain('1h 40m')
+    expect(html).toContain('data-calendar-weekday="0">一')
+    expect(html).toContain('data-calendar-weekday="6">日')
+    expect(html.match(/data-calendar-placeholder="true"/g)?.length).toBe(5)
+    expect(html).toContain('data-calendar-date="2026-04-01"')
+    expect(html).toContain('data-heat-level="1"')
+    expect(html).toContain('data-calendar-date="2026-04-10"')
+    expect(html).toContain('data-heat-level="4"')
+    expect(html).toContain('data-calendar-date="2026-04-26"')
+    expect(html).toContain('data-calendar-future="true"')
+    expect(html).toContain('disabled=""')
+    expect(html).toContain('专注 1h 20m')
+    expect(html).toContain('完成番茄 3')
+    expect(html).toContain('完成任务 2')
+    expect(html).toContain('休息 0h 15m')
+  })
+
+  test('marks today in the calendar when the selected month contains the local current day', () => {
+    const now = new Date()
+    const year = now.getFullYear()
+    const month = now.getMonth() + 1
+    const todayIndex = now.getDate() - 1
+    const days = createCalendarDays(year, month)
+    days[todayIndex] = { ...days[todayIndex], focusMinutes: 25, completedPomodoros: 1 }
+
+    const html = renderStatsView(createStats(), {
+      activeStatsTab: 'calendar',
+      canGoToNextMonth: false,
+      monthStats: createMonthStats({
+        year,
+        month,
+        days,
+        maxFocusMinutes: 25
+      })
+    })
+
+    expect(html).toContain('data-calendar-today="true"')
+    expect(html).toContain('data-calendar-today-dot="true"')
+    expect(html).toContain('data-calendar-today-label="true"')
+    expect(html).toContain('今天')
   })
 })

@@ -1,6 +1,7 @@
 import type {
   AppSettings,
   FocusStats,
+  MonthStats,
   Task,
   TaskBoardSnapshot,
   ThemePreference,
@@ -34,7 +35,8 @@ export const IPC_CHANNELS = {
     update: 'settings:update'
   },
   stats: {
-    get: 'stats:get'
+    get: 'stats:get',
+    getMonth: 'stats:get-month'
   },
   system: {
     getTheme: 'system:get-theme',
@@ -71,6 +73,11 @@ export interface ReorderTasksRequest {
 
 export interface UpdateSettingsRequest {
   patch: Partial<AppSettings>
+}
+
+export interface MonthStatsRequest {
+  year: number
+  month: number
 }
 
 export interface ResizeWindowRequest {
@@ -110,6 +117,7 @@ export interface FocusFlowApi {
   }
   stats: {
     get(): Promise<FocusStats>
+    getMonth(request: MonthStatsRequest): Promise<MonthStats>
   }
   system: {
     getTheme(): Promise<Exclude<ThemePreference, 'system'>>

@@ -95,6 +95,27 @@ export interface TodayStats {
   completedTasks: number
 }
 
+export interface MonthStatsSummary {
+  focusMinutes: number
+  completedPomodoros: number
+  completedTasks: number
+  shortBreakMinutes: number
+  longBreakMinutes: number
+}
+
+export interface CalendarDayStats extends MonthStatsSummary {
+  date: string
+  isFuture: boolean
+}
+
+export interface MonthStats {
+  year: number
+  month: number
+  summary: MonthStatsSummary
+  days: CalendarDayStats[]
+  maxFocusMinutes: number
+}
+
 export interface DailyTrendPoint {
   date: string
   focusMinutes: number

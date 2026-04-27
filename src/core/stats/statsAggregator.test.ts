@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
-import { aggregateStats } from './statsAggregator'
-import type { FocusStats, Task, TimerSession } from '@shared/types'
+import { aggregateMonthStats, aggregateStats } from './statsAggregator'
+import type { FocusStats, MonthStats, Task, TimerSession } from '@shared/types'
 
 const task = (input: Partial<Task> & Pick<Task, 'id' | 'title'>): Task => ({
   sortOrder: 1,
@@ -117,5 +117,105 @@ describe('stats aggregator', () => {
     expect(stats.taskFocusMinutes).toEqual([
       { taskId: 'done', title: 'Done', minutes: 10, status: 'completed' }
     ])
+  })
+
+  test('aggregates selected month by local day and keeps task completion scoped to existing tasks', () => {
+    const stats = aggregateMonthStats({
+      now: new Date('2026-04-25T12:00:00+08:00'),
+      year: 2026,
+      month: 4,
+      tasks: [
+        task({ id: 'local-april-task', title: 'Local April Task', completedAt: '2026-03-31T16:10:00.000Z' }),
+        task({ id: 'april-task', title: 'April Task', completedAt: '2026-04-10T09:00:00.000+08:00' }),
+        task({ id: 'may-task', title: 'May Task', completedAt: '2026-05-01T09:00:00.000+08:00' })
+      ],
+      sessions: [
+        session({
+          id: 'local-april-unbound',
+          phase: 'focus',
+          startedAt: '2026-03-31T16:30:00.000Z',
+          actualDurationMs: 25 * 60_000
+        }),
+        session({
+          id: 'april-bound',
+          phase: 'focus',
+          taskId: 'april-task',
+          startedAt: '2026-04-10T10:00:00.000+08:00',
+          actualDurationMs: 30 * 60_000
+        }),
+        session({
+          id: 'april-deleted-task-focus',
+          phase: 'focus',
+          taskId: 'deleted-task',
+          startedAt: '2026-04-10T11:00:00.000+08:00',
+          actualDurationMs: 20 * 60_000
+        }),
+        session({
+          id: 'april-short-break',
+          phase: 'shortBreak',
+          startedAt: '2026-04-01T01:00:00.000+08:00',
+          actualDurationMs: 5 * 60_000
+        }),
+        session({
+          id: 'april-long-break',
+          phase: 'longBreak',
+          startedAt: '2026-04-10T12:00:00.000+08:00',
+          actualDurationMs: 15 * 60_000
+        }),
+        session({
+          id: 'may-focus',
+          phase: 'focus',
+          startedAt: '2026-05-01T10:00:00.000+08:00',
+          actualDurationMs: 45 * 60_000
+        }),
+        session({
+          id: 'skipped-april-focus',
+          phase: 'focus',
+          startedAt: '2026-04-11T10:00:00.000+08:00',
+          actualDurationMs: 25 * 60_000,
+          completed: false,
+          completionReason: 'skipped'
+        })
+      ]
+    }) as MonthStats
+
+    expect(stats.year).toBe(2026)
+    expect(stats.month).toBe(4)
+    expect(stats.days).toHaveLength(30)
+    expect(stats.summary).toEqual({
+      focusMinutes: 75,
+      completedPomodoros: 3,
+      completedTasks: 2,
+      shortBreakMinutes: 5,
+      longBreakMinutes: 15
+    })
+    expect(stats.maxFocusMinutes).toBe(50)
+    expect(stats.days[0]).toMatchObject({
+      date: '2026-04-01',
+      focusMinutes: 25,
+      completedPomodoros: 1,
+      completedTasks: 1,
+      shortBreakMinutes: 5,
+      longBreakMinutes: 0,
+      isFuture: false
+    })
+    expect(stats.days[9]).toMatchObject({
+      date: '2026-04-10',
+      focusMinutes: 50,
+      completedPomodoros: 2,
+      completedTasks: 1,
+      shortBreakMinutes: 0,
+      longBreakMinutes: 15,
+      isFuture: false
+    })
+    expect(stats.days[25]).toMatchObject({
+      date: '2026-04-26',
+      focusMinutes: 0,
+      completedPomodoros: 0,
+      completedTasks: 0,
+      shortBreakMinutes: 0,
+      longBreakMinutes: 0,
+      isFuture: true
+    })
   })
 })
