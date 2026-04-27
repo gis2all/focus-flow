@@ -9,6 +9,7 @@ export interface TaskRowModel {
   statusLabel: '进行中' | '已完成'
   completedPomodoros: number
   focusMinutes: number
+  completedAt: string | null
 }
 
 export interface TimerPomodoroDisplay {
@@ -61,7 +62,8 @@ export const buildTaskRows = (items: TaskBoardItem[]): TaskRowModel[] =>
       isCompleted,
       statusLabel: isCompleted ? '已完成' : '进行中',
       completedPomodoros: item.completedPomodoros,
-      focusMinutes: item.focusMinutes
+      focusMinutes: item.focusMinutes,
+      completedAt: item.completedAt
     }
   })
 

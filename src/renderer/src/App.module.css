@@ -1252,10 +1252,10 @@
 
 .taskListHeader {
   display: grid;
-  grid-template-columns: 32px 64px minmax(220px, 1.7fr) minmax(156px, 0.9fr) 96px 78px;
+  grid-template-columns: 32px clamp(196px, 26vw, 268px) 68px 60px 126px 82px 60px;
   align-items: center;
   justify-items: start;
-  column-gap: 12px;
+  column-gap: 6px;
   padding: 8px 6px 10px;
   color: color-mix(in srgb, var(--text-3) 94%, white 6%);
   font-size: 11px;
@@ -1277,10 +1277,10 @@
 .taskLine {
   display: grid;
   position: relative;
-  grid-template-columns: 32px 64px minmax(220px, 1.7fr) minmax(156px, 0.9fr) 96px 78px;
+  grid-template-columns: 32px clamp(196px, 26vw, 268px) 68px 60px 126px 82px 60px;
   align-items: center;
   justify-items: start;
-  gap: 12px;
+  gap: 6px;
   min-height: 48px;
   padding: 0 10px 0 8px;
   color: var(--text-2);
@@ -1330,7 +1330,13 @@
 }
 
 .ghostLine {
-  grid-template-columns: 22px 64px minmax(0, 1fr) 156px 96px 78px;
+  grid-template-columns: 22px clamp(196px, 26vw, 268px) 68px 60px 126px 82px 60px;
+}
+
+.taskListHeader > span,
+.taskLine > * {
+  justify-self: start;
+  text-align: left;
 }
 
 .fakeCheck,
@@ -1454,6 +1460,13 @@
 }
 
 .taskStatusText {
+  color: var(--text-3);
+  font-size: 11px;
+  font-weight: 760;
+  white-space: nowrap;
+}
+
+.taskCompletionDate {
   color: var(--text-3);
   font-size: 11px;
   font-weight: 760;
