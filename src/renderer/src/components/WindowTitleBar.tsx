@@ -22,7 +22,7 @@ export const WindowTitleBar = ({ activeTheme, onToggleTheme, onShowMiniWindow }:
         className={styles.themeToggleButton}
         onClick={onToggleTheme}
         type="button"
-        aria-label={activeTheme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+        aria-label={activeTheme === 'dark' ? '切换到浅色模式' : '切换到深色模式'}
       >
         {activeTheme === 'dark' ? (
           <SunIcon className={styles.windowControlIcon} />
@@ -36,18 +36,13 @@ export const WindowTitleBar = ({ activeTheme, onToggleTheme, onShowMiniWindow }:
         </button>
       ) : null}
       <div className={styles.windowControls}>
-        <button onClick={() => void window.focusFlow.system.minimizeWindow()} type="button" aria-label="Minimize window">
+        <button onClick={() => void window.focusFlow.system.minimizeWindow()} type="button" aria-label="最小化">
           <MinimizeIcon className={styles.windowControlIcon} />
         </button>
-        <button onClick={() => void window.focusFlow.system.toggleMaximizeWindow()} type="button" aria-label="Maximize window">
+        <button onClick={() => void window.focusFlow.system.toggleMaximizeWindow()} type="button" aria-label="最大化">
           <MaximizeIcon className={styles.windowControlIcon} />
         </button>
-        <button
-          className={styles.closeWindowButton}
-          onClick={() => void window.focusFlow.system.closeWindow()}
-          type="button"
-          aria-label="Close window"
-        >
+        <button className={styles.closeWindowButton} onClick={() => void window.focusFlow.system.closeWindow()} type="button" aria-label="关闭">
           <CloseIcon className={styles.windowControlIcon} />
         </button>
       </div>

@@ -46,12 +46,14 @@ const createBoard = (): TaskBoardSnapshot => ({
 })
 
 const noopAsync = async (): Promise<void> => undefined
+const noop = (): void => undefined
 const createTimerContext = (status: TimerStatus, phase: TimerPhase) => ({ status, phase })
 
 describe('TasksView', () => {
   test('渲染清晰的任务区列结构和当前绑定操作', () => {
     const html = renderToStaticMarkup(
       <TasksView
+        activeTab="active"
         bindCurrentTask={noopAsync}
         canBindCurrentTask
         completeTask={noopAsync}
@@ -59,6 +61,7 @@ describe('TasksView', () => {
         currentTimerTaskId="task-a"
         deleteTask={noopAsync}
         newTaskTitle=""
+        onActiveTabChange={noop}
         reorderTasks={noopAsync}
         restoreTask={noopAsync}
         setNewTaskTitle={() => undefined}
@@ -95,6 +98,7 @@ describe('TasksView', () => {
   test('非运行专注时显示设为当前且不显示底部提示', () => {
     const html = renderToStaticMarkup(
       <TasksView
+        activeTab="active"
         bindCurrentTask={noopAsync}
         canBindCurrentTask={false}
         completeTask={noopAsync}
@@ -102,6 +106,7 @@ describe('TasksView', () => {
         currentTimerTaskId={null}
         deleteTask={noopAsync}
         newTaskTitle=""
+        onActiveTabChange={noop}
         reorderTasks={noopAsync}
         restoreTask={noopAsync}
         setNewTaskTitle={() => undefined}
@@ -117,5 +122,32 @@ describe('TasksView', () => {
     expect(html).toContain('>设为当前<')
     expect(html).not.toContain('点击“设为当前”会启动专注并绑定到该任务。')
     expect(html).not.toContain('拖拽进行中任务可调整顺序。')
+  })
+
+  test('uses the provided active tab instead of resetting internally', () => {
+    const html = renderToStaticMarkup(
+      <TasksView
+        activeTab="completed"
+        bindCurrentTask={noopAsync}
+        canBindCurrentTask={false}
+        completeTask={noopAsync}
+        createTask={noopAsync}
+        currentTimerTaskId={null}
+        deleteTask={noopAsync}
+        newTaskTitle=""
+        onActiveTabChange={noop}
+        reorderTasks={noopAsync}
+        restoreTask={noopAsync}
+        setNewTaskTitle={() => undefined}
+        startFocusWithTask={noopAsync}
+        taskBoard={createBoard()}
+        timerContext={createTimerContext('paused', 'shortBreak')}
+        updateTask={async () => undefined}
+      />
+    )
+
+    expect(html).toContain('aria-selected="true"')
+    expect(html).toContain('任务 C')
+    expect(html).not.toContain('任务 A')
   })
 })

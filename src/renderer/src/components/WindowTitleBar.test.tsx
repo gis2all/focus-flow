@@ -11,11 +11,18 @@ describe('WindowTitleBar', () => {
     )
 
     expect(html).toContain('aria-label="显示小窗"')
+    expect(html).toContain('aria-label="切换到深色模式"')
+    expect(html).not.toContain('data-tooltip=')
   })
 
   test('does not render the mini window button when no mini window action is provided', () => {
     const html = renderToStaticMarkup(<WindowTitleBar activeTheme="dark" onToggleTheme={noop} />)
 
     expect(html).not.toContain('aria-label="显示小窗"')
+    expect(html).toContain('aria-label="切换到浅色模式"')
+    expect(html).toContain('aria-label="最小化"')
+    expect(html).toContain('aria-label="最大化"')
+    expect(html).toContain('aria-label="关闭"')
+    expect(html).not.toContain('data-tooltip=')
   })
 })

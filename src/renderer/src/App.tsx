@@ -11,7 +11,13 @@ import { StatsView } from './views/StatsView'
 import { TasksView } from './views/TasksView'
 import { TimerView } from './views/TimerView'
 import type { ViewKey } from './types'
-import { buildTaskTitleById, getSmoothedTimerProgress, resolveCurrentTaskTitle, resolveEffectiveTheme } from './viewModel'
+import {
+  buildTaskTitleById,
+  getSmoothedTimerProgress,
+  resolveCurrentTaskTitle,
+  resolveEffectiveTheme,
+  type TaskViewTab
+} from './viewModel'
 
 const fallbackSnapshot = deriveTimerSnapshot(createIdleTimer(defaultSettings, Date.now()), Date.now())
 
@@ -50,6 +56,7 @@ export const App = ({ windowMode }: AppProps): ReactElement => {
   const [stats, setStats] = useState<FocusStats>(fallbackStats)
   const [systemTheme, setSystemTheme] = useState<'light' | 'dark'>('light')
   const [newTaskTitle, setNewTaskTitle] = useState('')
+  const [tasksActiveTab, setTasksActiveTab] = useState<TaskViewTab>('active')
   const [displayProgress, setDisplayProgress] = useState(fallbackSnapshot.progress)
   const previousSnapshotRef = useRef<TimerSnapshot>(fallbackSnapshot)
 
@@ -215,6 +222,7 @@ export const App = ({ windowMode }: AppProps): ReactElement => {
     if (activeView === 'tasks') {
       return (
         <TasksView
+          activeTab={tasksActiveTab}
           bindCurrentTask={bindCurrentTask}
           canBindCurrentTask={snapshot.status === 'running' && snapshot.phase === 'focus'}
           startFocusWithTask={startFocusWithTask}
@@ -223,6 +231,7 @@ export const App = ({ windowMode }: AppProps): ReactElement => {
           createTask={createTask}
           deleteTask={deleteTask}
           newTaskTitle={newTaskTitle}
+          onActiveTabChange={setTasksActiveTab}
           restoreTask={restoreTask}
           reorderTasks={reorderTasks}
           setNewTaskTitle={setNewTaskTitle}

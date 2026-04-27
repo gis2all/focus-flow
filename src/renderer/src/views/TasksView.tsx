@@ -6,6 +6,7 @@ import { getTimerActionConfirmation, shouldConfirmTimerAction } from '../timerAc
 import { getTaskRowsForTab, reorderTaskIds, type TaskRowModel, type TaskViewTab } from '../viewModel'
 
 interface TasksViewProps {
+  activeTab: TaskViewTab
   bindCurrentTask(taskId: string | null): Promise<void>
   canBindCurrentTask: boolean
   completeTask(id: string): Promise<void>
@@ -13,6 +14,7 @@ interface TasksViewProps {
   currentTimerTaskId: string | null
   deleteTask(id: string): Promise<void>
   newTaskTitle: string
+  onActiveTabChange(tab: TaskViewTab): void
   reorderTasks(ids: string[]): Promise<void>
   restoreTask(id: string): Promise<void>
   setNewTaskTitle(value: string): void
@@ -41,6 +43,7 @@ const emptyStateByTab: Record<TaskViewTab, string> = {
 }
 
 export const TasksView = ({
+  activeTab,
   bindCurrentTask,
   canBindCurrentTask,
   completeTask,
@@ -48,6 +51,7 @@ export const TasksView = ({
   currentTimerTaskId,
   deleteTask,
   newTaskTitle,
+  onActiveTabChange,
   reorderTasks,
   restoreTask,
   setNewTaskTitle,
@@ -56,7 +60,6 @@ export const TasksView = ({
   timerContext,
   updateTask
 }: TasksViewProps): ReactElement => {
-  const [activeTab, setActiveTab] = useState<TaskViewTab>('active')
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null)
   const [draftTitle, setDraftTitle] = useState('')
   const [dragSourceTaskId, setDragSourceTaskId] = useState<string | null>(null)
@@ -155,7 +158,7 @@ export const TasksView = ({
                     stopEditing()
                     setDragSourceTaskId(null)
                     setDragTargetTaskId(null)
-                    setActiveTab(tab)
+                    onActiveTabChange(tab)
                   }}
                   role="tab"
                   type="button"
