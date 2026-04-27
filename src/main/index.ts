@@ -95,6 +95,13 @@ const applyNativeThemePreference = (preference: AppSettings['themePreference']) 
   nativeTheme.themeSource = preference
 }
 
+// Electron measures BrowserWindow sizes in logical pixels, not physical pixels.
+// The live main window currently lands at 888x760 logical px on a 125% scaled
+// display (1110x950 physical px), so keep the startup height and minimum height
+// pinned to that verified layout to avoid future clipping regressions.
+const MAIN_WINDOW_WIDTH = 888
+const MAIN_WINDOW_HEIGHT = 760
+
 if (process.platform === 'win32') {
   app.setAppUserModelId(resolveWindowsAppUserModelId(app.isPackaged, process.execPath))
 }
@@ -128,10 +135,10 @@ if (!hasSingleInstanceLock) {
 const createMainWindow = (startHidden: boolean): BrowserWindow => {
   const shouldStartHidden = process.argv.includes('--hidden') || startHidden
   const window = new BrowserWindow({
-    width: 888,
-    height: 752,
-    minWidth: 888,
-    minHeight: 752,
+    width: MAIN_WINDOW_WIDTH,
+    height: MAIN_WINDOW_HEIGHT,
+    minWidth: MAIN_WINDOW_WIDTH,
+    minHeight: MAIN_WINDOW_HEIGHT,
     show: !shouldStartHidden,
     frame: false,
     title: 'FocusFlow',

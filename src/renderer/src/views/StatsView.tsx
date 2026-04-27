@@ -152,6 +152,7 @@ export const StatsView = ({
   const maxCompletedTaskMinutes = Math.max(...focusDurationRows.map((item) => item.minutes), 1)
   const halfHourlyPeak = Math.round(hourlyPeak / 2)
   const yAxisTicks = [formatDurationLabel(hourlyPeak), formatDurationLabel(halfHourlyPeak), formatDurationLabel(0)]
+  const chartAxisLabels = ['00', '03', '06', '09', '12', '15', '18', '21', '24']
   const summaryCards = [
     {
       label: '专注时长',
@@ -163,7 +164,7 @@ export const StatsView = ({
     {
       label: '完成番茄',
       value: `${summary.completedPomodoros}`,
-      meta: '已完成',
+      meta: isCalendarTab ? '本月已完成' : '今日已完成',
       icon: StatsSummaryRocketIcon,
       iconKey: 'pomodoros'
     },
@@ -177,7 +178,7 @@ export const StatsView = ({
     {
       label: '休息时长',
       value: formatDurationLabel(summaryBreakTotal),
-      meta: '短休 + 长休',
+      meta: isCalendarTab ? '本月短休 + 长休' : '今日短休 + 长休',
       icon: StatsSummaryCupIcon,
       iconKey: 'breaks'
     }
@@ -404,11 +405,11 @@ export const StatsView = ({
           <>
             <section className={styles.chartPanel}>
               <div className={styles.statsPanelHeader}>
-                <h2>今日专注时长分布</h2>
+                <h2>专注时长分布</h2>
                 <span>{hourlyPeak > 0 ? `峰值 ${formatDurationLabel(hourlyPeak)}` : '暂无专注'}</span>
               </div>
               <div className={styles.hourChartFrame}>
-                <div className={styles.yAxisTicks} aria-label="今日专注分布刻度">
+                <div className={styles.yAxisTicks} aria-label="专注时长分布刻度">
                   {yAxisTicks.map((tick) => (
                     <span key={tick}>{tick}</span>
                   ))}
@@ -424,11 +425,22 @@ export const StatsView = ({
               <div className={styles.chartAxisRow}>
                 <span aria-hidden="true" />
                 <div className={styles.chartAxis}>
-                  <span>00:00</span>
-                  <span>06:00</span>
-                  <span>12:00</span>
-                  <span>18:00</span>
-                  <span>24:00</span>
+                  {chartAxisLabels.map((label, index) => (
+                    <span
+                      key={label}
+                      style={{
+                        left: `${(index / (chartAxisLabels.length - 1)) * 100}%`,
+                        transform:
+                          index === 0
+                            ? 'translateX(0)'
+                            : index === chartAxisLabels.length - 1
+                              ? 'translateX(-100%)'
+                              : 'translateX(-50%)'
+                      }}
+                    >
+                      {label}
+                    </span>
+                  ))}
                 </div>
               </div>
             </section>

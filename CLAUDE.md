@@ -270,8 +270,8 @@ SQLite 当前核心表：
 
 ### 主窗口
 
-- 当前启动尺寸（`BrowserWindow` 逻辑尺寸）：`888x752`
-- 当前最小尺寸（`BrowserWindow` 逻辑尺寸）：`888x752`
+- 当前启动尺寸（`BrowserWindow` 逻辑尺寸）：`888x760`
+- 当前最小尺寸（`BrowserWindow` 逻辑尺寸）：`888x760`
 - 当前使用无原生边框窗口：`frame: false`
 - 窗口标题：`FocusFlow`
 - 自定义窗口控制按钮在渲染层实现
