@@ -30,8 +30,6 @@ const localDateKey = (date: Date): string => {
   return `${year}-${month}-${day}`
 }
 
-const startOfLocalDay = (date: Date): Date => new Date(date.getFullYear(), date.getMonth(), date.getDate())
-
 const minutesFromMs = (value: number | null): number => Math.round((value ?? 0) / 60_000)
 
 const createEmptyMonthSummary = (): MonthStatsSummary => ({
@@ -84,13 +82,6 @@ export const aggregateStats = (input: AggregateStatsInput): FocusStats => {
   const hourlyFocusMinutes = Array.from({ length: 24 }, () => 0)
   const taskTotals = new Map<string, number>()
   const tasksById = new Map((input.tasks ?? []).map((task) => [task.id, task]))
-  const weeklyBuckets = new Map<string, { focusMinutes: number; completedPomodoros: number }>()
-
-  for (let index = 6; index >= 0; index -= 1) {
-    const day = startOfLocalDay(input.now)
-    day.setDate(day.getDate() - index)
-    weeklyBuckets.set(localDateKey(day), { focusMinutes: 0, completedPomodoros: 0 })
-  }
 
   let todayFocusMinutes = 0
   let todayShortBreakMinutes = 0
@@ -107,12 +98,6 @@ export const aggregateStats = (input: AggregateStatsInput): FocusStats => {
       todayFocusMinutes += minutes
       todayCompletedPomodoros += 1
       hourlyFocusMinutes[started.getHours()] += minutes
-    }
-
-    const weeklyBucket = weeklyBuckets.get(dateKey)
-    if (weeklyBucket) {
-      weeklyBucket.focusMinutes += minutes
-      weeklyBucket.completedPomodoros += 1
     }
 
     if (dateKey === todayKey && session.taskId === null) {
@@ -149,10 +134,6 @@ export const aggregateStats = (input: AggregateStatsInput): FocusStats => {
       completedTasks: input.completedTasks ?? 0
     },
     hourlyFocusMinutes,
-    weeklyTrend: Array.from(weeklyBuckets.entries()).map(([date, value]) => ({
-      date,
-      ...value
-    })),
     taskFocusMinutes: Array.from(taskTotals.entries())
       .map(([taskId, minutes]) => {
         const task = tasksById.get(taskId)!

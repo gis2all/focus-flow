@@ -31,7 +31,6 @@ const fallbackStats: FocusStats = {
     completedTasks: 0
   },
   hourlyFocusMinutes: Array.from({ length: 24 }, () => 0),
-  weeklyTrend: [],
   taskFocusMinutes: [],
   unboundFocusMinutes: 0
 }

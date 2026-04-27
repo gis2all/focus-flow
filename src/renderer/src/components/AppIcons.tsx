@@ -80,12 +80,6 @@ export const SettingsIcon = (props: IconProps): ReactElement => (
   </svg>
 )
 
-export const ThemeIcon = (props: IconProps): ReactElement => (
-  <svg {...baseProps} {...props}>
-    <path d="M9.9 2.8A5.4 5.4 0 1 0 10.6 13 4.7 4.7 0 0 1 9.9 2.8Z" />
-  </svg>
-)
-
 export const SunIcon = (props: IconProps): ReactElement => (
   <svg {...baseProps} {...props}>
     <circle cx="8" cy="8" r="2.4" />
@@ -103,14 +97,6 @@ export const SunIcon = (props: IconProps): ReactElement => (
 export const MoonIcon = (props: IconProps): ReactElement => (
   <svg {...baseProps} {...props}>
     <path d="M10.1 2.5A5.5 5.5 0 1 0 12 11.1 4.9 4.9 0 0 1 10.1 2.5Z" />
-  </svg>
-)
-
-export const ExitIcon = (props: IconProps): ReactElement => (
-  <svg {...baseProps} {...props}>
-    <path d="M6.2 3H3.8v10h2.4" />
-    <path d="M8 8h4.6" />
-    <path d="m10.8 5.8 2.2 2.2-2.2 2.2" />
   </svg>
 )
 
@@ -137,13 +123,6 @@ export const CloseIcon = (props: IconProps): ReactElement => (
   <svg {...baseProps} {...props}>
     <path d="m4 4 8 8" />
     <path d="m12 4-8 8" />
-  </svg>
-)
-
-export const ActionArrowIcon = (props: IconProps): ReactElement => (
-  <svg {...baseProps} {...props}>
-    <path d="M3.5 8H12" />
-    <path d="m8.8 4.6 3.2 3.4-3.2 3.4" />
   </svg>
 )
 
@@ -205,24 +184,6 @@ export const LoungeChairIcon = (props: IconProps): ReactElement => (
     <path d="M6 15V9a2 2 0 0 1 2-2h1.5a3 3 0 0 1 2.7 1.7L14 12h4a2 2 0 0 1 2 2v1" />
     <path d="M6 15v3" />
     <path d="M18 15v3" />
-  </svg>
-)
-
-export const RocketIcon = (props: IconProps): ReactElement => (
-  <svg {...baseProps} {...props}>
-    <path d="M9.2 3.1c1.8.2 3.4 1.8 3.7 3.6-.9 1.8-2.4 3.5-4.6 5.1-1.2-.4-2.1-1.3-2.5-2.5 1.6-2.1 3.3-3.7 5.1-4.6Z" />
-    <circle cx="9.2" cy="6.6" r="1" />
-    <path d="m5.6 8.8-2 1 .9-2.2 1.7-.4" />
-    <path d="m8.5 11.7-.4 1.8 1.7-.9.5-1.7" />
-    <path d="m4.6 10.6 1.2.2.2 1.2-1.6.8z" />
-  </svg>
-)
-
-export const ClipboardCheckIcon = (props: IconProps): ReactElement => (
-  <svg {...baseProps} {...props}>
-    <rect x="4.2" y="3.4" width="7.6" height="9.6" rx="1.5" />
-    <path d="M6.2 3.4h3.6v1.5H6.2z" />
-    <path d="m6.4 8.2 1.2 1.2 2.3-2.5" />
   </svg>
 )
 

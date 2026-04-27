@@ -29,7 +29,6 @@ export interface TaskRepository {
   restore(id: string, now?: string): Promise<Task>
   reorderActive(ids: string[], now?: string): Promise<void>
   delete(id: string): Promise<void>
-  countCompletedOn(dateKey: string): Promise<number>
 }
 
 export interface TimerSessionRepository {
@@ -43,11 +42,6 @@ export interface TimerSessionRepository {
 export interface SettingsRepository {
   get(): Promise<AppSettings>
   update(patch: Partial<AppSettings>): Promise<AppSettings>
-}
-
-export interface WindowStateRepository {
-  getMiniWindowPosition(): Promise<{ x: number; y: number } | null>
-  saveMiniWindowPosition(position: { x: number; y: number }): Promise<void>
 }
 
 export interface TimerRuntimeRepository {

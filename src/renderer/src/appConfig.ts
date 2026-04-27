@@ -13,11 +13,3 @@ export const navItems: Array<{ key: ViewKey; label: string }> = [
   { key: 'stats', label: '统计' },
   { key: 'settings', label: '设置' }
 ]
-
-export const demoTaskRows = [
-  { id: 'demo-1', title: '阅读《高效能人士的七个习惯》', pomodoros: 2, time: '09:15' },
-  { id: 'demo-2', title: '回复工作邮件', pomodoros: 2, time: '10:30' },
-  { id: 'demo-3', title: '设计番茄钟 UI 原型', pomodoros: 1, time: '--:--' },
-  { id: 'demo-4', title: '实现计时与阶段切换逻辑', pomodoros: 1, time: '--:--' },
-  { id: 'demo-5', title: '编写文档与使用说明', pomodoros: 1, time: '--:--' }
-]

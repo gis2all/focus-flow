@@ -74,8 +74,7 @@ describe('StatsService', () => {
       },
       delete: async () => {
         throw new Error('not used')
-      },
-      countCompletedOn: async () => 999
+      }
     }
     const service = new StatsService(sessions, tasks, new FakeClock(new Date('2026-04-25T12:00:00+08:00').getTime()))
 
@@ -137,8 +136,7 @@ describe('StatsService', () => {
       },
       delete: async () => {
         throw new Error('not used')
-      },
-      countCompletedOn: async () => 999
+      }
     }
     const service = new StatsService(sessions, tasks, new FakeClock(new Date('2026-04-25T12:00:00+08:00').getTime()))
 

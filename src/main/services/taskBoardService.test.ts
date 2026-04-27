@@ -50,8 +50,7 @@ describe('TaskBoardService', () => {
       },
       delete: async () => {
         throw new Error('not used')
-      },
-      countCompletedOn: async () => 0
+      }
     }
     const sessions: TimerSessionRepository = {
       list: async () => [

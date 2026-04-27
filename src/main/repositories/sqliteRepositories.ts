@@ -9,8 +9,7 @@ import type {
   TaskRepository,
   UpdateTimerSessionTaskInput,
   TimerRuntimeRepository,
-  TimerSessionRepository,
-  WindowStateRepository
+  TimerSessionRepository
 } from '@main/ports/repositories'
 import type { SqliteAppDatabase } from '@main/adapters/sqlite/sqliteDatabase'
 
@@ -57,7 +56,6 @@ interface TimerRuntimeRow extends Record<string, unknown> {
 
 const nowIso = (): string => new Date().toISOString()
 const appSettingKeys = Object.keys(defaultSettings) as Array<keyof AppSettings>
-const miniWindowPositionKey = 'window:mini:position'
 
 const mapTask = (row: TaskRow): Task => ({
   id: row.id,
@@ -163,14 +161,6 @@ export class SqliteTaskRepository implements TaskRepository {
     if (changedRows === 0) {
       throw new Error(`Task not found: ${id}`)
     }
-  }
-
-  async countCompletedOn(dateKey: string): Promise<number> {
-    const row = this.database.get<{ count: number }>(
-      "SELECT COUNT(*) AS count FROM tasks WHERE completed_at LIKE ? || '%'",
-      [dateKey]
-    )
-    return Number(row?.count ?? 0)
   }
 
   private async getRequired(id: string): Promise<Task> {
@@ -283,33 +273,6 @@ export class SqliteSettingsRepository implements SettingsRepository {
       ])
     }
     return this.get()
-  }
-}
-
-export class SqliteWindowStateRepository implements WindowStateRepository {
-  constructor(private readonly database: SqliteAppDatabase) {}
-
-  async getMiniWindowPosition(): Promise<{ x: number; y: number } | null> {
-    const row = this.database.get<SettingRow>('SELECT value FROM settings WHERE key = ?', [miniWindowPositionKey])
-    if (!row) return null
-
-    const value = JSON.parse(row.value) as Partial<{ x: unknown; y: unknown }>
-    if (typeof value.x !== 'number' || typeof value.y !== 'number') {
-      return null
-    }
-
-    return {
-      x: value.x,
-      y: value.y
-    }
-  }
-
-  async saveMiniWindowPosition(position: { x: number; y: number }): Promise<void> {
-    await this.database.run('INSERT OR REPLACE INTO settings (key, value, updated_at) VALUES (?, ?, ?)', [
-      miniWindowPositionKey,
-      JSON.stringify(position),
-      nowIso()
-    ])
   }
 }
 

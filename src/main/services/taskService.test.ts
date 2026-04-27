@@ -53,8 +53,7 @@ const createRepository = (items: Task[] = []): TaskRepository => {
     delete: async (id) => {
       const index = tasks.findIndex((item) => item.id === id)
       if (index >= 0) tasks.splice(index, 1)
-    },
-    countCompletedOn: async () => 0
+    }
   }
 }
 

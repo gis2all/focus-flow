@@ -118,12 +118,6 @@ export interface MonthStats {
   maxFocusMinutes: number
 }
 
-export interface DailyTrendPoint {
-  date: string
-  focusMinutes: number
-  completedPomodoros: number
-}
-
 export interface TaskFocusPoint {
   taskId: string
   title: string
@@ -134,7 +128,6 @@ export interface TaskFocusPoint {
 export interface FocusStats {
   today: TodayStats
   hourlyFocusMinutes: number[]
-  weeklyTrend: DailyTrendPoint[]
   taskFocusMinutes: TaskFocusPoint[]
   unboundFocusMinutes: number
 }

@@ -14,7 +14,6 @@ const createStats = (input: Partial<StatsWithUnboundFocus> = {}): StatsWithUnbou
     completedTasks: 1
   },
   hourlyFocusMinutes: Array.from({ length: 24 }, () => 0),
-  weeklyTrend: [],
   taskFocusMinutes: [],
   unboundFocusMinutes: 0,
   ...input

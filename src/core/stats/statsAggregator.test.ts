@@ -112,7 +112,6 @@ describe('stats aggregator', () => {
     expect(stats.today.completedPomodoros).toBe(6)
     expect(stats.hourlyFocusMinutes[9]).toBe(25)
     expect(stats.hourlyFocusMinutes[10]).toBe(20)
-    expect(stats.weeklyTrend.at(-1)?.focusMinutes).toBe(120)
     expect(stats.unboundFocusMinutes).toBe(18)
     expect(stats.taskFocusMinutes).toEqual([
       { taskId: 'done', title: 'Done', minutes: 10, status: 'completed' }
