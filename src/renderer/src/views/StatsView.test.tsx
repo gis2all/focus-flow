@@ -210,6 +210,7 @@ describe('StatsView', () => {
 
     expect(html).toContain('aria-selected="true"')
     expect(html).toContain('日历')
+    expect(html).not.toContain('周视图')
     expect(html).toContain('2026年 4月')
     expect(html).not.toContain('专注日历')
     expect(html).toContain('本月累计')
@@ -259,7 +260,6 @@ describe('StatsView', () => {
 
     expect(html).toContain('data-calendar-today="true"')
     expect(html).toContain('data-calendar-today-dot="true"')
-    expect(html).toContain('data-calendar-today-label="true"')
-    expect(html).toContain('今天')
+    expect(html).toContain('data-calendar-today-label="true">今<')
   })
 })

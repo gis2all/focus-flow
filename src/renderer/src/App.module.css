@@ -907,8 +907,12 @@
     color 140ms ease;
 }
 
-.timerActionButton:hover,
-.timerActionButton:focus-visible {
+.timerActionButton:disabled {
+  cursor: not-allowed;
+}
+
+.timerActionButton:hover:not(:disabled),
+.timerActionButton:focus-visible:not(:disabled) {
   color: var(--text-1);
   border-color: var(--hover-border);
   background: linear-gradient(180deg, var(--hover-surface), var(--hover-surface-strong));
@@ -919,8 +923,8 @@
   outline: none;
 }
 
-:root[data-theme="light"] .timerActionButton:hover,
-:root[data-theme="light"] .timerActionButton:focus-visible {
+:root[data-theme="light"] .timerActionButton:hover:not(:disabled),
+:root[data-theme="light"] .timerActionButton:focus-visible:not(:disabled) {
   border-color: var(--line);
 }
 
@@ -1810,9 +1814,7 @@
   min-width: 0;
   overflow: hidden;
   padding: 10px 12px;
-  background:
-    radial-gradient(circle at 100% 0%, rgba(72, 144, 255, 0.12), transparent 38%),
-    linear-gradient(180deg, color-mix(in srgb, var(--window-bg) 88%, transparent), color-mix(in srgb, var(--window-bg) 74%, transparent));
+  background: linear-gradient(180deg, color-mix(in srgb, var(--window-bg) 88%, transparent), color-mix(in srgb, var(--window-bg) 74%, transparent));
   border: 1px solid color-mix(in srgb, var(--line-soft) 78%, transparent);
   border-radius: 8px;
   box-shadow:
@@ -1823,21 +1825,8 @@
   backdrop-filter: blur(16px) saturate(145%);
 }
 
-.statsSummaryCard::after {
-  position: absolute;
-  top: -8px;
-  right: -10px;
-  width: 86px;
-  height: 44px;
-  content: "";
-  background: radial-gradient(ellipse at top right, rgba(255, 255, 255, 0.24), transparent 68%);
-  pointer-events: none;
-}
-
 :root[data-theme="dark"] .statsSummaryCard {
-  background:
-    radial-gradient(circle at 100% 0%, rgba(53, 139, 255, 0.16), transparent 38%),
-    linear-gradient(180deg, rgba(18, 42, 66, 0.74), rgba(9, 29, 48, 0.68));
+  background: linear-gradient(180deg, rgba(18, 42, 66, 0.74), rgba(9, 29, 48, 0.68));
   border-color: transparent;
   box-shadow:
     0 10px 18px rgba(0, 0, 0, 0.18),
@@ -1846,27 +1835,25 @@
     inset 0 -1px 0 rgba(93, 128, 178, 0.18);
 }
 
-:root[data-theme="dark"] .statsSummaryCard::after {
-  background: radial-gradient(ellipse at top right, rgba(255, 255, 255, 0.08), transparent 68%);
-}
-
 .statsSummaryCard span {
   color: inherit;
   font-size: 11px;
   font-weight: 700;
+  line-height: 1.2;
   opacity: 0.88;
 }
 
 .statsSummaryContent {
   display: grid;
   align-content: center;
-  gap: 4px;
+  gap: 8px;
   min-width: 0;
 }
 
 .statsNumbers small {
   color: var(--text-3);
   font-size: 10px;
+  line-height: 1.2;
 }
 
 .statsNumbers strong {
@@ -1883,8 +1870,8 @@
   z-index: 1;
   display: grid;
   place-items: center;
-  width: 52px;
-  height: 52px;
+  width: 48px;
+  height: 48px;
   color: var(--accent);
   opacity: 1;
   background:
@@ -1897,8 +1884,8 @@
 }
 
 .statsSummaryIconSvg {
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   flex: 0 0 auto;
 }
 

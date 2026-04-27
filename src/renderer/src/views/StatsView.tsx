@@ -195,9 +195,6 @@ export const StatsView = ({
           >
             日历
           </button>
-          <button aria-disabled="true" aria-selected="false" disabled role="tab" type="button">
-            周视图
-          </button>
         </div>
       </div>
 
@@ -278,7 +275,7 @@ export const StatsView = ({
                     <span className={styles.calendarDayNumber}>{Number(day.date.slice(-2))}</span>
                     {isToday ? (
                       <em className={styles.calendarTodayLabel} data-calendar-today-label="true">
-                        今天
+                        今
                       </em>
                     ) : null}
                     {!day.isFuture ? (
