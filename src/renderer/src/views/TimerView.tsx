@@ -69,6 +69,7 @@ export const TimerView = ({
   const completedInCycle = snapshot.focusCount % longBreakInterval
   const longBreakProgress =
     snapshot.focusCount === 0 ? 1 : completedInCycle === 0 ? longBreakInterval : completedInCycle
+  const showLongBreakProgress = snapshot.status !== 'idle'
   const resolvedPomodoroDisplay = pomodoroDisplay ?? {
     ordinal: Math.max(1, snapshot.focusCount + 1),
     completed: snapshot.focusCount
@@ -162,7 +163,9 @@ export const TimerView = ({
             <div className={styles.focusDial}>
               <svg className={styles.focusDialSvg} viewBox="0 0 100 100" aria-hidden="true">
                 <circle className={styles.focusDialTrack} cx="50" cy="50" r="44" pathLength="100" />
-                <circle className={styles.focusDialProgress} cx="50" cy="50" r="44" pathLength="100" />
+                {showLongBreakProgress ? (
+                  <circle className={styles.focusDialProgress} cx="50" cy="50" r="44" pathLength="100" />
+                ) : null}
               </svg>
               <div className={styles.focusDialContent}>
                 <span>长休进度</span>

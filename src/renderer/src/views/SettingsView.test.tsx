@@ -35,6 +35,15 @@ describe('SettingsView', () => {
     expect(html).toContain('aria-label="减少专注时长"')
   })
 
+  test('renders toggle rows without making the whole row a label', () => {
+    const html = renderSettings()
+
+    expect(html).not.toContain('<label')
+    expect(html).toContain('aria-label="显示系统通知"')
+    expect(html).toContain('aria-label="播放提示音"')
+    expect(html).toContain('aria-label="关闭窗口后继续运行"')
+  })
+
   test('merges short break and long break default behavior into one setting', () => {
     const html = renderSettings()
 

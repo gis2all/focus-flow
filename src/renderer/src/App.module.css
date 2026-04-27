@@ -586,13 +586,13 @@
 }
 
 .autoSwitch input,
-.settingLine input[type="checkbox"] {
+.settingSwitchInput {
   justify-self: end;
   position: relative;
-  width: 42px;
-  height: 24px;
+  width: 36px;
+  height: 20px;
   margin: 0;
-  padding: 2px;
+  padding: 0;
   appearance: none;
   background: linear-gradient(180deg, #2d87ff, var(--accent-strong));
   border-radius: 999px;
@@ -605,14 +605,8 @@
     transform 140ms ease;
 }
 
-.autoSwitch input {
-  width: 36px;
-  height: 20px;
-  padding: 2px;
-}
-
 .autoSwitch input::after,
-.settingLine input[type="checkbox"]::after {
+.settingSwitchInput::after {
   position: absolute;
   top: 2px;
   left: 2px;
@@ -632,20 +626,20 @@
 }
 
 .autoSwitch input:not(:checked),
-.settingLine input[type="checkbox"]:not(:checked) {
+.settingSwitchInput:not(:checked) {
   background: color-mix(in srgb, var(--switch-off) 76%, white 24%);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.52);
 }
 
 .autoSwitch input:checked,
-.settingLine input[type="checkbox"]:checked {
+.settingSwitchInput:checked {
   background: linear-gradient(180deg, #2d87ff, var(--accent-strong));
 }
 
 .autoSwitch input:hover,
 .autoSwitch input:focus-visible,
-.settingLine input[type="checkbox"]:hover,
-.settingLine input[type="checkbox"]:focus-visible {
+.settingSwitchInput:hover,
+.settingSwitchInput:focus-visible {
   box-shadow:
     inset 0 1px 0 var(--hover-glass),
     var(--hover-shadow);
@@ -654,7 +648,7 @@
 }
 
 .autoSwitch input:checked::after,
-.settingLine input[type="checkbox"]:checked::after {
+.settingSwitchInput:checked::after {
   transform: translateX(16px);
 }
 
@@ -2644,27 +2638,37 @@
   white-space: nowrap;
 }
 
-.settingSwitchInput {
-  position: absolute;
+.settingSwitchControl {
   grid-column: 3;
   grid-row: 1;
-  width: 1px;
-  height: 1px;
+  position: relative;
+  justify-self: end;
+  width: 36px;
+  height: 20px;
+}
+
+.settingSwitchInput {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
   opacity: 0;
-  pointer-events: none;
+  cursor: pointer;
+  z-index: 1;
 }
 
 .settingSwitchTrack {
-  grid-column: 3;
-  grid-row: 1;
+  position: absolute;
+  inset: 0;
   display: grid;
   align-items: center;
-  justify-self: end;
   width: 36px;
   height: 20px;
   padding: 2px;
   background: linear-gradient(180deg, #2d87ff, var(--accent-strong));
   border-radius: 999px;
+  pointer-events: none;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.38),
     0 8px 14px rgba(31, 116, 255, 0.18);
@@ -2689,7 +2693,7 @@
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.52);
 }
 
-.settingLine:hover .settingSwitchTrack,
+.settingSwitchControl:hover .settingSwitchTrack,
 .settingSwitchInput:hover + .settingSwitchTrack,
 .settingSwitchInput:focus-visible + .settingSwitchTrack {
   box-shadow:
@@ -3282,15 +3286,15 @@
 }
 
 :root[data-theme="dark"] .autoSwitch input:not(:checked),
-:root[data-theme="dark"] .settingLine input[type="checkbox"]:not(:checked) {
+:root[data-theme="dark"] .settingSwitchInput:not(:checked) {
   background: #36516c;
   box-shadow: inset 0 1px 0 rgba(221, 237, 255, 0.08);
 }
 
 :root[data-theme="dark"] .autoSwitch input:hover,
 :root[data-theme="dark"] .autoSwitch input:focus-visible,
-:root[data-theme="dark"] .settingLine input[type="checkbox"]:hover,
-:root[data-theme="dark"] .settingLine input[type="checkbox"]:focus-visible {
+:root[data-theme="dark"] .settingSwitchInput:hover,
+:root[data-theme="dark"] .settingSwitchInput:focus-visible {
   box-shadow:
     inset 0 1px 0 rgba(177, 205, 236, 0.12),
     0 10px 18px rgba(0, 0, 0, 0.24);

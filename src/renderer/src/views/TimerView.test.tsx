@@ -232,8 +232,41 @@ describe('TimerView', () => {
     expect(html).not.toContain('预计专注')
     expect(html).not.toContain('当前任务')
     expect(html).toContain('长休进度')
+    expect(html).not.toContain('focusDialProgress')
     expect(html).toContain('1/5轮')
     expect(html).not.toContain('>1/5<')
+  })
+
+  test('renders the long-break progress circle after at least one completed focus', () => {
+    const html = renderToStaticMarkup(
+      <TimerView
+        currentTaskTitle="当前尚未开始专注"
+        progressPercent={25}
+        settings={{ ...defaultSettings, longBreakInterval: 5 }}
+        snapshot={createSnapshot({ status: 'running', phase: 'focus', focusCount: 1, progress: 0.25 })}
+        startTimer={noopAsync}
+        updateSettings={noopAsync}
+      />
+    )
+
+    expect(html).toContain('focusDialProgress')
+    expect(html).toContain('1/5轮')
+  })
+
+  test('renders the progress circle while a session is running even before the first completed focus', () => {
+    const html = renderToStaticMarkup(
+      <TimerView
+        currentTaskTitle="当前尚未开始专注"
+        progressPercent={0}
+        settings={{ ...defaultSettings, longBreakInterval: 5 }}
+        snapshot={createSnapshot({ status: 'running', phase: 'focus', focusCount: 0, progress: 0 })}
+        startTimer={noopAsync}
+        updateSettings={noopAsync}
+      />
+    )
+
+    expect(html).toContain('focusDialProgress')
+    expect(html).toContain('1/5轮')
   })
 
   test('derives task-bound pomodoro display from the bound task instead of global focus count', () => {
