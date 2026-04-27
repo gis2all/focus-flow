@@ -9,7 +9,8 @@ import type {
   TaskRepository,
   UpdateTimerSessionTaskInput,
   TimerRuntimeRepository,
-  TimerSessionRepository
+  TimerSessionRepository,
+  WindowStateRepository
 } from '@main/ports/repositories'
 import type { SqliteAppDatabase } from '@main/adapters/sqlite/sqliteDatabase'
 
@@ -37,7 +38,7 @@ interface TimerSessionRow extends Record<string, unknown> {
 }
 
 interface SettingRow extends Record<string, unknown> {
-  key: keyof AppSettings
+  key: string
   value: string
 }
 
@@ -55,6 +56,8 @@ interface TimerRuntimeRow extends Record<string, unknown> {
 }
 
 const nowIso = (): string => new Date().toISOString()
+const appSettingKeys = Object.keys(defaultSettings) as Array<keyof AppSettings>
+const miniWindowPositionKey = 'window:mini:position'
 
 const mapTask = (row: TaskRow): Task => ({
   id: row.id,
@@ -251,11 +254,16 @@ export class SqliteSettingsRepository implements SettingsRepository {
   constructor(private readonly database: SqliteAppDatabase) {}
 
   async get(): Promise<AppSettings> {
-    const rows = this.database.all<SettingRow>('SELECT key, value FROM settings')
+    const rows = this.database.all<SettingRow>(
+      `SELECT key, value
+       FROM settings
+       WHERE key IN (${appSettingKeys.map(() => '?').join(', ')})`,
+      appSettingKeys
+    )
     const saved = rows.reduce<Partial<AppSettings>>((settings, row) => {
       return {
         ...settings,
-        [row.key]: JSON.parse(row.value)
+        [row.key as keyof AppSettings]: JSON.parse(row.value)
       }
     }, {})
 
@@ -275,6 +283,33 @@ export class SqliteSettingsRepository implements SettingsRepository {
       ])
     }
     return this.get()
+  }
+}
+
+export class SqliteWindowStateRepository implements WindowStateRepository {
+  constructor(private readonly database: SqliteAppDatabase) {}
+
+  async getMiniWindowPosition(): Promise<{ x: number; y: number } | null> {
+    const row = this.database.get<SettingRow>('SELECT value FROM settings WHERE key = ?', [miniWindowPositionKey])
+    if (!row) return null
+
+    const value = JSON.parse(row.value) as Partial<{ x: unknown; y: unknown }>
+    if (typeof value.x !== 'number' || typeof value.y !== 'number') {
+      return null
+    }
+
+    return {
+      x: value.x,
+      y: value.y
+    }
+  }
+
+  async saveMiniWindowPosition(position: { x: number; y: number }): Promise<void> {
+    await this.database.run('INSERT OR REPLACE INTO settings (key, value, updated_at) VALUES (?, ?, ?)', [
+      miniWindowPositionKey,
+      JSON.stringify(position),
+      nowIso()
+    ])
   }
 }
 

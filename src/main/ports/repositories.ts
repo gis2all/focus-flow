@@ -45,6 +45,11 @@ export interface SettingsRepository {
   update(patch: Partial<AppSettings>): Promise<AppSettings>
 }
 
+export interface WindowStateRepository {
+  getMiniWindowPosition(): Promise<{ x: number; y: number } | null>
+  saveMiniWindowPosition(position: { x: number; y: number }): Promise<void>
+}
+
 export interface TimerRuntimeRepository {
   get(): Promise<TimerState | null>
   save(state: TimerState): Promise<void>

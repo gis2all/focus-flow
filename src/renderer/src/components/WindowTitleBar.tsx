@@ -1,14 +1,15 @@
 import type { ReactElement } from 'react'
 import appIconUrl from '../../../../resources/focusflow-icon.svg'
 import styles from '../App.module.css'
-import { CloseIcon, MaximizeIcon, MinimizeIcon, MoonIcon, SunIcon } from './AppIcons'
+import { CloseIcon, MaximizeIcon, MiniWindowIcon, MinimizeIcon, MoonIcon, SunIcon } from './AppIcons'
 
 interface WindowTitleBarProps {
   activeTheme: 'light' | 'dark'
   onToggleTheme(): void
+  onShowMiniWindow?(): void
 }
 
-export const WindowTitleBar = ({ activeTheme, onToggleTheme }: WindowTitleBarProps): ReactElement => (
+export const WindowTitleBar = ({ activeTheme, onToggleTheme, onShowMiniWindow }: WindowTitleBarProps): ReactElement => (
   <header className={styles.titleBar}>
     <div className={styles.titleBrand}>
       <span className={styles.titleBrandMark} aria-hidden="true">
@@ -29,6 +30,11 @@ export const WindowTitleBar = ({ activeTheme, onToggleTheme }: WindowTitleBarPro
           <MoonIcon className={styles.windowControlIcon} />
         )}
       </button>
+      {onShowMiniWindow ? (
+        <button className={styles.miniWindowToggleButton} onClick={onShowMiniWindow} type="button" aria-label="显示小窗">
+          <MiniWindowIcon className={styles.windowControlIcon} />
+        </button>
+      ) : null}
       <div className={styles.windowControls}>
         <button onClick={() => void window.focusFlow.system.minimizeWindow()} type="button" aria-label="Minimize window">
           <MinimizeIcon className={styles.windowControlIcon} />

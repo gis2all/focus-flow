@@ -129,6 +129,29 @@ body {
   background: var(--window-bg);
 }
 
+body[data-window-mode="mini"] {
+  min-width: 0;
+  min-height: 0;
+  background: transparent;
+}
+
+html[data-window-mode="mini"] {
+  background: transparent;
+}
+
+body[data-window-mode="mini"],
+body[data-window-mode="mini"] #root {
+  width: 100vw;
+  height: 100vh;
+}
+
+body[data-window-mode="mini"],
+body[data-window-mode="mini"] #root,
+html[data-window-mode="mini"] {
+  overflow: hidden;
+  background: transparent !important;
+}
+
 button,
 input,
 select {

@@ -37,6 +37,8 @@ const api: FocusFlowApi = {
   system: {
     getTheme: () => ipcRenderer.invoke(IPC_CHANNELS.system.getTheme),
     showWindow: () => ipcRenderer.invoke(IPC_CHANNELS.system.showWindow),
+    showMiniWindow: () => ipcRenderer.invoke(IPC_CHANNELS.system.showMiniWindow),
+    resizeWindow: (request) => ipcRenderer.invoke(IPC_CHANNELS.system.resizeWindow, request),
     minimizeWindow: () => ipcRenderer.invoke(IPC_CHANNELS.system.minimizeWindow),
     toggleMaximizeWindow: () => ipcRenderer.invoke(IPC_CHANNELS.system.toggleMaximizeWindow),
     closeWindow: () => ipcRenderer.invoke(IPC_CHANNELS.system.closeWindow),

@@ -126,6 +126,13 @@ export const MaximizeIcon = (props: IconProps): ReactElement => (
   </svg>
 )
 
+export const MiniWindowIcon = (props: IconProps): ReactElement => (
+  <svg {...baseProps} {...props}>
+    <rect x="2.8" y="3.4" width="10.6" height="9.2" rx="1.8" />
+    <rect x="9.1" y="5.2" width="4.1" height="3.6" rx="0.8" fill="currentColor" stroke="none" />
+  </svg>
+)
+
 export const CloseIcon = (props: IconProps): ReactElement => (
   <svg {...baseProps} {...props}>
     <path d="m4 4 8 8" />
@@ -137,6 +144,29 @@ export const ActionArrowIcon = (props: IconProps): ReactElement => (
   <svg {...baseProps} {...props}>
     <path d="M3.5 8H12" />
     <path d="m8.8 4.6 3.2 3.4-3.2 3.4" />
+  </svg>
+)
+
+export const ReturnArrowIcon = (props: IconProps): ReactElement => (
+  <svg {...baseProps} {...props}>
+    <path d="M11.6 8.8H6.4" strokeWidth="2.5" opacity="0.2" />
+    <path d="m8.2 5.9-2.5 2.5 2.5 2.5" strokeWidth="2.5" opacity="0.2" />
+    <path d="M11.2 7.9H5.6" strokeWidth="2.15" />
+    <path d="m8 5.1-2.8 2.8L8 10.7" strokeWidth="2.15" />
+  </svg>
+)
+
+export const GripDotsIcon = (props: IconProps): ReactElement => (
+  <svg {...baseProps} {...props}>
+    <circle cx="5" cy="4.6" r="0.9" fill="currentColor" stroke="none" />
+    <circle cx="8" cy="4.6" r="0.9" fill="currentColor" stroke="none" />
+    <circle cx="11" cy="4.6" r="0.9" fill="currentColor" stroke="none" />
+    <circle cx="5" cy="8" r="0.9" fill="currentColor" stroke="none" />
+    <circle cx="8" cy="8" r="0.9" fill="currentColor" stroke="none" />
+    <circle cx="11" cy="8" r="0.9" fill="currentColor" stroke="none" />
+    <circle cx="5" cy="11.4" r="0.9" fill="currentColor" stroke="none" />
+    <circle cx="8" cy="11.4" r="0.9" fill="currentColor" stroke="none" />
+    <circle cx="11" cy="11.4" r="0.9" fill="currentColor" stroke="none" />
   </svg>
 )
 

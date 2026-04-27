@@ -150,7 +150,8 @@
   height: 100%;
 }
 
-.themeToggleButton {
+.themeToggleButton,
+.miniWindowToggleButton {
   width: 48px;
   height: 100%;
   padding: 0;
@@ -191,6 +192,8 @@
 
 .themeToggleButton:hover,
 .themeToggleButton:focus-visible,
+.miniWindowToggleButton:hover,
+.miniWindowToggleButton:focus-visible,
 .windowControls button:hover,
 .windowControls button:focus-visible {
   color: var(--text-1);
@@ -207,6 +210,251 @@
   color: #fff;
   background: #d94d45;
   box-shadow: 0 8px 16px color-mix(in srgb, #d94d45 22%, transparent);
+}
+
+.miniWindow {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  isolation: isolate;
+  color: var(--text-1);
+  border-radius: 4px;
+  background: transparent;
+}
+
+.miniWindowDark {
+  --miniWindowBase:
+    radial-gradient(circle at 18% 18%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 30%),
+    radial-gradient(circle at 85% 18%, color-mix(in srgb, #80b3ff 11%, transparent), transparent 28%),
+    linear-gradient(160deg, color-mix(in srgb, var(--hero-top) 96%, #0b1625 4%), var(--hero-bottom));
+  --miniWindowShellSurface:
+    radial-gradient(circle at 100% 0%, rgba(53, 139, 255, 0.16), transparent 38%),
+    linear-gradient(180deg, rgba(18, 42, 66, 0.74), rgba(9, 29, 48, 0.68));
+  --miniWindowShellEdge: rgba(93, 128, 178, 0.18);
+  --miniWindowShellGlow: rgba(255, 255, 255, 0.08);
+}
+
+.miniWindowLight {
+  --miniWindowBase:
+    radial-gradient(circle at 18% 18%, color-mix(in srgb, var(--accent) 14%, white 36%), transparent 30%),
+    radial-gradient(circle at 85% 18%, color-mix(in srgb, #8eb8ff 18%, transparent), transparent 28%),
+    linear-gradient(160deg, color-mix(in srgb, var(--hero-top) 92%, white 8%), var(--hero-bottom));
+  --miniWindowShellSurface:
+    radial-gradient(circle at 100% 0%, rgba(72, 144, 255, 0.12), transparent 38%),
+    linear-gradient(180deg, color-mix(in srgb, var(--window-bg) 88%, transparent), color-mix(in srgb, var(--window-bg) 74%, transparent));
+  --miniWindowShellEdge: rgba(255, 255, 255, 0.22);
+  --miniWindowShellGlow: rgba(255, 255, 255, 0.16);
+}
+
+.miniWindowShell {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 10px 10px 12px;
+  overflow: hidden;
+  background:
+    var(--miniWindowBase),
+    var(--miniWindowShellSurface);
+  border: 1px solid transparent;
+  border-radius: 4px;
+  box-shadow:
+    0 10px 18px rgba(0, 0, 0, 0.18),
+    inset 1px 0 0 var(--miniWindowShellEdge),
+    inset -1px 0 0 var(--miniWindowShellEdge),
+    inset 0 -1px 0 var(--miniWindowShellEdge);
+  backdrop-filter: blur(22px);
+}
+
+.miniWindowShell::before {
+  position: absolute;
+  top: -8px;
+  right: -10px;
+  width: 94px;
+  height: 48px;
+  pointer-events: none;
+  content: "";
+  background: radial-gradient(ellipse at top right, var(--miniWindowShellGlow), transparent 70%);
+}
+
+.miniWindowTopBar,
+.miniTimerBody {
+  position: relative;
+  z-index: 1;
+}
+
+.miniWindowTopBar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 19px;
+}
+
+.miniDragRegion {
+  -webkit-app-region: drag;
+  display: grid;
+  place-items: center;
+  width: 19px;
+  height: 19px;
+  color: var(--text-3);
+  background: transparent;
+  border: 0;
+  flex: 0 0 auto;
+}
+
+.miniDragIcon,
+.miniReturnIcon {
+  width: 19px;
+  height: 19px;
+}
+
+.miniReturnIcon {
+  transform: none;
+}
+
+.miniStatus {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 19px;
+  color: var(--text-1);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  flex: 0 0 auto;
+  margin-left: auto;
+  transform: translateX(-4px);
+}
+
+.miniStatusBadge {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 15px;
+  height: 15px;
+  overflow: visible;
+}
+
+.miniStatusBadgeRunning {
+  filter: drop-shadow(0 0 3px color-mix(in srgb, var(--accent) 18%, transparent));
+}
+
+.miniStatusHalo {
+  grid-area: 1 / 1;
+  width: 15px;
+  height: 15px;
+  border-radius: 999px;
+  box-sizing: border-box;
+  border: 2px solid color-mix(in srgb, var(--accent) 24%, white 10%);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  opacity: 0.68;
+  transform: translateX(-1px);
+}
+
+.miniStatusHaloRunning {
+  animation: miniStatusHaloPulse 1.9s ease-in-out infinite;
+}
+
+.miniStatusCore {
+  grid-area: 1 / 1;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--accent-strong);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+.miniStatusLabel {
+  color: var(--text-hero);
+  font: 850 12px/1 var(--font-ui);
+}
+
+.miniStatusLabelSubtle {
+  color: var(--text-3);
+}
+
+.miniStatusLabelMuted {
+  color: var(--text-2);
+}
+
+@keyframes miniStatusHaloPulse {
+  0%,
+  100% {
+    opacity: 0.54;
+    transform: translateX(-1px) scale(0.96);
+  }
+
+  50% {
+    opacity: 0.78;
+    transform: translateX(-1px) scale(1.08);
+  }
+}
+
+.miniReturnButton {
+  -webkit-app-region: no-drag;
+  display: grid;
+  place-items: center;
+  width: 19px;
+  height: 19px;
+  padding: 0;
+  color: var(--text-3);
+  background: transparent;
+  border: 0;
+  opacity: 1;
+  flex: 0 0 auto;
+  transition:
+    opacity 140ms ease,
+    transform 140ms ease;
+  transform: translateX(4px);
+}
+
+.miniReturnButton:hover,
+.miniReturnButton:focus-visible {
+  color: var(--text-3);
+  opacity: 1;
+  transform: translate(4px, -1px);
+  outline: none;
+}
+
+.miniTimerBody {
+  display: grid;
+  place-items: center;
+  min-height: 0;
+  padding-top: 0;
+}
+
+.miniTimerDigits {
+  color: var(--text-hero);
+  text-shadow: 0 10px 20px color-mix(in srgb, var(--accent) 16%, transparent);
+  transform: translateY(10px);
+}
+
+.miniTimerDigits .timerDigitsGroup {
+  min-width: 2.02ch;
+  font-size: clamp(58px, 24vw, 72px);
+}
+
+.miniTimerDigits .timerDigitsSeparator {
+  width: clamp(14px, 2vw, 18px);
+  height: calc(clamp(58px, 24vw, 72px) * 0.8);
+  margin: 0 0.05em;
+}
+
+.miniTimerDigits .timerDigitsSeparator::before,
+.miniTimerDigits .timerDigitsSeparator::after {
+  width: clamp(8px, 1.15vw, 10px);
+  height: clamp(8px, 1.15vw, 10px);
+}
+
+.miniTimerDigits .timerDigitsSeparator::before {
+  transform: translate(-50%, calc(-50% - 8px));
+}
+
+.miniTimerDigits .timerDigitsSeparator::after {
+  transform: translate(-50%, calc(-50% + 8px));
 }
 
 .timerView,

@@ -7,7 +7,7 @@
   "author": "",
   "license": "MIT",
   "scripts": {
-    "dev": "electron-vite dev",
+    "dev": "electron-vite dev --watch",
     "build": "tsc --noEmit && electron-vite build",
     "preview": "electron-vite preview",
     "test": "vitest run",

@@ -9,7 +9,8 @@ import {
   SqliteSettingsRepository,
   SqliteTaskRepository,
   SqliteTimerRuntimeRepository,
-  SqliteTimerSessionRepository
+  SqliteTimerSessionRepository,
+  SqliteWindowStateRepository
 } from './sqliteRepositories'
 
 let tempDir: string
@@ -169,6 +170,16 @@ describe('sqlite repositories', () => {
       focusMinutes: 50,
       themePreference: 'dark'
     })
+  })
+
+  test('persists the mini window position inside the settings table namespace', async () => {
+    const windowState = new SqliteWindowStateRepository(database)
+
+    expect(await windowState.getMiniWindowPosition()).toBeNull()
+
+    await windowState.saveMiniWindowPosition({ x: 1280, y: 720 })
+
+    expect(await windowState.getMiniWindowPosition()).toEqual({ x: 1280, y: 720 })
   })
 
   test('persists timer runtime state for restore scenarios', async () => {

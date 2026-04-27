@@ -1,7 +1,8 @@
-import { ipcMain, type BrowserWindow } from 'electron'
+import { BrowserWindow, ipcMain, screen } from 'electron'
 import {
   IPC_CHANNELS,
   type CreateTaskRequest,
+  type ResizeWindowRequest,
   type ReorderTasksRequest,
   type StartTimerRequest,
   type UpdateSettingsRequest,
@@ -22,12 +23,46 @@ export interface IpcServices {
   settings: SettingsService
   stats: StatsService
   theme: SystemThemePort
-  getWindow(): BrowserWindow | null
+  showMainWindow(): void | Promise<void>
+  showMiniWindow(): void | Promise<void>
+  getWindows(): BrowserWindow[]
   quit(): void
   onSettingsUpdated?(settings: AppSettings): void | Promise<void>
 }
 
 export const registerIpcHandlers = (services: IpcServices): void => {
+  const getSenderWindow = (webContentsId: number): BrowserWindow | null => {
+    return services.getWindows().find((window) => window.webContents.id === webContentsId) ?? null
+  }
+
+  const resizeSenderWindow = (window: BrowserWindow, request: ResizeWindowRequest): void => {
+    const width = Math.round(request.width)
+    const height = Math.round(request.height)
+    if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) {
+      return
+    }
+
+    const currentBounds = window.getBounds()
+    const workArea = screen.getDisplayMatching(currentBounds).workArea
+    const nextBounds = {
+      x: Math.max(workArea.x, Math.min(currentBounds.x, workArea.x + workArea.width - width)),
+      y: Math.max(workArea.y, Math.min(currentBounds.y, workArea.y + workArea.height - height)),
+      width,
+      height
+    }
+
+    window.setMinimumSize(width, height)
+    window.setMaximumSize(width, height)
+    window.setContentSize(width, height)
+    window.setBounds(nextBounds)
+  }
+
+  const broadcastSnapshot = (snapshot: ReturnType<TimerService['getSnapshot']>): void => {
+    for (const window of services.getWindows()) {
+      window.webContents.send(IPC_CHANNELS.timer.snapshot, snapshot)
+    }
+  }
+
   ipcMain.handle(IPC_CHANNELS.timer.getSnapshot, () => services.timer.getSnapshot())
   ipcMain.handle(IPC_CHANNELS.timer.start, (_event, request?: StartTimerRequest) => services.timer.start(request))
   ipcMain.handle(IPC_CHANNELS.timer.bindCurrentTask, (_event, taskId: string | null) => services.timer.bindCurrentTask(taskId))
@@ -57,16 +92,18 @@ export const registerIpcHandlers = (services: IpcServices): void => {
   ipcMain.handle(IPC_CHANNELS.stats.get, () => services.stats.get())
 
   ipcMain.handle(IPC_CHANNELS.system.getTheme, () => (services.theme.shouldUseDarkColors() ? 'dark' : 'light'))
-  ipcMain.handle(IPC_CHANNELS.system.showWindow, () => {
-    const window = services.getWindow()
-    window?.show()
-    window?.focus()
+  ipcMain.handle(IPC_CHANNELS.system.showWindow, () => services.showMainWindow())
+  ipcMain.handle(IPC_CHANNELS.system.showMiniWindow, () => services.showMiniWindow())
+  ipcMain.handle(IPC_CHANNELS.system.resizeWindow, (event, request: ResizeWindowRequest) => {
+    const window = getSenderWindow(event.sender.id)
+    if (!window) return
+    resizeSenderWindow(window, request)
   })
-  ipcMain.handle(IPC_CHANNELS.system.minimizeWindow, () => {
-    services.getWindow()?.minimize()
+  ipcMain.handle(IPC_CHANNELS.system.minimizeWindow, (event) => {
+    getSenderWindow(event.sender.id)?.minimize()
   })
-  ipcMain.handle(IPC_CHANNELS.system.toggleMaximizeWindow, () => {
-    const window = services.getWindow()
+  ipcMain.handle(IPC_CHANNELS.system.toggleMaximizeWindow, (event) => {
+    const window = getSenderWindow(event.sender.id)
     if (!window) return
     if (window.isMaximized()) {
       window.unmaximize()
@@ -74,12 +111,12 @@ export const registerIpcHandlers = (services: IpcServices): void => {
     }
     window.maximize()
   })
-  ipcMain.handle(IPC_CHANNELS.system.closeWindow, () => {
-    services.getWindow()?.close()
+  ipcMain.handle(IPC_CHANNELS.system.closeWindow, (event) => {
+    getSenderWindow(event.sender.id)?.close()
   })
   ipcMain.handle(IPC_CHANNELS.system.quit, () => services.quit())
 
   services.timer.onSnapshot((snapshot) => {
-    services.getWindow()?.webContents.send(IPC_CHANNELS.timer.snapshot, snapshot)
+    broadcastSnapshot(snapshot)
   })
 }
