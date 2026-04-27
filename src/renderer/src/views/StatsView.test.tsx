@@ -20,6 +20,13 @@ const createStats = (input: Partial<StatsWithUnboundFocus> = {}): StatsWithUnbou
   ...input
 })
 
+const localDateKey = (date: Date): string => {
+  const year = date.getFullYear()
+  const month = `${date.getMonth() + 1}`.padStart(2, '0')
+  const day = `${date.getDate()}`.padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
 const createCalendarDays = (year: number, month: number): CalendarDayStats[] => {
   const dayCount = new Date(year, month, 0).getDate()
   return Array.from({ length: dayCount }, (_, index) => {
@@ -31,7 +38,9 @@ const createCalendarDays = (year: number, month: number): CalendarDayStats[] => 
       completedTasks: 0,
       shortBreakMinutes: 0,
       longBreakMinutes: 0,
-      isFuture: false
+      isFuture: false,
+      taskFocusMinutes: [],
+      unboundFocusMinutes: 0
     }
   })
 }
@@ -56,18 +65,21 @@ const noop = (): void => undefined
 const renderStatsView = (
   stats: FocusStats = createStats(),
   input: Partial<Parameters<typeof StatsView>[0]> = {}
-): string =>
-  renderToStaticMarkup(
-    <StatsView
-      activeStatsTab="today"
-      canGoToNextMonth={false}
-      monthStats={createMonthStats()}
-      onCalendarMonthChange={noop}
-      onStatsTabChange={noop}
-      stats={stats}
-      {...input}
-    />
-  )
+): string => {
+  const props = {
+    activeStatsTab: 'today',
+    canGoToNextMonth: false,
+    monthStats: createMonthStats(),
+    onCalendarDaySelect: noop,
+    onCalendarMonthChange: noop,
+    onStatsTabChange: noop,
+    selectedCalendarDate: localDateKey(new Date()),
+    stats,
+    ...input
+  } as Parameters<typeof StatsView>[0]
+
+  return renderToStaticMarkup(<StatsView {...props} />)
+}
 
 describe('StatsView', () => {
   test('renders top summary cards and actual break totals', () => {
@@ -237,6 +249,102 @@ describe('StatsView', () => {
     expect(html).toContain('data-calendar-tooltip-metric="rest"')
     expect(html).toContain('data-calendar-tooltip-icon="rest"')
     expect(html).toContain('data-calendar-tooltip-value="rest">15m<')
+  })
+
+  test('renders today focus duration rows below the calendar by default', () => {
+    const now = new Date()
+    const year = now.getFullYear()
+    const month = now.getMonth() + 1
+    const todayKey = localDateKey(now)
+    const todayIndex = now.getDate() - 1
+    const days = createCalendarDays(year, month)
+    days[todayIndex] = {
+      ...days[todayIndex],
+      focusMinutes: 55,
+      completedPomodoros: 3,
+      taskFocusMinutes: [{ taskId: 'today-task', title: '今日任务', minutes: 20, status: 'completed' }],
+      unboundFocusMinutes: 35
+    }
+
+    const html = renderStatsView(
+      createStats({
+        taskFocusMinutes: [{ taskId: 'today-task', title: '今日任务', minutes: 20, status: 'completed' }],
+        unboundFocusMinutes: 35
+      }),
+      {
+        activeStatsTab: 'calendar',
+        monthStats: createMonthStats({
+          year,
+          month,
+          days,
+          maxFocusMinutes: 55
+        }),
+        selectedCalendarDate: todayKey
+      }
+    )
+
+    expect(html).toContain(`${todayKey.slice(5)} 专注时长`)
+    expect(html).toContain('已完成任务 + 未绑定专注')
+    expect(html).not.toContain('当日专注时长')
+    expect(html).toContain(`data-calendar-date="${todayKey}"`)
+    expect(html).toContain('data-calendar-selected="true"')
+    expect(html).toContain('未绑定专注')
+    expect(html).toContain('35m')
+    expect(html).toContain('今日任务')
+    expect(html).toContain('20m')
+
+    const unboundIndex = html.indexOf('>未绑定专注<')
+    const taskIndex = html.indexOf('>今日任务<')
+
+    expect(unboundIndex).toBeGreaterThanOrEqual(0)
+    expect(taskIndex).toBeGreaterThan(unboundIndex)
+  })
+
+  test('renders selected day focus duration rows and a non-today empty state', () => {
+    const days = createCalendarDays(2026, 4)
+    days[9] = {
+      ...days[9],
+      focusMinutes: 120,
+      completedPomodoros: 4,
+      taskFocusMinutes: [
+        { taskId: 'task-a', title: '选中任务 A', minutes: 80, status: 'completed' },
+        { taskId: 'task-b', title: '选中任务 B', minutes: 10, status: 'completed' }
+      ],
+      unboundFocusMinutes: 30
+    }
+    const html = renderStatsView(createStats(), {
+      activeStatsTab: 'calendar',
+      monthStats: createMonthStats({ days, maxFocusMinutes: 120 }),
+      selectedCalendarDate: '2026-04-10'
+    })
+
+    expect(html).toContain('04-10 专注时长')
+    expect(html).toContain('已完成任务 + 未绑定专注')
+    expect(html).toContain('data-calendar-date="2026-04-10"')
+    expect(html).toContain('data-calendar-selected="true"')
+    expect(html).not.toContain('data-calendar-tooltip-date="2026-04-10"')
+    expect(html).toContain('选中任务 A')
+    expect(html).toContain('1h 20m')
+    expect(html).toContain('未绑定专注')
+    expect(html).toContain('30m')
+    expect(html).toContain('选中任务 B')
+    expect(html).toContain('10m')
+
+    const taskAIndex = html.indexOf('>选中任务 A<')
+    const unboundIndex = html.indexOf('>未绑定专注<')
+    const taskBIndex = html.indexOf('>选中任务 B<')
+
+    expect(taskAIndex).toBeGreaterThanOrEqual(0)
+    expect(unboundIndex).toBeGreaterThan(taskAIndex)
+    expect(taskBIndex).toBeGreaterThan(unboundIndex)
+
+    const emptyHtml = renderStatsView(createStats(), {
+      activeStatsTab: 'calendar',
+      monthStats: createMonthStats({ days, maxFocusMinutes: 120 }),
+      selectedCalendarDate: '2026-04-11'
+    })
+
+    expect(emptyHtml).toContain('这一天还没有专注时长记录')
   })
 
   test('marks today in the calendar when the selected month contains the local current day', () => {

@@ -90,8 +90,15 @@ describe('StatsService', () => {
         session({
           id: 'april-focus',
           phase: 'focus',
+          taskId: 'april-task',
           startedAt: '2026-04-10T10:00:00.000+08:00',
           actualDurationMs: 25 * 60_000
+        }),
+        session({
+          id: 'april-unbound-focus',
+          phase: 'focus',
+          startedAt: '2026-04-10T11:00:00.000+08:00',
+          actualDurationMs: 10 * 60_000
         }),
         session({
           id: 'may-focus',
@@ -137,11 +144,15 @@ describe('StatsService', () => {
 
     const monthStats = (await service.getMonth({ year: 2026, month: 4 })) as MonthStats
 
-    expect(monthStats.summary.focusMinutes).toBe(25)
-    expect(monthStats.summary.completedPomodoros).toBe(1)
+    expect(monthStats.summary.focusMinutes).toBe(35)
+    expect(monthStats.summary.completedPomodoros).toBe(2)
     expect(monthStats.summary.completedTasks).toBe(1)
     expect(monthStats.days).toHaveLength(30)
     expect(monthStats.days[9].date).toBe('2026-04-10')
-    expect(monthStats.days[9].focusMinutes).toBe(25)
+    expect(monthStats.days[9].focusMinutes).toBe(35)
+    expect(monthStats.days[9].unboundFocusMinutes).toBe(10)
+    expect(monthStats.days[9].taskFocusMinutes).toEqual([
+      { taskId: 'april-task', title: 'April Task', minutes: 25, status: 'completed' }
+    ])
   })
 })

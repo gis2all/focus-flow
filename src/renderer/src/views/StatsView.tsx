@@ -1,5 +1,5 @@
 import type { CSSProperties, ReactElement } from 'react'
-import type { CalendarDayStats, FocusStats, MonthStats } from '@shared/types'
+import type { CalendarDayStats, FocusStats, MonthStats, TaskFocusPoint } from '@shared/types'
 import {
   StatsSummaryClipboardIcon,
   StatsSummaryClockIcon,
@@ -16,8 +16,10 @@ interface StatsViewProps {
   activeStatsTab: StatsTab
   canGoToNextMonth: boolean
   monthStats: MonthStats
+  onCalendarDaySelect(date: string): void
   onCalendarMonthChange(direction: CalendarMonthDirection): void
   onStatsTabChange(tab: StatsTab): void
+  selectedCalendarDate: string
   stats: FocusStats
 }
 
@@ -67,6 +69,33 @@ const formatCalendarDateLabel = (date: string): string => {
   return `${Number(month)}月${Number(day)}日`
 }
 
+const formatCalendarDateShortLabel = (date: string): string => date.slice(5)
+
+const buildFocusDurationRows = (taskFocusMinutes: TaskFocusPoint[], unboundFocusMinutes: number): FocusDurationRow[] => {
+  const completedTaskDurations: FocusDurationRow[] = [...taskFocusMinutes]
+    .sort((left, right) => right.minutes - left.minutes)
+    .map((item) => ({
+      taskId: item.taskId,
+      title: item.title,
+      minutes: item.minutes,
+      kind: 'task'
+    }))
+
+  return [
+    ...completedTaskDurations,
+    ...(Math.max(unboundFocusMinutes, 0) > 0
+      ? [
+          {
+            taskId: 'unbound-focus',
+            title: '未绑定专注',
+            minutes: Math.max(unboundFocusMinutes, 0),
+            kind: 'unbound' as const
+          }
+        ]
+      : [])
+  ].sort((left, right) => right.minutes - left.minutes)
+}
+
 export const getHourBarHeight = (minutes: number, maxHourly: number): string => {
   if (minutes <= 0) return '0%'
   return `${(minutes / maxHourly) * 100}%`
@@ -100,8 +129,10 @@ export const StatsView = ({
   activeStatsTab,
   canGoToNextMonth,
   monthStats,
+  onCalendarDaySelect,
   onCalendarMonthChange,
   onStatsTabChange,
+  selectedCalendarDate,
   stats
 }: StatsViewProps): ReactElement => {
   const isCalendarTab = activeStatsTab === 'calendar'
@@ -112,33 +143,12 @@ export const StatsView = ({
   const focusTotal = Math.max(stats.today.focusMinutes, 0)
   const shortBreakMinutes = Math.max(stats.today.shortBreakMinutes, 0)
   const longBreakMinutes = Math.max(stats.today.longBreakMinutes, 0)
-  const unboundFocusMinutes = Math.max(stats.unboundFocusMinutes, 0)
   const breakTotal = shortBreakMinutes + longBreakMinutes
   const totalTrackedRaw = focusTotal + breakTotal
   const totalTracked = Math.max(totalTrackedRaw, 1)
   const focusPercent = Math.round((focusTotal / totalTracked) * 100)
   const breakPercent = Math.round(((focusTotal + shortBreakMinutes) / totalTracked) * 100)
-  const completedTaskDurations: FocusDurationRow[] = [...stats.taskFocusMinutes]
-    .sort((left, right) => right.minutes - left.minutes)
-    .map((item) => ({
-      taskId: item.taskId,
-      title: item.title,
-      minutes: item.minutes,
-      kind: 'task'
-    }))
-  const focusDurationRows: FocusDurationRow[] = [
-    ...completedTaskDurations,
-    ...(unboundFocusMinutes > 0
-      ? [
-          {
-            taskId: 'unbound-focus',
-            title: '未绑定专注',
-            minutes: unboundFocusMinutes,
-            kind: 'unbound' as const
-          }
-        ]
-      : [])
-  ].sort((left, right) => right.minutes - left.minutes)
+  const focusDurationRows = buildFocusDurationRows(stats.taskFocusMinutes, stats.unboundFocusMinutes)
   const maxCompletedTaskMinutes = Math.max(...focusDurationRows.map((item) => item.minutes), 1)
   const halfHourlyPeak = Math.round(hourlyPeak / 2)
   const yAxisTicks = [formatDurationLabel(hourlyPeak), formatDurationLabel(halfHourlyPeak), formatDurationLabel(0)]
@@ -174,6 +184,20 @@ export const StatsView = ({
   ]
   const todayKey = localDateKey(new Date())
   const calendarGridItems = getCalendarGridItems(monthStats)
+  const selectedCalendarDay = monthStats.days.find((day) => day.date === selectedCalendarDate) ?? null
+  const isSelectedCalendarDateToday = selectedCalendarDate === todayKey
+  const selectedCalendarFocusDurationRows = isSelectedCalendarDateToday
+    ? focusDurationRows
+    : buildFocusDurationRows(selectedCalendarDay?.taskFocusMinutes ?? [], selectedCalendarDay?.unboundFocusMinutes ?? 0)
+  const maxSelectedCalendarFocusMinutes = Math.max(
+    ...selectedCalendarFocusDurationRows.map((item) => item.minutes),
+    1
+  )
+  const selectedCalendarRankTitle = `${formatCalendarDateShortLabel(selectedCalendarDate)} 专注时长`
+  const selectedCalendarRankMeta = '已完成任务 + 未绑定专注'
+  const selectedCalendarEmptyState = isSelectedCalendarDateToday
+    ? '今天还没有专注时长记录'
+    : '这一天还没有专注时长记录'
 
   return (
     <div className={styles.statsView}>
@@ -218,7 +242,8 @@ export const StatsView = ({
         </aside>
 
         {isCalendarTab ? (
-          <section className={styles.calendarPanel}>
+          <>
+            <section className={styles.calendarPanel}>
             <div className={styles.calendarPanelHeader}>
               <div>
                 <h2>
@@ -251,6 +276,7 @@ export const StatsView = ({
 
                 const day = item.day
                 const isToday = day.date === todayKey
+                const isSelected = day.date === selectedCalendarDate
                 const breakMinutes = day.shortBreakMinutes + day.longBreakMinutes
                 const heatLevel = getCalendarHeatLevel(day, monthStats.maxFocusMinutes)
                 const columnIndex = index % 7
@@ -258,14 +284,17 @@ export const StatsView = ({
                 return (
                   <button
                     aria-label={getCalendarDayAriaLabel(day, isToday)}
+                    aria-selected={isSelected}
                     className={styles.calendarDay}
                     data-calendar-column={columnIndex}
                     data-calendar-date={day.date}
                     data-calendar-future={day.isFuture ? 'true' : undefined}
+                    data-calendar-selected={isSelected ? 'true' : undefined}
                     data-calendar-today={isToday ? 'true' : undefined}
                     data-heat-level={heatLevel}
                     disabled={day.isFuture}
                     key={day.date}
+                    onClick={() => onCalendarDaySelect(day.date)}
                     role="gridcell"
                     type="button"
                   >
@@ -278,8 +307,8 @@ export const StatsView = ({
                         今
                       </em>
                     ) : null}
-                    {!day.isFuture ? (
-                      <span className={styles.calendarTooltip} role="tooltip">
+                    {!day.isFuture && !isSelected ? (
+                      <span className={styles.calendarTooltip} data-calendar-tooltip-date={day.date} role="tooltip">
                         <strong className={styles.calendarTooltipDate}>
                           <span>{formatCalendarDateLabel(day.date)}</span>
                           {isToday ? <em className={styles.calendarTooltipToday}>今天</em> : null}
@@ -346,7 +375,31 @@ export const StatsView = ({
               ))}
               <span>多</span>
             </div>
-          </section>
+            </section>
+            <section className={styles.rankPanel}>
+              <div className={styles.statsPanelHeader}>
+                <h2>{selectedCalendarRankTitle}</h2>
+                <span>{selectedCalendarRankMeta}</span>
+              </div>
+              {selectedCalendarFocusDurationRows.length === 0 ? (
+                <div className={styles.statsEmptyState}>{selectedCalendarEmptyState}</div>
+              ) : (
+                <div className={styles.rankList}>
+                  {selectedCalendarFocusDurationRows.map((item) => (
+                    <div className={styles.rankRow} data-rank-kind={item.kind} key={item.taskId}>
+                      <div className={styles.rankRowTop}>
+                        <span>{item.title}</span>
+                        <strong>{formatDurationLabel(item.minutes)}</strong>
+                      </div>
+                      <div className={styles.rankTrack}>
+                        <span style={{ width: getRankBarWidth(item.minutes, maxSelectedCalendarFocusMinutes) }} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
+          </>
         ) : (
           <>
             <section className={styles.chartPanel}>

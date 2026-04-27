@@ -106,6 +106,8 @@ export interface MonthStatsSummary {
 export interface CalendarDayStats extends MonthStatsSummary {
   date: string
   isFuture: boolean
+  taskFocusMinutes: TaskFocusPoint[]
+  unboundFocusMinutes: number
 }
 
 export interface MonthStats {

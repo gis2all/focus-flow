@@ -1,4 +1,12 @@
-import type { CalendarDayStats, FocusStats, MonthStats, MonthStatsSummary, Task, TimerSession } from '@shared/types'
+import type {
+  CalendarDayStats,
+  FocusStats,
+  MonthStats,
+  MonthStatsSummary,
+  Task,
+  TaskFocusPoint,
+  TimerSession
+} from '@shared/types'
 
 export interface AggregateStatsInput {
   now: Date
@@ -45,12 +53,28 @@ const createMonthDayBuckets = (year: number, month: number, now: Date): Map<stri
     buckets.set(dateKey, {
       date: dateKey,
       ...createEmptyMonthSummary(),
-      isFuture: dateKey > todayKey
+      isFuture: dateKey > todayKey,
+      taskFocusMinutes: [],
+      unboundFocusMinutes: 0
     })
   }
 
   return buckets
 }
+
+const buildTaskFocusPoints = (taskTotals: Map<string, number>, tasksById: Map<string, Task>): TaskFocusPoint[] =>
+  Array.from(taskTotals.entries())
+    .filter(([, minutes]) => minutes > 0)
+    .map(([taskId, minutes]) => {
+      const task = tasksById.get(taskId)!
+      return {
+        taskId,
+        title: task.title,
+        minutes,
+        status: 'completed' as const
+      }
+    })
+    .sort((left, right) => right.minutes - left.minutes)
 
 export const aggregateStats = (input: AggregateStatsInput): FocusStats => {
   const completedFocusSessions = input.sessions.filter((session) => session.phase === 'focus' && session.completed)
@@ -148,6 +172,8 @@ export const aggregateMonthStats = (input: AggregateMonthStatsInput): MonthStats
   const dayBuckets = createMonthDayBuckets(input.year, input.month, input.now)
   const summary = createEmptyMonthSummary()
   const tasks = input.tasks ?? []
+  const tasksById = new Map(tasks.map((task) => [task.id, task]))
+  const dayTaskTotals = new Map<string, Map<string, number>>()
   const todayKey = localDateKey(input.now)
 
   for (const task of tasks) {
@@ -172,6 +198,18 @@ export const aggregateMonthStats = (input: AggregateMonthStatsInput): MonthStats
       day.completedPomodoros += 1
       summary.focusMinutes += minutes
       summary.completedPomodoros += 1
+
+      if (session.taskId === null) {
+        day.unboundFocusMinutes += minutes
+        continue
+      }
+
+      const task = tasksById.get(session.taskId)
+      if (!task?.completedAt || localDateKey(new Date(task.completedAt)) !== sessionKey) continue
+
+      const taskTotals = dayTaskTotals.get(sessionKey) ?? new Map<string, number>()
+      taskTotals.set(session.taskId, (taskTotals.get(session.taskId) ?? 0) + minutes)
+      dayTaskTotals.set(sessionKey, taskTotals)
       continue
     }
 
@@ -188,6 +226,10 @@ export const aggregateMonthStats = (input: AggregateMonthStatsInput): MonthStats
   }
 
   const days = Array.from(dayBuckets.values())
+  for (const day of days) {
+    const taskTotals = dayTaskTotals.get(day.date)
+    day.taskFocusMinutes = taskTotals ? buildTaskFocusPoints(taskTotals, tasksById) : []
+  }
 
   return {
     year: input.year,

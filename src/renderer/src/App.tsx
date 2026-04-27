@@ -46,6 +46,13 @@ const getStatsMonth = (date = new Date()): StatsMonth => ({
   month: date.getMonth() + 1
 })
 
+const localDateKey = (date: Date): string => {
+  const year = date.getFullYear()
+  const month = `${date.getMonth() + 1}`.padStart(2, '0')
+  const day = `${date.getDate()}`.padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
 const compareStatsMonths = (left: StatsMonth, right: StatsMonth): number =>
   left.year === right.year ? left.month - right.month : left.year - right.year
 
@@ -57,9 +64,7 @@ const getAdjacentStatsMonth = (month: StatsMonth, direction: CalendarMonthDirect
 const createEmptyMonthStats = ({ year, month }: StatsMonth): MonthStats => {
   const dayCount = new Date(year, month, 0).getDate()
   const today = new Date()
-  const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(
-    today.getDate()
-  ).padStart(2, '0')}`
+  const todayKey = localDateKey(today)
   const days = Array.from({ length: dayCount }, (_, index) => {
     const date = `${year}-${String(month).padStart(2, '0')}-${String(index + 1).padStart(2, '0')}`
     return {
@@ -69,7 +74,9 @@ const createEmptyMonthStats = ({ year, month }: StatsMonth): MonthStats => {
       completedTasks: 0,
       shortBreakMinutes: 0,
       longBreakMinutes: 0,
-      isFuture: date > todayKey
+      isFuture: date > todayKey,
+      taskFocusMinutes: [],
+      unboundFocusMinutes: 0
     }
   })
 
@@ -89,6 +96,7 @@ const createEmptyMonthStats = ({ year, month }: StatsMonth): MonthStats => {
 }
 
 const initialStatsMonth = getStatsMonth()
+const initialCalendarDate = localDateKey(new Date())
 
 const fallbackTaskBoard: TaskBoardSnapshot = {
   counts: {
@@ -113,12 +121,14 @@ export const App = ({ windowMode }: AppProps): ReactElement => {
   const [activeStatsTab, setActiveStatsTab] = useState<StatsTab>('today')
   const [selectedStatsMonth, setSelectedStatsMonth] = useState<StatsMonth>(initialStatsMonth)
   const [monthStats, setMonthStats] = useState<MonthStats>(createEmptyMonthStats(initialStatsMonth))
+  const [selectedCalendarDate, setSelectedCalendarDate] = useState(initialCalendarDate)
   const [systemTheme, setSystemTheme] = useState<'light' | 'dark'>('light')
   const [newTaskTitle, setNewTaskTitle] = useState('')
   const [tasksActiveTab, setTasksActiveTab] = useState<TaskViewTab>('active')
   const [displayProgress, setDisplayProgress] = useState(fallbackSnapshot.progress)
   const previousSnapshotRef = useRef<TimerSnapshot>(fallbackSnapshot)
   const selectedStatsMonthRef = useRef<StatsMonth>(initialStatsMonth)
+  const selectedCalendarDateRef = useRef(initialCalendarDate)
 
   const refreshTaskBoard = async (): Promise<void> => {
     setTaskBoard(await window.focusFlow.tasks.getBoard())
@@ -140,6 +150,12 @@ export const App = ({ windowMode }: AppProps): ReactElement => {
     if (compareStatsMonths(nextMonth, getStatsMonth()) > 0) return
     selectedStatsMonthRef.current = nextMonth
     setSelectedStatsMonth(nextMonth)
+    const nextMonthPrefix = `${nextMonth.year}-${String(nextMonth.month).padStart(2, '0')}`
+    if (!selectedCalendarDateRef.current.startsWith(nextMonthPrefix)) {
+      const todayKey = localDateKey(new Date())
+      selectedCalendarDateRef.current = todayKey
+      setSelectedCalendarDate(todayKey)
+    }
     setMonthStats(await window.focusFlow.stats.getMonth(nextMonth))
   }
 
@@ -201,6 +217,11 @@ export const App = ({ windowMode }: AppProps): ReactElement => {
   useEffect(() => {
     selectedStatsMonthRef.current = selectedStatsMonth
   }, [selectedStatsMonth])
+
+  const selectCalendarDay = (date: string): void => {
+    selectedCalendarDateRef.current = date
+    setSelectedCalendarDate(date)
+  }
 
   useEffect(() => {
     if (windowMode !== 'mini') return
@@ -333,7 +354,9 @@ export const App = ({ windowMode }: AppProps): ReactElement => {
           canGoToNextMonth={compareStatsMonths(selectedStatsMonth, getStatsMonth()) < 0}
           monthStats={monthStats}
           onCalendarMonthChange={(direction) => void changeCalendarMonth(direction)}
+          onCalendarDaySelect={selectCalendarDay}
           onStatsTabChange={setActiveStatsTab}
+          selectedCalendarDate={selectedCalendarDate}
           stats={stats}
         />
       )

@@ -2174,20 +2174,21 @@
 }
 
 .calendarStatsLayout {
-  grid-template-rows: minmax(86px, auto) minmax(0, 1fr);
+  grid-template-rows: minmax(86px, auto) minmax(0, 1fr) minmax(156px, 0.62fr);
   grid-template-areas:
     "numbers numbers"
-    "calendar calendar";
+    "calendar calendar"
+    "rank rank";
 }
 
 .calendarPanel {
   grid-area: calendar;
   display: grid;
   grid-template-rows: auto auto minmax(0, 1fr) auto;
-  gap: 12px;
+  gap: 10px;
   min-width: 0;
   min-height: 0;
-  padding: 16px 18px;
+  padding: 14px 18px;
   background: color-mix(in srgb, var(--window-bg) 82%, transparent);
   border: 1px solid color-mix(in srgb, var(--line-soft) 90%, white 10%);
   border-radius: 8px;
@@ -2264,7 +2265,7 @@
 }
 
 .calendarGrid > [data-calendar-placeholder="true"] {
-  min-height: 44px;
+  min-height: 29px;
 }
 
 .calendarDay {
@@ -2272,8 +2273,8 @@
   display: grid;
   place-items: center;
   min-width: 0;
-  min-height: 44px;
-  padding: 6px 4px;
+  min-height: 29px;
+  padding: 3px 4px;
   color: var(--text-1);
   background: color-mix(in srgb, #eef5ff 66%, var(--window-bg) 34%);
   border: 1px solid color-mix(in srgb, var(--line-soft) 82%, white 18%);
@@ -2305,6 +2306,14 @@
 
 .calendarDay[data-calendar-today="true"] {
   border-color: color-mix(in srgb, var(--line-soft) 82%, white 18%);
+}
+
+.calendarDay[data-calendar-selected="true"] {
+  border-color: color-mix(in srgb, var(--accent) 52%, var(--line-soft));
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--accent) 34%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.78),
+    0 10px 20px color-mix(in srgb, var(--accent) 16%, transparent);
 }
 
 .calendarDay[data-calendar-future="true"] {
@@ -3202,6 +3211,14 @@
   border-color: var(--dark-card-border);
 }
 
+:root[data-theme="dark"] .calendarDay[data-calendar-selected="true"] {
+  border-color: color-mix(in srgb, var(--accent) 52%, var(--dark-card-border));
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--accent) 32%, transparent),
+    inset 0 1px 0 var(--dark-glass-highlight),
+    0 10px 20px rgba(30, 110, 235, 0.18);
+}
+
 :root[data-theme="dark"] .calendarTodayDot {
   background: #78d6a1;
   box-shadow: 0 0 0 2px color-mix(in srgb, #78d6a1 18%, transparent);
@@ -3326,10 +3343,11 @@
   }
 
   .calendarStatsLayout {
-    grid-template-rows: auto minmax(320px, 1fr);
+    grid-template-rows: auto minmax(320px, 1fr) auto;
     grid-template-areas:
       "numbers"
-      "calendar";
+      "calendar"
+      "rank";
   }
 
   .statsNumbers {

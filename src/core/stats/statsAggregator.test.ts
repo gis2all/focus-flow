@@ -127,6 +127,12 @@ describe('stats aggregator', () => {
       tasks: [
         task({ id: 'local-april-task', title: 'Local April Task', completedAt: '2026-03-31T16:10:00.000Z' }),
         task({ id: 'april-task', title: 'April Task', completedAt: '2026-04-10T09:00:00.000+08:00' }),
+        task({ id: 'active-task', title: 'Active Task' }),
+        task({
+          id: 'completed-other-day',
+          title: 'Completed Other Day',
+          completedAt: '2026-04-11T09:00:00.000+08:00'
+        }),
         task({ id: 'may-task', title: 'May Task', completedAt: '2026-05-01T09:00:00.000+08:00' })
       ],
       sessions: [
@@ -142,6 +148,20 @@ describe('stats aggregator', () => {
           taskId: 'april-task',
           startedAt: '2026-04-10T10:00:00.000+08:00',
           actualDurationMs: 30 * 60_000
+        }),
+        session({
+          id: 'april-active-task-focus',
+          phase: 'focus',
+          taskId: 'active-task',
+          startedAt: '2026-04-10T10:30:00.000+08:00',
+          actualDurationMs: 7 * 60_000
+        }),
+        session({
+          id: 'april-other-day-completed-task-focus',
+          phase: 'focus',
+          taskId: 'completed-other-day',
+          startedAt: '2026-04-10T10:45:00.000+08:00',
+          actualDurationMs: 8 * 60_000
         }),
         session({
           id: 'april-deleted-task-focus',
@@ -183,13 +203,13 @@ describe('stats aggregator', () => {
     expect(stats.month).toBe(4)
     expect(stats.days).toHaveLength(30)
     expect(stats.summary).toEqual({
-      focusMinutes: 75,
-      completedPomodoros: 3,
-      completedTasks: 2,
+      focusMinutes: 90,
+      completedPomodoros: 5,
+      completedTasks: 3,
       shortBreakMinutes: 5,
       longBreakMinutes: 15
     })
-    expect(stats.maxFocusMinutes).toBe(50)
+    expect(stats.maxFocusMinutes).toBe(65)
     expect(stats.days[0]).toMatchObject({
       date: '2026-04-01',
       focusMinutes: 25,
@@ -197,17 +217,23 @@ describe('stats aggregator', () => {
       completedTasks: 1,
       shortBreakMinutes: 5,
       longBreakMinutes: 0,
-      isFuture: false
+      isFuture: false,
+      taskFocusMinutes: [],
+      unboundFocusMinutes: 25
     })
     expect(stats.days[9]).toMatchObject({
       date: '2026-04-10',
-      focusMinutes: 50,
-      completedPomodoros: 2,
+      focusMinutes: 65,
+      completedPomodoros: 4,
       completedTasks: 1,
       shortBreakMinutes: 0,
       longBreakMinutes: 15,
-      isFuture: false
+      isFuture: false,
+      unboundFocusMinutes: 0
     })
+    expect(stats.days[9].taskFocusMinutes).toEqual([
+      { taskId: 'april-task', title: 'April Task', minutes: 30, status: 'completed' }
+    ])
     expect(stats.days[25]).toMatchObject({
       date: '2026-04-26',
       focusMinutes: 0,
@@ -215,7 +241,9 @@ describe('stats aggregator', () => {
       completedTasks: 0,
       shortBreakMinutes: 0,
       longBreakMinutes: 0,
-      isFuture: true
+      isFuture: true,
+      taskFocusMinutes: [],
+      unboundFocusMinutes: 0
     })
   })
 })
