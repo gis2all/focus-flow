@@ -221,6 +221,13 @@
   color: var(--text-1);
   border-radius: 4px;
   background: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.miniWindow,
+.miniWindow * {
+  cursor: default;
 }
 
 .miniWindowDark {
@@ -267,6 +274,7 @@
     inset -1px 0 0 var(--miniWindowShellEdge),
     inset 0 -1px 0 var(--miniWindowShellEdge);
   backdrop-filter: blur(22px);
+  cursor: default;
 }
 
 .miniWindowShell::before {
@@ -294,7 +302,6 @@
 }
 
 .miniDragRegion {
-  -webkit-app-region: drag;
   display: grid;
   place-items: center;
   width: 19px;
@@ -303,6 +310,12 @@
   background: transparent;
   border: 0;
   flex: 0 0 auto;
+  cursor: move !important;
+  touch-action: none;
+}
+
+.miniDragRegion * {
+  cursor: move !important;
 }
 
 .miniDragIcon,
@@ -409,6 +422,11 @@
     opacity 140ms ease,
     transform 140ms ease;
   transform: translateX(4px);
+  cursor: pointer !important;
+}
+
+.miniReturnButton * {
+  cursor: pointer !important;
 }
 
 .miniReturnButton:hover,
@@ -2337,7 +2355,7 @@
 .settingLabel {
   overflow: hidden;
   color: var(--text-1);
-  font: 400 11px/1 var(--font-ui);
+  font: 700 11px/1 var(--font-ui);
   text-overflow: ellipsis;
   white-space: nowrap;
 }

@@ -6,8 +6,10 @@ import {
   type ReorderTasksRequest,
   type StartTimerRequest,
   type UpdateSettingsRequest,
-  type UpdateTaskRequest
+  type UpdateTaskRequest,
+  type WindowDragRequest
 } from '@shared/contracts'
+import { MINI_WINDOW_HEIGHT, MINI_WINDOW_WIDTH } from '@main/windowing'
 import type { AppSettings } from '@shared/types'
 import type { SystemThemePort } from '@main/ports/desktop'
 import type { SettingsService } from '@main/services/settingsService'
@@ -31,6 +33,14 @@ export interface IpcServices {
 }
 
 export const registerIpcHandlers = (services: IpcServices): void => {
+  const activeWindowDrags = new Map<number, { offsetX: number; offsetY: number }>()
+
+  const lockMiniWindowSize = (window: BrowserWindow): void => {
+    window.setMinimumSize(MINI_WINDOW_WIDTH, MINI_WINDOW_HEIGHT)
+    window.setMaximumSize(MINI_WINDOW_WIDTH, MINI_WINDOW_HEIGHT)
+    window.setContentSize(MINI_WINDOW_WIDTH, MINI_WINDOW_HEIGHT)
+  }
+
   const getSenderWindow = (webContentsId: number): BrowserWindow | null => {
     return services.getWindows().find((window) => window.webContents.id === webContentsId) ?? null
   }
@@ -55,6 +65,45 @@ export const registerIpcHandlers = (services: IpcServices): void => {
     window.setMaximumSize(width, height)
     window.setContentSize(width, height)
     window.setBounds(nextBounds)
+  }
+
+  const beginSenderWindowDrag = (window: BrowserWindow, request: WindowDragRequest): void => {
+    lockMiniWindowSize(window)
+    const [windowX, windowY] = window.getPosition()
+    activeWindowDrags.set(window.webContents.id, {
+      offsetX: request.pointerScreenX - windowX,
+      offsetY: request.pointerScreenY - windowY
+    })
+  }
+
+  const updateSenderWindowDrag = (window: BrowserWindow, request: WindowDragRequest): void => {
+    const dragState = activeWindowDrags.get(window.webContents.id)
+    if (!dragState) return
+
+    const workArea = screen.getDisplayNearestPoint({
+      x: Math.round(request.pointerScreenX),
+      y: Math.round(request.pointerScreenY)
+    }).workArea
+    const nextX = Math.max(
+      workArea.x,
+      Math.min(Math.round(request.pointerScreenX - dragState.offsetX), workArea.x + workArea.width - MINI_WINDOW_WIDTH)
+    )
+    const nextY = Math.max(
+      workArea.y,
+      Math.min(Math.round(request.pointerScreenY - dragState.offsetY), workArea.y + workArea.height - MINI_WINDOW_HEIGHT)
+    )
+
+    lockMiniWindowSize(window)
+    window.setBounds({
+      x: nextX,
+      y: nextY,
+      width: MINI_WINDOW_WIDTH,
+      height: MINI_WINDOW_HEIGHT
+    })
+  }
+
+  const endSenderWindowDrag = (webContentsId: number): void => {
+    activeWindowDrags.delete(webContentsId)
   }
 
   const broadcastSnapshot = (snapshot: ReturnType<TimerService['getSnapshot']>): void => {
@@ -94,6 +143,19 @@ export const registerIpcHandlers = (services: IpcServices): void => {
   ipcMain.handle(IPC_CHANNELS.system.getTheme, () => (services.theme.shouldUseDarkColors() ? 'dark' : 'light'))
   ipcMain.handle(IPC_CHANNELS.system.showWindow, () => services.showMainWindow())
   ipcMain.handle(IPC_CHANNELS.system.showMiniWindow, () => services.showMiniWindow())
+  ipcMain.on(IPC_CHANNELS.system.beginWindowDrag, (event, request: WindowDragRequest) => {
+    const window = getSenderWindow(event.sender.id)
+    if (!window) return
+    beginSenderWindowDrag(window, request)
+  })
+  ipcMain.on(IPC_CHANNELS.system.updateWindowDrag, (event, request: WindowDragRequest) => {
+    const window = getSenderWindow(event.sender.id)
+    if (!window) return
+    updateSenderWindowDrag(window, request)
+  })
+  ipcMain.on(IPC_CHANNELS.system.endWindowDrag, (event) => {
+    endSenderWindowDrag(event.sender.id)
+  })
   ipcMain.handle(IPC_CHANNELS.system.resizeWindow, (event, request: ResizeWindowRequest) => {
     const window = getSenderWindow(event.sender.id)
     if (!window) return
@@ -113,6 +175,7 @@ export const registerIpcHandlers = (services: IpcServices): void => {
   })
   ipcMain.handle(IPC_CHANNELS.system.closeWindow, (event) => {
     getSenderWindow(event.sender.id)?.close()
+    endSenderWindowDrag(event.sender.id)
   })
   ipcMain.handle(IPC_CHANNELS.system.quit, () => services.quit())
 
