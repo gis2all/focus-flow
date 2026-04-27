@@ -7,7 +7,7 @@
   "author": "",
   "license": "MIT",
   "scripts": {
-    "dev": "electron-vite dev",
+    "dev": "electron-vite dev --watch",
     "build": "tsc --noEmit && electron-vite build",
     "preview": "electron-vite preview",
     "test": "vitest run",
@@ -47,7 +47,8 @@
         "filter": [
           "focusflow-icon.png",
           "focusflow-icon.ico",
-          "focusflow-tray.png"
+          "focusflow-tray.png",
+          "focusflow-tray-dark.png"
         ]
       }
     ],

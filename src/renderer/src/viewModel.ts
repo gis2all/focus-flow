@@ -11,6 +11,11 @@ export interface TaskRowModel {
   focusMinutes: number
 }
 
+export interface TimerPomodoroDisplay {
+  ordinal: number
+  completed: number
+}
+
 export const formatTimerClock = (milliseconds: number): string => {
   const totalSeconds = Math.max(0, Math.ceil(milliseconds / 1000))
   const minutes = Math.floor(totalSeconds / 60)
@@ -22,6 +27,21 @@ export const formatDurationLabel = (minutes: number): string => {
   const hours = Math.floor(minutes / 60)
   const rest = minutes % 60
   return `${hours}h ${rest}m`
+}
+
+export const clampProgress = (value: number): number => Math.min(1, Math.max(0, value))
+
+export const getSmoothedTimerProgress = (
+  snapshot: Pick<TimerSnapshot, 'status' | 'startedAt' | 'targetEndAt' | 'durationMs' | 'progress'>,
+  now: number
+): number => {
+  if (snapshot.status !== 'running' || snapshot.targetEndAt === null || snapshot.durationMs <= 0) {
+    return clampProgress(snapshot.progress)
+  }
+
+  const remainingMs = Math.max(0, snapshot.targetEndAt - now)
+  const elapsedMs = Math.min(snapshot.durationMs, Math.max(0, snapshot.durationMs - remainingMs))
+  return clampProgress(elapsedMs / snapshot.durationMs)
 }
 
 export const resolveEffectiveTheme = (
@@ -53,6 +73,28 @@ export const getTaskRowsForTab = (board: TaskBoardSnapshot, tab: TaskViewTab): T
 
 export const buildTaskTitleById = (board: TaskBoardSnapshot): Record<string, string> =>
   Object.fromEntries([...board.activeItems, ...board.completedItems].map((item) => [item.id, item.title]))
+
+export const resolveTimerPomodoroDisplay = (
+  snapshot: Pick<TimerSnapshot, 'phase' | 'taskId' | 'lastFocusTaskId' | 'unboundFocusCount'>,
+  board: TaskBoardSnapshot
+): TimerPomodoroDisplay => {
+  const taskById = new Map([...board.activeItems, ...board.completedItems].map((item) => [item.id, item]))
+  const displayTaskId = snapshot.phase === 'focus' ? snapshot.taskId : snapshot.lastFocusTaskId
+  const displayTask = displayTaskId ? taskById.get(displayTaskId) : undefined
+
+  if (displayTask) {
+    return {
+      completed: Math.max(0, displayTask.completedPomodoros),
+      ordinal: Math.max(1, displayTask.completedPomodoros + 1)
+    }
+  }
+
+  const completed = Math.max(0, snapshot.unboundFocusCount)
+  return {
+    completed,
+    ordinal: Math.max(1, completed + 1)
+  }
+}
 
 export const resolveCurrentTaskTitle = (
   snapshot: Pick<TimerSnapshot, 'taskId' | 'phase' | 'status'>,

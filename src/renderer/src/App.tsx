@@ -2,13 +2,23 @@ import { useEffect, useMemo, useRef, useState, type ReactElement } from 'react'
 import { createIdleTimer, deriveTimerSnapshot } from '@core/timer/timerState'
 import { defaultSettings } from '@shared/defaults'
 import type { AppSettings, FocusStats, TaskBoardSnapshot, TimerPhase, TimerSnapshot } from '@shared/types'
+import { MINI_WINDOW_SIZE } from '@shared/windowMetrics'
 import { AppShell } from './components/AppShell'
+import type { WindowMode } from './types'
 import { SettingsView } from './views/SettingsView'
+import { MiniTimerView } from './views/MiniTimerView'
 import { StatsView } from './views/StatsView'
 import { TasksView } from './views/TasksView'
 import { TimerView } from './views/TimerView'
 import type { ViewKey } from './types'
-import { buildTaskTitleById, resolveCurrentTaskTitle, resolveEffectiveTheme } from './viewModel'
+import {
+  buildTaskTitleById,
+  getSmoothedTimerProgress,
+  resolveCurrentTaskTitle,
+  resolveEffectiveTheme,
+  resolveTimerPomodoroDisplay,
+  type TaskViewTab
+} from './viewModel'
 
 const fallbackSnapshot = deriveTimerSnapshot(createIdleTimer(defaultSettings, Date.now()), Date.now())
 
@@ -35,7 +45,11 @@ const fallbackTaskBoard: TaskBoardSnapshot = {
   completedItems: []
 }
 
-export const App = (): ReactElement => {
+interface AppProps {
+  windowMode: WindowMode
+}
+
+export const App = ({ windowMode }: AppProps): ReactElement => {
   const [activeView, setActiveView] = useState<ViewKey>('timer')
   const [snapshot, setSnapshot] = useState<TimerSnapshot>(fallbackSnapshot)
   const [taskBoard, setTaskBoard] = useState<TaskBoardSnapshot>(fallbackTaskBoard)
@@ -43,6 +57,8 @@ export const App = (): ReactElement => {
   const [stats, setStats] = useState<FocusStats>(fallbackStats)
   const [systemTheme, setSystemTheme] = useState<'light' | 'dark'>('light')
   const [newTaskTitle, setNewTaskTitle] = useState('')
+  const [tasksActiveTab, setTasksActiveTab] = useState<TaskViewTab>('active')
+  const [displayProgress, setDisplayProgress] = useState(fallbackSnapshot.progress)
   const previousSnapshotRef = useRef<TimerSnapshot>(fallbackSnapshot)
 
   const refreshTaskBoard = async (): Promise<void> => {
@@ -56,22 +72,40 @@ export const App = (): ReactElement => {
   }
 
   useEffect(() => {
-    void Promise.all([
-      window.focusFlow.timer.getSnapshot(),
-      window.focusFlow.tasks.getBoard(),
-      window.focusFlow.settings.get().then(setSettings),
-      window.focusFlow.stats.get().then(setStats),
-      window.focusFlow.system.getTheme().then(setSystemTheme)
-    ]).then(([nextSnapshot, nextTaskBoard]) => {
-      previousSnapshotRef.current = nextSnapshot
-      setSnapshot(nextSnapshot)
-      setTaskBoard(nextTaskBoard)
-    })
+    if (windowMode === 'mini') {
+      void Promise.all([
+        window.focusFlow.timer.getSnapshot(),
+        window.focusFlow.settings.get().then(setSettings),
+        window.focusFlow.system.getTheme().then(setSystemTheme)
+      ]).then(([nextSnapshot]) => {
+        previousSnapshotRef.current = nextSnapshot
+        setSnapshot(nextSnapshot)
+        setDisplayProgress(nextSnapshot.progress)
+      })
+    } else {
+      void Promise.all([
+        window.focusFlow.timer.getSnapshot(),
+        window.focusFlow.tasks.getBoard(),
+        window.focusFlow.settings.get().then(setSettings),
+        window.focusFlow.stats.get().then(setStats),
+        window.focusFlow.system.getTheme().then(setSystemTheme)
+      ]).then(([nextSnapshot, nextTaskBoard]) => {
+        previousSnapshotRef.current = nextSnapshot
+        setSnapshot(nextSnapshot)
+        setDisplayProgress(nextSnapshot.progress)
+        setTaskBoard(nextTaskBoard)
+      })
+    }
 
     return window.focusFlow.timer.onSnapshot((value) => {
       const previousSnapshot = previousSnapshotRef.current
       previousSnapshotRef.current = value
       setSnapshot(value)
+      setDisplayProgress(value.progress)
+
+      if (windowMode === 'mini') {
+        return
+      }
 
       const shouldRefreshTaskBoard =
         previousSnapshot.sessionId !== value.sessionId ||
@@ -81,16 +115,48 @@ export const App = (): ReactElement => {
         void refreshTaskBoardAndStats()
       }
     })
-  }, [])
+  }, [windowMode])
 
   useEffect(() => {
     document.documentElement.dataset.theme = resolveEffectiveTheme(settings.themePreference, systemTheme)
   }, [settings.themePreference, systemTheme])
 
+  useEffect(() => {
+    if (windowMode !== 'mini') return
+
+    void window.focusFlow.system.resizeWindow(MINI_WINDOW_SIZE)
+  }, [windowMode, MINI_WINDOW_SIZE.height, MINI_WINDOW_SIZE.width])
+
+  useEffect(() => {
+    if (snapshot.status !== 'running') {
+      setDisplayProgress(snapshot.progress)
+      return
+    }
+
+    let frameId = 0
+
+    const updateFrame = () => {
+      setDisplayProgress(getSmoothedTimerProgress(snapshot, Date.now()))
+      frameId = window.requestAnimationFrame(updateFrame)
+    }
+
+    updateFrame()
+
+    return () => {
+      window.cancelAnimationFrame(frameId)
+    }
+  }, [snapshot])
+
   const activeTheme = resolveEffectiveTheme(settings.themePreference, systemTheme)
-  const progressPercent = Math.round(snapshot.progress * 100)
+
+  if (windowMode === 'mini') {
+    return <MiniTimerView activeTheme={activeTheme} settings={settings} snapshot={snapshot} />
+  }
+
+  const progressPercent = displayProgress * 100
   const taskTitleById = useMemo(() => buildTaskTitleById(taskBoard), [taskBoard])
   const currentTaskTitle = resolveCurrentTaskTitle(snapshot, taskTitleById)
+  const pomodoroDisplay = useMemo(() => resolveTimerPomodoroDisplay(snapshot, taskBoard), [snapshot, taskBoard])
 
   const createTask = async (): Promise<void> => {
     if (!newTaskTitle.trim()) return
@@ -146,6 +212,7 @@ export const App = (): ReactElement => {
       return (
         <TimerView
           currentTaskTitle={currentTaskTitle}
+          pomodoroDisplay={pomodoroDisplay}
           progressPercent={progressPercent}
           settings={settings}
           snapshot={snapshot}
@@ -158,6 +225,7 @@ export const App = (): ReactElement => {
     if (activeView === 'tasks') {
       return (
         <TasksView
+          activeTab={tasksActiveTab}
           bindCurrentTask={bindCurrentTask}
           canBindCurrentTask={snapshot.status === 'running' && snapshot.phase === 'focus'}
           startFocusWithTask={startFocusWithTask}
@@ -166,17 +234,19 @@ export const App = (): ReactElement => {
           createTask={createTask}
           deleteTask={deleteTask}
           newTaskTitle={newTaskTitle}
+          onActiveTabChange={setTasksActiveTab}
           restoreTask={restoreTask}
           reorderTasks={reorderTasks}
           setNewTaskTitle={setNewTaskTitle}
           taskBoard={taskBoard}
+          timerContext={{ status: snapshot.status, phase: snapshot.phase }}
           updateTask={updateTask}
         />
       )
     }
 
     if (activeView === 'stats') {
-      return <StatsView stats={stats} taskBoard={taskBoard} />
+      return <StatsView stats={stats} />
     }
 
     return <SettingsView settings={settings} updateSettings={updateSettings} activeTheme={activeTheme} />
@@ -187,6 +257,7 @@ export const App = (): ReactElement => {
       activeTheme={activeTheme}
       activeView={activeView}
       onNavigate={setActiveView}
+      onShowMiniWindow={() => void window.focusFlow.system.showMiniWindow()}
       onToggleTheme={() => void updateSettings({ themePreference: activeTheme === 'dark' ? 'light' : 'dark' })}
     >
       {renderActiveView()}

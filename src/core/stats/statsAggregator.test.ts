@@ -23,13 +23,15 @@ const session = (input: Partial<TimerSession> & Pick<TimerSession, 'id' | 'start
 })
 
 describe('stats aggregator', () => {
-  test('aggregates today focus minutes, completed pomodoros, hourly distribution, weekly trend and task focus', () => {
+  test('aggregates today focus minutes and only ranks tasks completed today with focus time', () => {
     const stats = aggregateStats({
       now: new Date('2026-04-25T20:00:00.000'),
       tasks: [
         task({ id: 'design', title: 'Design' }),
         task({ id: 'writing', title: 'Writing' }),
-        task({ id: 'done', title: 'Done', completedAt: '2026-04-25T16:00:00.000Z' })
+        task({ id: 'done', title: 'Done', completedAt: '2026-04-25T08:00:00.000Z' }),
+        task({ id: 'done-no-focus', title: 'Done No Focus', completedAt: '2026-04-25T09:00:00.000Z' }),
+        task({ id: 'done-yesterday', title: 'Done Yesterday', completedAt: '2026-04-24T14:00:00.000Z' })
       ],
       sessions: [
         session({
@@ -73,6 +75,13 @@ describe('stats aggregator', () => {
           actualDurationMs: 10 * 60_000
         }),
         session({
+          id: 'today-yesterday-completed-task-focus',
+          phase: 'focus',
+          taskId: 'done-yesterday',
+          startedAt: '2026-04-25T16:00:00.000',
+          actualDurationMs: 12 * 60_000
+        }),
+        session({
           id: 'today-deleted-task-focus',
           phase: 'focus',
           taskId: 'deleted',
@@ -91,15 +100,14 @@ describe('stats aggregator', () => {
       ]
     })
 
-    expect(stats.today.focusMinutes).toBe(90)
+    expect(stats.today.focusMinutes).toBe(102)
     expect(stats.today.shortBreakMinutes).toBe(5)
     expect(stats.today.longBreakMinutes).toBe(15)
-    expect(stats.today.completedPomodoros).toBe(4)
+    expect(stats.today.completedPomodoros).toBe(5)
     expect(stats.hourlyFocusMinutes[9]).toBe(25)
     expect(stats.hourlyFocusMinutes[10]).toBe(20)
-    expect(stats.weeklyTrend.at(-1)?.focusMinutes).toBe(90)
+    expect(stats.weeklyTrend.at(-1)?.focusMinutes).toBe(102)
     expect(stats.taskFocusMinutes).toEqual([
-      { taskId: 'design', title: 'Design', minutes: 45, status: 'active' },
       { taskId: 'done', title: 'Done', minutes: 10, status: 'completed' }
     ])
   })

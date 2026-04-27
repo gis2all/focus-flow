@@ -9,7 +9,8 @@ import {
   SqliteSettingsRepository,
   SqliteTaskRepository,
   SqliteTimerRuntimeRepository,
-  SqliteTimerSessionRepository
+  SqliteTimerSessionRepository,
+  SqliteWindowStateRepository
 } from './sqliteRepositories'
 
 let tempDir: string
@@ -171,6 +172,16 @@ describe('sqlite repositories', () => {
     })
   })
 
+  test('persists the mini window position inside the settings table namespace', async () => {
+    const windowState = new SqliteWindowStateRepository(database)
+
+    expect(await windowState.getMiniWindowPosition()).toBeNull()
+
+    await windowState.saveMiniWindowPosition({ x: 1280, y: 720 })
+
+    expect(await windowState.getMiniWindowPosition()).toEqual({ x: 1280, y: 720 })
+  })
+
   test('persists timer runtime state for restore scenarios', async () => {
     const runtime = new SqliteTimerRuntimeRepository(database)
 
@@ -183,6 +194,8 @@ describe('sqlite repositories', () => {
       durationMs: 25 * 60_000,
       remainingMs: 11 * 60_000,
       focusCount: 3,
+      unboundFocusCount: 0,
+      lastFocusTaskId: null,
       sessionId: 'session-1',
       updatedAt: new Date('2026-04-25T09:14:00.000Z').getTime()
     })
@@ -191,7 +204,9 @@ describe('sqlite repositories', () => {
       expect.objectContaining({
         status: 'paused',
         remainingMs: 11 * 60_000,
-        focusCount: 3
+        focusCount: 3,
+        unboundFocusCount: 0,
+        lastFocusTaskId: null
       })
     )
   })

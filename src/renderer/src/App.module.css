@@ -1,57 +1,95 @@
 .appFrame {
   display: grid;
-  grid-template-columns: 92px minmax(0, 1fr);
-  grid-template-rows: 42px minmax(0, 1fr);
+  grid-template-columns: 124px minmax(0, 1fr);
+  grid-template-rows: 50px minmax(0, 1fr);
   width: 100vw;
   height: 100vh;
   overflow: hidden;
   color: var(--text-1);
-  background: var(--window-bg);
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.92), transparent 36%),
+    linear-gradient(140deg, var(--hero-bottom), var(--window-bg) 45%, var(--hero-bottom));
 }
 
 .sideRail {
   grid-row: 2;
   display: grid;
   grid-template-rows: 1fr;
-  background: var(--rail-bg);
-  border-right: 1px solid var(--line);
+  background:
+    linear-gradient(90deg, var(--rail-bg), color-mix(in srgb, var(--rail-bg) 72%, transparent)),
+    radial-gradient(circle at 70% 16%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 42%);
+  border-right: 0;
 }
 
 .navIcon,
 .windowControlIcon {
   display: block;
-  width: 14px;
-  height: 14px;
+  width: 18px;
+  height: 18px;
   color: currentColor;
 }
 
 .primaryNav {
   display: grid;
   align-content: start;
-  padding-top: 10px;
+  gap: 4px;
+  padding-top: 14px;
 }
 
 .navItem {
+  position: relative;
   display: grid;
-  grid-template-columns: 16px 1fr;
+  grid-template-columns: 22px 1fr;
   align-items: center;
-  gap: 8px;
-  min-height: 40px;
-  padding: 0 12px;
+  gap: 12px;
+  min-height: 54px;
+  margin-right: 8px;
+  padding: 0 12px 0 18px;
   color: var(--text-2);
   text-align: left;
   background: transparent;
   border: 0;
-  border-left: 3px solid transparent;
-  font-size: 12px;
-  font-weight: 600;
+  border-left: 0;
+  border-radius: 0 4px 4px 0;
+  font-size: 14px;
+  font-weight: 800;
   white-space: nowrap;
+  transition:
+    color 140ms ease,
+    background 140ms ease,
+    box-shadow 140ms ease,
+    transform 140ms ease;
 }
 
 .navItemActive {
   color: var(--accent);
-  background: var(--accent-soft);
-  border-left-color: var(--accent);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 16%, transparent), color-mix(in srgb, var(--accent) 7%, transparent));
+}
+
+.navItemActive::before {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: -1px;
+  width: 5px;
+  content: "";
+  background: linear-gradient(180deg, var(--accent), var(--accent-strong));
+  border-radius: 999px;
+  box-shadow: 0 8px 18px color-mix(in srgb, var(--accent) 26%, transparent);
+}
+
+.navItem:not(.navItemActive):hover,
+.navItem:not(.navItemActive):focus-visible {
+  color: var(--text-1);
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--hover-surface) 88%, transparent), color-mix(in srgb, var(--hover-surface) 42%, transparent)),
+    transparent;
+  box-shadow:
+    inset 4px 0 0 color-mix(in srgb, var(--accent) 52%, transparent),
+    inset 0 1px 0 var(--hover-glass),
+    var(--hover-shadow);
+  transform: translateX(2px);
+  outline: none;
 }
 
 .appSurface {
@@ -68,21 +106,40 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  min-height: 42px;
-  padding-left: 14px;
-  background: var(--window-bg);
-  border-bottom: 1px solid var(--line);
+  min-height: 50px;
+  padding-left: 10px;
+  background: color-mix(in srgb, var(--window-bg) 86%, transparent);
+  border-bottom: 0;
+  backdrop-filter: blur(22px);
 }
 
 .titleBrand {
   display: flex;
   align-items: center;
+  gap: 8px;
   min-width: 0;
+}
+
+.titleBrandMark {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  color: #fff;
+  line-height: 0;
+}
+
+.titleBrandMark img {
+  display: block;
+  width: 26px;
+  height: 26px;
+  filter: drop-shadow(0 5px 10px color-mix(in srgb, var(--accent) 20%, transparent));
 }
 
 .titleBrand strong {
   color: var(--text-1);
-  font: 700 16px/1 var(--font-ui);
+  font: 850 17px/1 var(--font-ui);
+  letter-spacing: -0.03em;
 }
 
 .titleActions {
@@ -93,8 +150,9 @@
   height: 100%;
 }
 
-.themeToggleButton {
-  width: 42px;
+.themeToggleButton,
+.miniWindowToggleButton {
+  width: 48px;
   height: 100%;
   padding: 0;
   display: grid;
@@ -102,6 +160,12 @@
   color: var(--text-3);
   background: transparent;
   border: 0;
+  border-radius: 8px;
+  transition:
+    color 140ms ease,
+    background 140ms ease,
+    box-shadow 140ms ease,
+    transform 140ms ease;
 }
 
 .windowControls {
@@ -110,7 +174,7 @@
 }
 
 .windowControls button {
-  width: 42px;
+  width: 48px;
   height: 100%;
   padding: 0;
   display: grid;
@@ -118,17 +182,303 @@
   color: var(--text-3);
   background: transparent;
   border: 0;
+  border-radius: 8px;
+  transition:
+    color 140ms ease,
+    background 140ms ease,
+    box-shadow 140ms ease,
+    transform 140ms ease;
 }
 
 .themeToggleButton:hover,
-.windowControls button:hover {
+.themeToggleButton:focus-visible,
+.miniWindowToggleButton:hover,
+.miniWindowToggleButton:focus-visible,
+.windowControls button:hover,
+.windowControls button:focus-visible {
   color: var(--text-1);
-  background: var(--surface);
+  background: linear-gradient(180deg, var(--hover-surface), var(--hover-surface-strong));
+  box-shadow:
+    inset 0 1px 0 var(--hover-glass),
+    var(--hover-shadow);
+  transform: translateY(-1px);
+  outline: none;
 }
 
-.closeWindowButton:hover {
+.closeWindowButton:hover,
+.closeWindowButton:focus-visible {
   color: #fff;
   background: #d94d45;
+  box-shadow: 0 8px 16px color-mix(in srgb, #d94d45 22%, transparent);
+}
+
+.miniWindow {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  isolation: isolate;
+  color: var(--text-1);
+  border-radius: 4px;
+  background: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.miniWindow,
+.miniWindow * {
+  cursor: default;
+}
+
+.miniWindowDark {
+  --miniWindowBase:
+    radial-gradient(circle at 18% 18%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 30%),
+    radial-gradient(circle at 85% 18%, color-mix(in srgb, #80b3ff 11%, transparent), transparent 28%),
+    linear-gradient(160deg, color-mix(in srgb, var(--hero-top) 96%, #0b1625 4%), var(--hero-bottom));
+  --miniWindowShellSurface:
+    radial-gradient(circle at 100% 0%, rgba(53, 139, 255, 0.16), transparent 38%),
+    linear-gradient(180deg, rgba(18, 42, 66, 0.74), rgba(9, 29, 48, 0.68));
+  --miniWindowShellEdge: rgba(93, 128, 178, 0.18);
+  --miniWindowShellGlow: rgba(255, 255, 255, 0.08);
+}
+
+.miniWindowLight {
+  --miniWindowBase:
+    radial-gradient(circle at 18% 18%, color-mix(in srgb, var(--accent) 14%, white 36%), transparent 30%),
+    radial-gradient(circle at 85% 18%, color-mix(in srgb, #8eb8ff 18%, transparent), transparent 28%),
+    linear-gradient(160deg, color-mix(in srgb, var(--hero-top) 92%, white 8%), var(--hero-bottom));
+  --miniWindowShellSurface:
+    radial-gradient(circle at 100% 0%, rgba(72, 144, 255, 0.12), transparent 38%),
+    linear-gradient(180deg, color-mix(in srgb, var(--window-bg) 88%, transparent), color-mix(in srgb, var(--window-bg) 74%, transparent));
+  --miniWindowShellEdge: rgba(255, 255, 255, 0.22);
+  --miniWindowShellGlow: rgba(255, 255, 255, 0.16);
+}
+
+.miniWindowShell {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 10px 10px 12px;
+  overflow: hidden;
+  background:
+    var(--miniWindowBase),
+    var(--miniWindowShellSurface);
+  border: 1px solid transparent;
+  border-radius: 4px;
+  box-shadow:
+    0 10px 18px rgba(0, 0, 0, 0.18),
+    inset 1px 0 0 var(--miniWindowShellEdge),
+    inset -1px 0 0 var(--miniWindowShellEdge),
+    inset 0 -1px 0 var(--miniWindowShellEdge);
+  backdrop-filter: blur(22px);
+  cursor: default;
+}
+
+.miniWindowShell::before {
+  position: absolute;
+  top: -8px;
+  right: -10px;
+  width: 94px;
+  height: 48px;
+  pointer-events: none;
+  content: "";
+  background: radial-gradient(ellipse at top right, var(--miniWindowShellGlow), transparent 70%);
+}
+
+.miniWindowTopBar,
+.miniTimerBody {
+  position: relative;
+  z-index: 1;
+}
+
+.miniWindowTopBar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 19px;
+}
+
+.miniDragRegion {
+  display: grid;
+  place-items: center;
+  width: 19px;
+  height: 19px;
+  color: var(--text-3);
+  background: transparent;
+  border: 0;
+  flex: 0 0 auto;
+  cursor: move !important;
+  touch-action: none;
+}
+
+.miniDragRegion * {
+  cursor: move !important;
+}
+
+.miniDragIcon,
+.miniReturnIcon {
+  width: 19px;
+  height: 19px;
+}
+
+.miniReturnIcon {
+  transform: none;
+}
+
+.miniStatus {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 19px;
+  color: var(--text-1);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  flex: 0 0 auto;
+  margin-left: auto;
+  transform: translateX(-4px);
+}
+
+.miniStatusBadge {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 15px;
+  height: 15px;
+  overflow: visible;
+}
+
+.miniStatusBadgeRunning {
+  filter: drop-shadow(0 0 3px color-mix(in srgb, var(--accent) 18%, transparent));
+}
+
+.miniStatusHalo {
+  grid-area: 1 / 1;
+  width: 15px;
+  height: 15px;
+  border-radius: 999px;
+  box-sizing: border-box;
+  border: 2px solid color-mix(in srgb, var(--accent) 24%, white 10%);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  opacity: 0.68;
+  transform: translateX(-1px);
+}
+
+.miniStatusHaloRunning {
+  animation: miniStatusHaloPulse 1.9s ease-in-out infinite;
+}
+
+.miniStatusCore {
+  grid-area: 1 / 1;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--accent-strong);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+.miniStatusCoreRunning {
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--accent) 12%, transparent),
+    0 0 10px color-mix(in srgb, var(--accent) 42%, transparent);
+}
+
+.miniStatusLabel {
+  color: var(--text-hero);
+  font: 850 12px/1 var(--font-ui);
+}
+
+.miniStatusLabelSubtle {
+  color: var(--text-3);
+}
+
+.miniStatusLabelMuted {
+  color: var(--text-2);
+}
+
+@keyframes miniStatusHaloPulse {
+  0%,
+  100% {
+    opacity: 0.54;
+    transform: translateX(-1px) scale(0.96);
+  }
+
+  50% {
+    opacity: 0.78;
+    transform: translateX(-1px) scale(1.08);
+  }
+}
+
+.miniReturnButton {
+  -webkit-app-region: no-drag;
+  display: grid;
+  place-items: center;
+  width: 19px;
+  height: 19px;
+  padding: 0;
+  color: var(--text-3);
+  background: transparent;
+  border: 0;
+  opacity: 1;
+  flex: 0 0 auto;
+  transition:
+    opacity 140ms ease,
+    transform 140ms ease;
+  transform: translateX(4px);
+  cursor: pointer !important;
+}
+
+.miniReturnButton * {
+  cursor: pointer !important;
+}
+
+.miniReturnButton:hover,
+.miniReturnButton:focus-visible {
+  color: var(--text-3);
+  opacity: 1;
+  transform: translate(4px, -1px);
+  outline: none;
+}
+
+.miniTimerBody {
+  display: grid;
+  place-items: center;
+  min-height: 0;
+  padding-top: 0;
+}
+
+.miniTimerDigits {
+  color: var(--text-hero);
+  text-shadow: 0 10px 20px color-mix(in srgb, var(--accent) 16%, transparent);
+  transform: translateY(10px);
+}
+
+.miniTimerDigits .timerDigitsGroup {
+  min-width: 2.02ch;
+  font-size: clamp(58px, 24vw, 72px);
+}
+
+.miniTimerDigits .timerDigitsSeparator {
+  width: clamp(14px, 2vw, 18px);
+  height: calc(clamp(58px, 24vw, 72px) * 0.8);
+  margin: 0 0.05em;
+}
+
+.miniTimerDigits .timerDigitsSeparator::before,
+.miniTimerDigits .timerDigitsSeparator::after {
+  width: clamp(8px, 1.15vw, 10px);
+  height: clamp(8px, 1.15vw, 10px);
+}
+
+.miniTimerDigits .timerDigitsSeparator::before {
+  transform: translate(-50%, calc(-50% - 8px));
+}
+
+.miniTimerDigits .timerDigitsSeparator::after {
+  transform: translate(-50%, calc(-50% + 8px));
 }
 
 .timerView,
@@ -147,36 +497,17 @@
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  grid-template-rows: auto minmax(0, 1fr) auto auto;
+  grid-template-rows: 30px minmax(0, 1fr) 68px;
   gap: 10px;
-  background:
-    radial-gradient(circle at 48% 24%, var(--hero-glow), transparent 36%),
-    linear-gradient(180deg, var(--hero-top), var(--hero-bottom));
+  padding: 18px 24px 18px;
+  background: var(--window-bg);
+  border: 0;
+  border-radius: 22px 0 0 0;
 }
 
 .timerView::before,
 .timerView::after {
-  position: absolute;
-  right: -4%;
-  left: -4%;
-  bottom: 40px;
-  z-index: 0;
-  height: 170px;
-  pointer-events: none;
-  content: "";
-  background:
-    radial-gradient(ellipse at 18% 58%, var(--mountain-a), transparent 36%),
-    radial-gradient(ellipse at 48% 68%, var(--mountain-b), transparent 33%),
-    radial-gradient(ellipse at 75% 64%, var(--mountain-c), transparent 31%),
-    linear-gradient(166deg, transparent 0 30%, var(--mountain-a) 30% 42%, transparent 42%),
-    linear-gradient(176deg, transparent 0 18%, var(--mountain-b) 18% 34%, transparent 34%),
-    linear-gradient(185deg, transparent 0 43%, var(--mountain-c) 43% 57%, transparent 57%);
-}
-
-.timerView::after {
-  bottom: -12px;
-  opacity: 0.72;
-  transform: scaleX(1.08);
+  content: none;
 }
 
 .timerHeader,
@@ -193,33 +524,91 @@
 }
 
 .timerHeader p {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   margin: 0;
   color: var(--accent);
-  font-size: 12px;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 850;
+}
+
+.timerStatusBadge {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+}
+
+.timerStatusHalo {
+  grid-area: 1 / 1;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  box-sizing: border-box;
+  border: 3px solid color-mix(in srgb, var(--accent) 24%, white 10%);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  animation: timerStatusPulse 2.2s ease-in-out infinite;
+}
+
+.timerStatusCore {
+  grid-area: 1 / 1;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--accent-strong);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+@keyframes timerStatusPulse {
+  0%,
+  100% {
+    opacity: 0.68;
+    transform: scale(0.98);
+  }
+
+  50% {
+    opacity: 0.92;
+    transform: scale(1.08);
+  }
 }
 
 .autoSwitch {
   display: grid;
   grid-template-columns: auto auto;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   color: var(--text-3);
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 780;
 }
 
 .autoSwitch input,
 .settingLine input[type="checkbox"] {
   justify-self: end;
   position: relative;
-  width: 30px;
-  height: 18px;
+  width: 42px;
+  height: 24px;
   margin: 0;
+  padding: 2px;
   appearance: none;
-  background: var(--switch-off);
+  background: linear-gradient(180deg, #2d87ff, var(--accent-strong));
   border-radius: 999px;
-  transition: background-color 140ms ease;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.38),
+    0 8px 14px rgba(31, 116, 255, 0.18);
+  transition:
+    background-color 140ms ease,
+    box-shadow 140ms ease,
+    transform 140ms ease;
+}
+
+.autoSwitch input {
+  width: 36px;
+  height: 20px;
+  padding: 2px;
 }
 
 .autoSwitch input::after,
@@ -227,32 +616,55 @@
   position: absolute;
   top: 2px;
   left: 2px;
-  width: 14px;
-  height: 14px;
+  width: 20px;
+  height: 20px;
   content: "";
   background: #fff;
   border-radius: 50%;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 3px 8px rgba(31, 73, 129, 0.22);
   transition: transform 140ms ease;
+}
+
+.autoSwitch input::after {
+  width: 16px;
+  height: 16px;
+  transform: translateX(0);
+}
+
+.autoSwitch input:not(:checked),
+.settingLine input[type="checkbox"]:not(:checked) {
+  background: color-mix(in srgb, var(--switch-off) 76%, white 24%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.52);
 }
 
 .autoSwitch input:checked,
 .settingLine input[type="checkbox"]:checked {
-  background: var(--accent);
+  background: linear-gradient(180deg, #2d87ff, var(--accent-strong));
+}
+
+.autoSwitch input:hover,
+.autoSwitch input:focus-visible,
+.settingLine input[type="checkbox"]:hover,
+.settingLine input[type="checkbox"]:focus-visible {
+  box-shadow:
+    inset 0 1px 0 var(--hover-glass),
+    var(--hover-shadow);
+  transform: var(--hover-lift);
+  outline: none;
 }
 
 .autoSwitch input:checked::after,
 .settingLine input[type="checkbox"]:checked::after {
-  transform: translateX(12px);
+  transform: translateX(16px);
 }
 
 .timerHero {
   position: relative;
   display: grid;
-  grid-template-rows: minmax(0, 1fr) auto;
+  grid-template-rows: minmax(0, 1fr) 172px;
   min-height: 0;
   border: 1px solid transparent;
-  border-radius: 14px;
+  border-radius: 20px;
   overflow: visible;
   background: transparent;
 }
@@ -264,14 +676,17 @@
   align-content: center;
   justify-items: center;
   min-height: 0;
-  padding: 14px 16px 6px;
+  padding: 10px 16px 0;
   text-align: center;
 }
 
 .timerDigits {
+  position: relative;
+  z-index: 1;
   display: inline-flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
+  gap: 0;
   min-width: 5.2ch;
   color: var(--text-hero);
   font-family: var(--font-display);
@@ -284,56 +699,92 @@
 
 .timerDigitsGroup {
   display: block;
-  min-width: 1.95ch;
-  letter-spacing: -0.12em;
-  font-size: clamp(96px, 23vw, 128px);
+  min-width: 2.08ch;
+  letter-spacing: -0.02em;
+  font-size: clamp(98px, 19.5vw, 126px);
   font-weight: 900;
-  line-height: 0.82;
+  line-height: 0.8;
   text-align: center;
 }
 
 .timerDigitsSeparator {
+  position: relative;
   display: block;
-  width: 0.56ch;
-  margin: 0 0.02em;
-  font-size: clamp(88px, 20vw, 118px);
-  font-weight: 900;
-  line-height: 0.78;
-  transform: translateY(0.02em);
+  flex: 0 0 auto;
+  width: clamp(20px, 2.2vw, 28px);
+  height: calc(clamp(98px, 19.5vw, 126px) * 0.8);
+  margin: 0 0.09em;
+  font-size: 0;
+  line-height: 0;
 }
 
-.timerQuote {
-  margin: 10px 0 0;
-  color: var(--text-3);
-  font-size: 11px;
-  text-align: center;
+.timerDigitsSeparator::before,
+.timerDigitsSeparator::after {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: clamp(12px, 1.5vw, 16px);
+  height: clamp(12px, 1.5vw, 16px);
+  content: "";
+  background: currentColor;
+  border-radius: 999px;
+}
+
+.timerDigitsSeparator::before {
+  transform: translate(-50%, calc(-50% - 14px));
+}
+
+.timerDigitsSeparator::after {
+  transform: translate(-50%, calc(-50% + 14px));
 }
 
 .timerMetaRow {
   position: relative;
   z-index: 1;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 110px;
-  gap: 16px;
+  grid-template-columns: minmax(0, 1fr) 140px;
+  gap: 14px;
   align-items: end;
-  padding: 0 18px 14px;
+  min-height: 172px;
+  padding: 0 0 20px;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
 }
 
 .currentTaskCard {
   display: grid;
-  gap: 6px;
+  align-content: end;
+  gap: 11px;
+  min-width: 0;
 }
 
 .currentTaskCard span,
 .currentTaskCard small {
   color: var(--text-3);
-  font-size: 11px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.currentTaskCard small {
+  line-height: 1.2;
+  white-space: nowrap;
 }
 
 .currentTaskCard strong {
+  display: block;
   color: var(--text-1);
-  font-size: 17px;
-  font-weight: 700;
+  overflow: hidden;
+  font-size: 21px;
+  line-height: 1.14;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  margin-top: -4px;
+  padding-top: 2px;
+  padding-bottom: 1px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .focusDialCard {
@@ -346,40 +797,91 @@
   position: relative;
   display: grid;
   place-items: center;
-  width: 100px;
-  height: 100px;
+  width: 140px;
+  height: 140px;
   color: var(--text-2);
+  overflow: hidden;
   border-radius: 50%;
-  background:
-    radial-gradient(circle, var(--window-bg) 59%, transparent 61%),
-    conic-gradient(var(--accent) var(--progress), rgba(122, 142, 175, 0.18) 0);
+  background: color-mix(in srgb, var(--window-bg) 5%, transparent);
+  border: 0;
+  backdrop-filter: blur(2px) saturate(145%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.34),
+    inset 0 -12px 18px rgba(255, 255, 255, 0.05),
+    0 12px 24px rgba(95, 127, 182, 0.12);
+  transform: translateY(2px);
+}
+
+.focusDial::before {
+  position: absolute;
+  top: 10px;
+  right: 20px;
+  left: 20px;
+  z-index: 0;
+  height: 28px;
+  content: "";
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.46), rgba(255, 255, 255, 0));
+  border-radius: 999px;
+  filter: blur(1.5px);
+  pointer-events: none;
+}
+
+.focusDialSvg {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+  transform: rotate(-90deg);
+}
+
+.focusDialTrack,
+.focusDialProgress {
+  fill: none;
+  stroke-width: 5;
+}
+
+.focusDialTrack {
+  stroke: #ecf2fb;
+}
+
+.focusDialProgress {
+  stroke: #4186ff;
+  stroke-linecap: round;
+  stroke-dasharray: var(--progress-value) 100;
+  filter:
+    drop-shadow(0 1px 0 rgba(255, 255, 255, 0.45))
+    drop-shadow(0 4px 10px rgba(70, 136, 255, 0.24));
 }
 
 .focusDialContent {
   display: grid;
   justify-items: center;
   align-content: center;
-  gap: 5px;
-  transform: translateY(1px);
+  gap: 4px;
+  position: relative;
+  z-index: 1;
+  transform: translateY(-4px);
 }
 
 .focusDial span {
-  font-size: 10px;
+  color: var(--text-3);
+  font-size: 11px;
   line-height: 1.1;
+  font-weight: 700;
   text-align: center;
 }
 
 .focusDial strong {
   color: var(--text-1);
-  font-size: 20px;
+  font-size: 22px;
   line-height: 1;
-  font-weight: 800;
+  font-weight: 850;
   text-align: center;
+  white-space: nowrap;
 }
 
 .timerActions {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: 1.34fr repeat(4, minmax(0, 1fr));
   gap: 10px;
 }
 
@@ -387,32 +889,51 @@
   display: grid;
   justify-items: center;
   align-content: center;
-  min-height: 60px;
+  min-height: 68px;
   gap: 6px;
-  padding: 10px 10px 12px;
+  padding: 9px 10px 10px;
   color: var(--text-1);
-  background: color-mix(in srgb, var(--surface) 78%, var(--window-bg) 22%);
-  border: 1px solid var(--line-strong);
-  border-radius: 8px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--window-bg) 96%, transparent), color-mix(in srgb, var(--surface-2) 82%, transparent));
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  box-shadow:
+    0 12px 30px rgba(48, 101, 188, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  transition:
+    transform 140ms ease,
+    box-shadow 140ms ease,
+    border-color 140ms ease,
+    background 140ms ease,
+    color 140ms ease;
 }
 
 .timerActionButton:hover,
 .timerActionButton:focus-visible {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 18%, transparent);
+  color: var(--text-1);
+  border-color: var(--hover-border);
+  background: linear-gradient(180deg, var(--hover-surface), var(--hover-surface-strong));
+  box-shadow:
+    inset 0 1px 0 var(--hover-glass),
+    var(--hover-shadow-strong);
+  transform: var(--hover-lift);
   outline: none;
 }
 
+:root[data-theme="light"] .timerActionButton:hover,
+:root[data-theme="light"] .timerActionButton:focus-visible {
+  border-color: var(--line);
+}
+
 .timerActionIcon {
-  width: 18px;
-  height: 18px;
+  width: 22px;
+  height: 22px;
   color: var(--accent);
 }
 
 .timerActionButton b {
   overflow: hidden;
-  font-size: 12px;
-  font-weight: 700;
+  font-size: 13px;
+  font-weight: 850;
   line-height: 1.2;
   text-align: center;
   text-overflow: ellipsis;
@@ -421,40 +942,143 @@
 
 .startButton {
   color: #fff;
-  background: linear-gradient(180deg, var(--accent), var(--accent-strong));
+  background:
+    radial-gradient(circle at 4% 6%, rgba(186, 226, 255, 0.24), transparent 22%),
+    linear-gradient(180deg, #2d87ff, var(--accent-strong));
   border-color: transparent;
+  box-shadow: var(--blue-shadow);
 }
 
 .startButton:hover,
 .startButton:focus-visible {
+  color: #fff;
   border-color: transparent;
-  box-shadow: 0 10px 22px color-mix(in srgb, var(--accent) 24%, transparent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    var(--hover-shadow-strong);
+  transform: var(--hover-lift);
 }
 
-.startButton .timerActionIcon,
+.startButton .timerActionIcon {
+  width: 28px;
+  height: 28px;
+  color: #fff;
+  filter:
+    drop-shadow(0 1px 0 rgba(30, 76, 168, 0.22))
+    drop-shadow(0 0 2px rgba(22, 70, 160, 0.18));
+}
+
 .startButton b {
   color: inherit;
 }
 
+:root[data-theme="dark"] .startButton:hover,
+:root[data-theme="dark"] .startButton:focus-visible {
+  color: #fff;
+  border-color: transparent;
+  background:
+    radial-gradient(circle at 4% 6%, rgba(186, 226, 255, 0.22), transparent 22%),
+    linear-gradient(180deg, #2d87ff, var(--accent-strong));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    var(--hover-shadow-strong);
+  transform: var(--hover-lift);
+  outline: none;
+}
+
+:root[data-theme="light"] .startButton:hover,
+:root[data-theme="light"] .startButton:focus-visible {
+  color: #fff;
+  border-color: transparent;
+  background:
+    radial-gradient(circle at 4% 6%, rgba(186, 226, 255, 0.16), transparent 20%),
+    linear-gradient(180deg, #3c92ff, var(--accent-strong));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    var(--hover-shadow-strong);
+  transform: var(--hover-lift);
+  outline: none;
+}
+
 .listView {
-  grid-template-rows: auto auto minmax(0, 1fr) auto auto;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  grid-template-rows: auto minmax(0, 1fr);
   gap: 14px;
+  padding: 14px 16px 12px;
+  background: var(--window-bg);
+  border-radius: 22px 0 0 0;
+}
+
+:root[data-theme="dark"] .listView {
+  background: var(--window-bg);
+}
+
+.listView::before,
+.listView::after {
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+  content: "";
+}
+
+.listView::before {
+  content: none;
+}
+
+.listView::after {
+  content: none;
+}
+
+.taskControls,
+.taskListShell {
+  position: relative;
+  z-index: 1;
+}
+
+.taskControls {
+  display: grid;
+  gap: 8px;
+}
+
+.taskListShell {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 12px;
+  min-height: 0;
 }
 
 .taskTabs {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 24px;
-}
-
-.taskTabButton {
-  position: relative;
+  width: fit-content;
   padding: 0;
   color: var(--text-2);
   background: transparent;
   border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.taskTabButton {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0;
+  color: var(--text-3);
+  background: transparent;
+  border: 0;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
+  transition:
+    color 140ms ease,
+    transform 140ms ease,
+    text-shadow 140ms ease;
 }
 
 .taskTabActive {
@@ -464,16 +1088,37 @@
 .taskTabActive::after {
   position: absolute;
   right: 0;
-  bottom: -7px;
+  bottom: -10px;
   left: 0;
   height: 2px;
   content: "";
   background: var(--accent);
 }
 
+.taskTabButton span,
+.taskTabButton b {
+  position: relative;
+  z-index: 1;
+}
+
+.taskTabButton:hover,
+.taskTabButton:focus-visible {
+  color: var(--text-1);
+  transform: translateY(-1px);
+  text-shadow: 0 0 12px color-mix(in srgb, var(--accent) 18%, transparent);
+  outline: none;
+}
+
+.taskTabButton b {
+  color: inherit;
+  font-size: 12px;
+  line-height: 1;
+  font-weight: inherit;
+}
+
 .pageTopper {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   min-height: 36px;
   gap: 16px;
@@ -483,7 +1128,7 @@
   display: grid;
   align-content: start;
   min-width: 0;
-  padding-top: 8px;
+  padding-top: 0;
 }
 
 .tabLine {
@@ -494,9 +1139,11 @@
   font-size: 12px;
 }
 
+.tabLine span,
 .tabLine strong {
   position: relative;
   color: var(--text-1);
+  font-weight: 800;
 }
 
 .tabLine strong::after {
@@ -515,20 +1162,30 @@
   align-items: center;
   gap: 0;
   flex: 0 0 auto;
-  border: 1px solid var(--line);
-  border-radius: 8px;
+  justify-self: end;
+  width: 326px;
+  margin-right: 24px;
+  border: 1px solid color-mix(in srgb, var(--line) 92%, white 8%);
+  border-radius: 4px;
   overflow: hidden;
-  background: var(--surface);
+  background: color-mix(in srgb, var(--window-bg) 72%, transparent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.94),
+    0 10px 18px rgba(66, 111, 184, 0.06);
+  backdrop-filter: blur(16px) saturate(140%);
 }
 
 .inlineTaskForm:focus-within {
-  border-color: var(--line-strong);
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 18%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 24%, white 6%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.94),
+    0 0 0 1px color-mix(in srgb, var(--accent) 18%, transparent),
+    0 14px 28px rgba(66, 111, 184, 0.08);
 }
 
 .inlineTaskForm input {
   min-height: 32px;
-  padding: 0 10px;
+  padding: 0 12px;
   color: var(--text-1);
   background: transparent;
   border: 0;
@@ -537,8 +1194,8 @@
 .inlineTaskForm input {
   color: var(--text-2);
   outline: none;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 11px;
+  font-weight: 400;
   line-height: 1;
 }
 
@@ -549,55 +1206,85 @@
 
 .inlineTaskForm button {
   min-height: 32px;
-  padding: 0 12px;
+  padding: 0 14px;
   color: #fff;
-  background: linear-gradient(180deg, var(--accent), var(--accent-strong));
+  background:
+    radial-gradient(circle at 70% 10%, rgba(113, 179, 255, 0.58), transparent 30%),
+    linear-gradient(180deg, #2d87ff, var(--accent-strong));
   border: 0;
-  border-left: 1px solid var(--line-soft);
+  border-left: 1px solid color-mix(in srgb, var(--accent) 22%, white 14%);
   font-size: 12px;
   font-weight: 700;
 }
 
 .taskListHeader {
   display: grid;
-  grid-template-columns: 32px minmax(240px, 1.8fr) minmax(120px, 1fr) 96px 78px;
+  grid-template-columns: 32px 64px minmax(220px, 1.7fr) minmax(156px, 0.9fr) 96px 78px;
   align-items: center;
+  justify-items: start;
   column-gap: 12px;
   padding: 8px 6px 10px;
-  color: var(--text-3);
-  border-bottom: 1px solid var(--line);
+  color: color-mix(in srgb, var(--text-3) 94%, white 6%);
   font-size: 11px;
+  font-weight: 780;
+  letter-spacing: 0;
+  text-transform: none;
 }
 
 .denseList {
   display: grid;
   align-content: start;
-  gap: 4px;
+  gap: 0;
   min-height: 0;
   overflow: auto;
+  padding: 0 4px 4px 2px;
+  scrollbar-gutter: stable;
 }
 
 .taskLine {
   display: grid;
-  grid-template-columns: 32px minmax(240px, 1.8fr) minmax(120px, 1fr) 96px 78px;
+  position: relative;
+  grid-template-columns: 32px 64px minmax(220px, 1.7fr) minmax(156px, 0.9fr) 96px 78px;
   align-items: center;
+  justify-items: start;
   gap: 12px;
   min-height: 48px;
-  padding: 0 6px;
+  padding: 0 10px 0 8px;
   color: var(--text-2);
-  border: 1px solid transparent;
-  border-radius: 8px;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--line-soft) 92%, white 8%);
+  border-radius: 0;
+  box-shadow: none;
+  backdrop-filter: none;
   font-size: 12px;
+  transition:
+    border-color 140ms ease,
+    background 140ms ease,
+    color 140ms ease;
+}
+
+.taskLine::before {
+  content: none;
 }
 
 .taskLineDone {
-  opacity: 0.76;
+  opacity: 0.84;
 }
 
 .taskLine:hover {
   color: var(--text-1);
-  background: var(--surface);
-  border-color: var(--line-soft);
+  border-color: color-mix(in srgb, var(--accent) 20%, var(--line-soft));
+  background: color-mix(in srgb, var(--accent) 4%, transparent);
+}
+
+:root[data-theme="light"] .taskLine:hover {
+  border-color: color-mix(in srgb, var(--accent) 20%, var(--line-soft));
+}
+
+.taskLineCurrent {
+  border-color: color-mix(in srgb, var(--accent) 34%, var(--line-soft));
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
 }
 
 .taskDraggable {
@@ -605,12 +1292,12 @@
 }
 
 .taskDropTarget {
-  border-color: var(--accent);
-  background: var(--accent-soft);
+  border-color: color-mix(in srgb, var(--accent) 46%, var(--line-soft));
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
 }
 
 .ghostLine {
-  grid-template-columns: 22px minmax(0, 1fr) 56px 96px 78px;
+  grid-template-columns: 22px 64px minmax(0, 1fr) 156px 96px 78px;
 }
 
 .fakeCheck,
@@ -622,11 +1309,30 @@
   display: grid;
   place-items: center;
   color: var(--accent);
-  background: transparent;
-  border: 2px solid var(--line-strong);
-  border-radius: 2px;
+  background: color-mix(in srgb, var(--window-bg) 78%, transparent);
+  border: 2px solid color-mix(in srgb, var(--line-strong) 92%, white 8%);
+  border-radius: 4px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.92);
   font-size: 10px;
   font-weight: 700;
+  transition:
+    color 140ms ease,
+    background 140ms ease,
+    border-color 140ms ease,
+    box-shadow 140ms ease,
+    transform 140ms ease;
+}
+
+.taskStateButton:hover,
+.taskStateButton:focus-visible {
+  color: var(--text-1);
+  border-color: var(--hover-border);
+  background: linear-gradient(180deg, var(--hover-surface), var(--hover-surface-strong));
+  box-shadow:
+    inset 0 1px 0 var(--hover-glass),
+    var(--hover-shadow);
+  transform: var(--hover-lift);
+  outline: none;
 }
 
 .taskLineDone .checkButton {
@@ -635,47 +1341,98 @@
   box-shadow: inset 0 0 0 2px var(--window-bg);
 }
 
+.taskLineDone .checkButton:hover,
+.taskLineDone .checkButton:focus-visible {
+  color: #fff;
+  border-color: transparent;
+  background: linear-gradient(180deg, #3491ff, var(--accent-strong));
+  box-shadow: var(--hover-shadow-strong);
+  transform: var(--hover-lift);
+  outline: none;
+}
+
 .taskRestoreButton {
   border-color: var(--accent);
 }
 
 .taskNameButton,
 .taskTitleText {
-  overflow: hidden;
   color: inherit;
   text-align: left;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   background: transparent;
   border: 0;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.taskNameButton {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+}
+
+.taskTitleText {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .taskMain {
+  position: relative;
   display: grid;
   align-items: center;
-  gap: 3px;
-}
-
-.taskStatusBadge {
   justify-self: start;
-  padding: 1px 8px;
-  border-radius: 999px;
-  border: 1px solid var(--line);
-  font-size: 10px;
+  width: 100%;
+  min-width: 0;
+}
+
+.taskTitleTooltip {
+  position: fixed;
+  z-index: 48;
+  width: max-content;
+  padding: 6px 9px;
+  color: var(--text-2);
+  text-align: left;
+  white-space: normal;
+  word-break: break-word;
+  font-size: 12px;
   font-weight: 700;
+  letter-spacing: 0;
+  line-height: 1.25;
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--window-bg) 96%, white 4%),
+      color-mix(in srgb, var(--window-bg) 92%, #dce9ff 8%)
+    );
+  border: 0;
+  border-radius: 4px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.82),
+    inset 0 -1px 0 rgba(160, 194, 236, 0.18),
+    0 12px 28px rgba(66, 111, 184, 0.16);
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  pointer-events: none;
+  transform: translateY(-100%);
 }
 
-.taskStatusBadgeActive {
-  color: var(--accent);
-  background: var(--accent-soft);
-  border-color: var(--line-soft);
-}
-
-.taskStatusBadgeDone {
+.taskStatusText {
   color: var(--text-3);
-  background: var(--surface);
+  font-size: 11px;
+  font-weight: 760;
+  white-space: nowrap;
+}
+
+.taskStatusTextActive {
+  color: var(--accent);
+}
+
+.taskStatusTextDone {
+  color: var(--text-3);
 }
 
 .taskTitleInput {
@@ -683,9 +1440,10 @@
   min-height: 28px;
   padding: 0 8px;
   color: var(--text-1);
-  background: color-mix(in srgb, var(--surface) 72%, transparent);
-  border: 1px solid var(--line-strong);
-  border-radius: 6px;
+  background: color-mix(in srgb, var(--window-bg) 74%, transparent);
+  border: 1px solid color-mix(in srgb, var(--line-strong) 94%, white 6%);
+  border-radius: 8px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.92);
   outline: none;
   font-size: 12px;
   font-weight: 600;
@@ -693,19 +1451,47 @@
 
 .taskTitleInput:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 28%, transparent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.92),
+    0 0 0 1px color-mix(in srgb, var(--accent) 24%, transparent);
 }
 
 .taskStats {
   display: flex;
-  flex-direction: column;
   align-items: flex-start;
-  gap: 4px;
+  justify-self: start;
+  min-width: 0;
+}
+
+.taskStatsInline {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  color: var(--text-2);
+  white-space: nowrap;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.taskStatsValue {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.taskStatsSeparator {
+  flex: 0 0 auto;
+  width: 1px;
+  height: 8px;
+  margin: 0 12px;
+  background: color-mix(in srgb, var(--text-2) 56%, transparent);
+  border-radius: 999px;
+  opacity: 0.74;
 }
 
 .taskBindCell {
   display: flex;
-  justify-content: flex-end;
+  justify-content: flex-start;
 }
 
 .taskBindButton {
@@ -713,48 +1499,99 @@
   height: 28px;
   padding: 0 10px;
   color: var(--accent);
-  background: transparent;
-  border: 1px solid var(--line-strong);
+  background: color-mix(in srgb, var(--window-bg) 76%, transparent);
+  border: 0;
   border-radius: 4px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.94),
+    0 6px 14px rgba(67, 112, 182, 0.06);
   font-size: 11px;
   font-weight: 700;
+  transition:
+    color 140ms ease,
+    background 140ms ease,
+    box-shadow 140ms ease,
+    transform 140ms ease;
 }
 
 .taskBindButtonActive {
   color: #fff;
-  background: var(--accent);
-  border-color: var(--accent);
+  background:
+    radial-gradient(circle at 70% 10%, rgba(113, 179, 255, 0.58), transparent 30%),
+    linear-gradient(180deg, #2d87ff, var(--accent-strong));
+  border: 0;
+  box-shadow: var(--blue-shadow);
+}
+
+.taskBindButton:hover,
+.taskBindButton:focus-visible {
+  color: var(--text-1);
+  background: linear-gradient(180deg, var(--hover-surface), var(--hover-surface-strong));
+  box-shadow:
+    inset 0 1px 0 var(--hover-glass),
+    var(--hover-shadow);
+  transform: var(--hover-lift);
+  outline: none;
+}
+
+.taskBindButtonActive:hover,
+.taskBindButtonActive:focus-visible {
+  color: #fff;
+  background:
+    radial-gradient(circle at 18% 12%, rgba(170, 214, 255, 0.72), transparent 30%),
+    linear-gradient(180deg, #2d87ff, var(--accent-strong));
+  box-shadow: var(--hover-shadow-strong);
+  transform: var(--hover-lift);
+  outline: none;
 }
 
 .taskBindButton:disabled {
   color: var(--text-3);
-  border-color: var(--line);
   cursor: not-allowed;
 }
 
 .taskDangerCell {
   display: flex;
-  justify-content: center;
-  border-left: 1px solid var(--line);
-  padding-left: 6px;
+  justify-content: flex-start;
+  padding-left: 0;
 }
 
 .taskDangerButton {
   min-width: 54px;
   height: 28px;
   padding: 0 8px;
-  color: #d94d45;
-  background: transparent;
-  border: 1px solid rgba(217, 77, 69, 0.4);
+  color: #de6157;
+  background: color-mix(in srgb, var(--window-bg) 74%, transparent);
+  border: 0;
   border-radius: 4px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.94);
   font-size: 11px;
   font-weight: 700;
+  transition:
+    color 140ms ease,
+    background 140ms ease,
+    box-shadow 140ms ease,
+    transform 140ms ease;
 }
 
-.taskDangerButton:hover {
-  color: #fff;
-  background: #d94d45;
-  border-color: #d94d45;
+.taskDangerButton:hover,
+.taskDangerButton:focus-visible {
+  color: #de6157;
+  background: color-mix(in srgb, #de6157 8%, var(--window-bg) 92%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.94),
+    0 8px 16px rgba(222, 97, 87, 0.08);
+  transform: var(--hover-lift);
+  outline: none;
+}
+
+:root[data-theme="light"] .taskDangerButton:hover,
+:root[data-theme="light"] .taskDangerButton:focus-visible {
+  color: #de6157;
+  background: color-mix(in srgb, #de6157 7%, var(--window-bg) 93%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.94),
+    0 8px 16px rgba(222, 97, 87, 0.08);
 }
 
 .tomatoBadge,
@@ -785,10 +1622,12 @@
   min-height: 120px;
   padding: 16px;
   color: var(--text-3);
-  background: var(--surface);
-  border: 1px dashed var(--line);
-  border-radius: 8px;
+  background: color-mix(in srgb, var(--window-bg) 70%, transparent);
+  border: 1px dashed color-mix(in srgb, var(--line) 92%, white 8%);
+  border-radius: 14px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.94);
   font-size: 12px;
+  font-weight: 700;
   text-align: center;
 }
 
@@ -877,11 +1716,24 @@
 }
 
 .statsView {
+  position: relative;
+  isolation: isolate;
   grid-template-rows: auto minmax(0, 1fr);
   gap: 10px;
+  background: var(--window-bg);
+}
+
+:root[data-theme="dark"] .statsView {
+  background: var(--window-bg);
+}
+
+.statsView::after {
+  content: none;
 }
 
 .statsLayout {
+  position: relative;
+  z-index: 1;
   display: grid;
   grid-template-columns: minmax(0, 1.55fr) minmax(220px, 0.75fr);
   grid-template-rows: minmax(86px, auto) minmax(0, 1fr) minmax(156px, 0.62fr);
@@ -898,9 +1750,13 @@
 .chartPanel,
 .compositionPanel,
 .rankPanel {
-  background: var(--surface);
-  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--window-bg) 82%, transparent);
+  border: 1px solid color-mix(in srgb, var(--line-soft) 90%, white 10%);
   border-radius: 8px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.96),
+    0 10px 22px rgba(59, 103, 182, 0.06);
+  backdrop-filter: blur(16px) saturate(140%);
 }
 
 .statsNumbers {
@@ -911,44 +1767,77 @@
   min-height: 0;
   background: transparent;
   border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  backdrop-filter: none;
 }
 
-.statsNumbers > div {
+.statsSummaryCard {
+  position: relative;
   display: grid;
-  align-content: center;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
   gap: 4px;
   min-width: 0;
+  overflow: hidden;
   padding: 10px 12px;
-  background: var(--surface);
-  border: 1px solid var(--line);
+  background:
+    radial-gradient(circle at 100% 0%, rgba(72, 144, 255, 0.12), transparent 38%),
+    linear-gradient(180deg, color-mix(in srgb, var(--window-bg) 88%, transparent), color-mix(in srgb, var(--window-bg) 74%, transparent));
+  border: 1px solid color-mix(in srgb, var(--line-soft) 78%, transparent);
   border-radius: 8px;
+  box-shadow:
+    0 8px 18px rgba(59, 103, 182, 0.05),
+    inset 1px 0 0 rgba(255, 255, 255, 0.32),
+    inset -1px 0 0 rgba(255, 255, 255, 0.18),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.38);
+  backdrop-filter: blur(16px) saturate(145%);
 }
 
-.metricCard {
-  color: #fff;
-  background: linear-gradient(180deg, #5b97ff, var(--accent));
+.statsSummaryCard::after {
+  position: absolute;
+  top: -8px;
+  right: -10px;
+  width: 86px;
+  height: 44px;
+  content: "";
+  background: radial-gradient(ellipse at top right, rgba(255, 255, 255, 0.24), transparent 68%);
+  pointer-events: none;
+}
+
+:root[data-theme="dark"] .statsSummaryCard {
+  background:
+    radial-gradient(circle at 100% 0%, rgba(53, 139, 255, 0.16), transparent 38%),
+    linear-gradient(180deg, rgba(18, 42, 66, 0.74), rgba(9, 29, 48, 0.68));
   border-color: transparent;
+  box-shadow:
+    0 10px 18px rgba(0, 0, 0, 0.18),
+    inset 1px 0 0 rgba(93, 128, 178, 0.18),
+    inset -1px 0 0 rgba(93, 128, 178, 0.18),
+    inset 0 -1px 0 rgba(93, 128, 178, 0.18);
 }
 
-.metricCard span,
-.statsNumbers > div span {
+:root[data-theme="dark"] .statsSummaryCard::after {
+  background: radial-gradient(ellipse at top right, rgba(255, 255, 255, 0.08), transparent 68%);
+}
+
+.statsSummaryCard span {
   color: inherit;
   font-size: 11px;
   font-weight: 700;
   opacity: 0.88;
 }
 
-.metricCard strong {
-  color: #fff;
+.statsSummaryContent {
+  display: grid;
+  align-content: center;
+  gap: 4px;
+  min-width: 0;
 }
 
 .statsNumbers small {
   color: var(--text-3);
   font-size: 10px;
-}
-
-.metricCard small {
-  color: rgba(255, 255, 255, 0.72);
 }
 
 .statsNumbers strong {
@@ -958,6 +1847,30 @@
   line-height: 1.05;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.statsSummaryIcon {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  color: var(--accent);
+  opacity: 1;
+  background:
+    linear-gradient(180deg, rgba(236, 246, 255, 0.98), rgba(224, 238, 255, 0.94));
+  border: 1px solid color-mix(in srgb, var(--line-soft) 90%, white 10%);
+  border-radius: 50%;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.96),
+    0 10px 18px rgba(63, 113, 203, 0.08);
+}
+
+.statsSummaryIconSvg {
+  width: 28px;
+  height: 28px;
+  flex: 0 0 auto;
 }
 
 .chartPanel {
@@ -999,7 +1912,25 @@
   min-height: 0;
   height: 100%;
   padding: 8px 0;
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid color-mix(in srgb, var(--line-soft) 72%, white 28%);
+}
+
+.hourChart::before,
+.hourChart::after {
+  position: absolute;
+  right: 0;
+  left: 0;
+  height: 1px;
+  content: "";
+  background: linear-gradient(90deg, transparent, rgba(164, 193, 240, 0.32), transparent);
+}
+
+.hourChart::before {
+  top: 34%;
+}
+
+.hourChart::after {
+  top: 68%;
 }
 
 .hourChartFrame {
@@ -1038,11 +1969,14 @@
 }
 
 .hourSlot div {
-  width: 100%;
+  width: calc(100% - 2px);
+  margin: 0 auto;
   min-height: 0;
-  border-radius: 2px 2px 0 0;
-  background: linear-gradient(180deg, var(--accent), #64c9ff);
-  box-shadow: 0 0 0 1px rgba(56, 132, 255, 0.08);
+  border-radius: 8px 8px 0 0;
+  background: linear-gradient(180deg, #2b7fff, #58c5ff);
+  box-shadow:
+    0 0 0 1px rgba(56, 132, 255, 0.05),
+    0 8px 14px rgba(56, 132, 255, 0.08);
 }
 
 .chartAxisRow {
@@ -1064,24 +1998,33 @@
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
   min-height: 0;
-  padding: 14px 16px;
+  padding: 14px 16px 12px;
 }
 
 .compositionBody {
   display: grid;
-  align-content: center;
+  grid-template-rows: minmax(0, 1fr) auto;
+  align-content: stretch;
+  align-items: center;
   justify-items: center;
-  gap: 14px;
+  gap: 10px;
+  height: 100%;
   min-height: 0;
 }
 
 .donut {
-  width: 92px;
-  height: 92px;
+  position: relative;
+  width: 138px;
+  height: 138px;
   border-radius: 50%;
-  background:
-    radial-gradient(circle, var(--surface) 51%, transparent 53%),
-    conic-gradient(var(--accent) 0 var(--focus), var(--cyan) var(--focus) var(--break), var(--surface-3) var(--break) 100%);
+  background: conic-gradient(var(--accent) 0 var(--focus), #43dec7 var(--focus) var(--break), #d8e8ff var(--break) 100%);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 14px), #000 calc(100% - 13px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 14px), #000 calc(100% - 13px));
+}
+
+.donut::before,
+.donut::after {
+  content: none;
 }
 
 .legendList {
@@ -1123,7 +2066,7 @@
 }
 
 .legendList span:nth-child(3) b {
-  background: var(--surface-3);
+  background: #d8e8ff;
 }
 
 .rankPanel {
@@ -1141,6 +2084,8 @@
   gap: 9px;
   min-height: 0;
   overflow: auto;
+  padding-right: 10px;
+  scrollbar-gutter: stable;
 }
 
 .rankRow {
@@ -1160,28 +2105,31 @@
 .rankRowTop span {
   overflow: hidden;
   color: var(--text-1);
-  font-weight: 700;
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 1.2;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .rankRowTop strong {
   color: var(--text-1);
-  font-size: 12px;
-  font-weight: 800;
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 1.2;
 }
 
 .rankTrack {
   height: 6px;
   overflow: hidden;
-  background: color-mix(in srgb, var(--surface-3) 64%, transparent);
+  background: color-mix(in srgb, #dceaff 88%, white 12%);
   border-radius: 999px;
 }
 
 .rankTrack span {
   display: block;
   height: 100%;
-  background: linear-gradient(90deg, var(--accent), #64c9ff);
+  background: linear-gradient(90deg, #2b7fff, #58c5ff);
   border-radius: inherit;
 }
 
@@ -1190,25 +2138,37 @@
   place-items: center;
   min-height: 84px;
   color: var(--text-3);
-  border: 1px dashed var(--line);
+  background: color-mix(in srgb, var(--window-bg) 86%, transparent);
+  border: 1px dashed color-mix(in srgb, var(--line-soft) 88%, white 12%);
   border-radius: 8px;
   font-size: 11px;
 }
 
 .settingsView {
+  position: relative;
+  isolation: isolate;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   min-height: 0;
+  padding: 14px 16px 12px;
+  background: var(--window-bg);
+}
+
+:root[data-theme="dark"] .settingsView {
+  background: var(--window-bg);
 }
 
 .settingsBody {
   min-height: 0;
   overflow: auto;
+  padding: 0 16px 0 0;
   scrollbar-gutter: stable;
+  scrollbar-color: auto;
+  scrollbar-width: auto;
 }
 
 .settingsBody::-webkit-scrollbar {
-  width: 8px;
+  width: 10px;
 }
 
 .settingsBody::-webkit-scrollbar-track {
@@ -1218,13 +2178,15 @@
 .settingsBody::-webkit-scrollbar-thumb {
   background: var(--scrollbar-thumb);
   background-clip: content-box;
-  border: 2px solid transparent;
-  border-radius: 4px;
+  border: 3px solid transparent;
+  border-radius: 999px;
 }
 
 .settingsBody::-webkit-scrollbar-thumb:hover {
   background: var(--scrollbar-thumb-hover);
   background-clip: content-box;
+  border: 3px solid transparent;
+  border-radius: 999px;
 }
 
 .settingsBody::-webkit-scrollbar-button,
@@ -1235,17 +2197,25 @@
 }
 
 .settingsPanel {
+  position: relative;
   display: grid;
   align-content: start;
-  gap: 18px;
-  padding: 20px 28px 34px;
+  gap: 14px;
+  min-height: 100%;
+  padding: 0 0 26px;
+  overflow: visible;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  backdrop-filter: none;
 }
 
 .settingsGroup {
   display: grid;
-  gap: 10px;
-  padding-top: 18px;
-  border-top: 1px solid var(--line);
+  gap: 4px;
+  padding-top: 14px;
+  border-top: 1px solid color-mix(in srgb, var(--line) 82%, transparent);
 }
 
 .settingsGroup:first-child {
@@ -1254,31 +2224,151 @@
 }
 
 .settingsGroup h2 {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0;
   margin: 0;
+  margin-bottom: 10px;
   color: var(--text-1);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 800;
 }
 
-.settingsGroup p {
-  margin: 0;
-  color: var(--text-3);
-  font-size: 11px;
+.settingsGroup h2::before {
+  display: none;
 }
 
 .settingLine {
+  position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 220px;
+  grid-template-columns: 28px minmax(0, 1fr) 152px;
   align-items: center;
-  gap: 24px;
-  min-height: 38px;
+  column-gap: 10px;
+  min-height: 30px;
   color: var(--text-2);
-  font-size: 12px;
+  font-size: 13px;
+}
+
+.settingIconBox {
+  grid-column: 1;
+  grid-row: 1;
+  display: grid;
+  justify-self: start;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  color: var(--accent);
+  background: linear-gradient(180deg, rgba(236, 246, 255, 0.98), rgba(226, 239, 255, 0.94));
+  border-radius: 7px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    0 6px 14px rgba(59, 103, 182, 0.07);
+  transition:
+    background 140ms ease,
+    box-shadow 140ms ease,
+    transform 140ms ease;
+}
+
+.settingLine:hover .settingIconBox,
+.settingLine:focus-within .settingIconBox {
+  box-shadow:
+    inset 0 1px 0 var(--hover-glass),
+    var(--hover-shadow);
+  transform: var(--hover-lift);
+}
+
+.settingIconSvg {
+  width: 15px;
+  height: 15px;
+  flex: 0 0 auto;
+}
+
+.settingCopy {
+  grid-column: 2;
+  grid-row: 1;
+  display: grid;
+  align-content: center;
+  justify-items: start;
+  min-width: 0;
+}
+
+.settingLabel {
+  overflow: hidden;
+  color: var(--text-1);
+  font: 700 11px/1 var(--font-ui);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.settingSwitchInput {
+  position: absolute;
+  grid-column: 3;
+  grid-row: 1;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.settingSwitchTrack {
+  grid-column: 3;
+  grid-row: 1;
+  display: grid;
+  align-items: center;
+  justify-self: end;
+  width: 36px;
+  height: 20px;
+  padding: 2px;
+  background: linear-gradient(180deg, #2d87ff, var(--accent-strong));
+  border-radius: 999px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.38),
+    0 8px 14px rgba(31, 116, 255, 0.18);
+  transition:
+    background-color 140ms ease,
+    box-shadow 140ms ease,
+    transform 140ms ease;
+}
+
+.settingSwitchTrack span {
+  width: 16px;
+  height: 16px;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 3px 8px rgba(31, 73, 129, 0.22);
+  transform: translateX(16px);
+  transition: transform 140ms ease;
+}
+
+.settingSwitchInput:not(:checked) + .settingSwitchTrack {
+  background: color-mix(in srgb, var(--switch-off) 76%, white 24%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.52);
+}
+
+.settingLine:hover .settingSwitchTrack,
+.settingSwitchInput:hover + .settingSwitchTrack,
+.settingSwitchInput:focus-visible + .settingSwitchTrack {
+  box-shadow:
+    inset 0 1px 0 var(--hover-glass),
+    var(--hover-shadow);
+  transform: var(--hover-lift);
+}
+
+.settingSwitchInput:not(:checked) + .settingSwitchTrack span {
+  transform: translateX(0);
+}
+
+.settingSwitchInput:focus-visible + .settingSwitchTrack {
+  outline: 2px solid color-mix(in srgb, var(--accent) 28%, transparent);
+  outline-offset: 2px;
 }
 
 .settingsSelect,
 .settingStepper {
-  width: 220px;
+  grid-column: 3;
+  grid-row: 1;
+  width: 152px;
   justify-self: end;
 }
 
@@ -1288,24 +2378,39 @@
 
 .settingsSelectButton {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 38px;
+  grid-template-columns: minmax(0, 1fr) 48px;
   align-items: center;
   gap: 0;
   width: 100%;
-  min-height: 40px;
-  padding: 0 0 0 14px;
+  min-height: 28px;
+  padding: 0 0 0 10px;
   color: var(--text-1);
   text-align: left;
-  background: color-mix(in srgb, var(--surface) 78%, var(--window-bg) 22%);
-  border: 1px solid var(--line-strong);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--window-bg) 92%, transparent),
+    color-mix(in srgb, var(--surface-2) 68%, transparent)
+  );
+  border: 0;
   border-radius: 4px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 8px 16px rgba(66, 111, 184, 0.06);
+  font: 400 11px/1 var(--font-ui);
+  transition:
+    background 140ms ease,
+    box-shadow 140ms ease,
+    transform 140ms ease;
 }
 
 .settingsSelectButton:hover,
 .settingsSelectButton:focus-visible,
 .settingsSelectButtonOpen {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 24%, transparent);
+  background: linear-gradient(180deg, var(--hover-surface), var(--hover-surface-strong));
+  box-shadow:
+    inset 0 1px 0 var(--hover-glass),
+    var(--hover-shadow);
+  transform: var(--hover-lift);
   outline: none;
 }
 
@@ -1316,14 +2421,29 @@
 }
 
 .settingsSelectChevron {
+  position: relative;
   display: grid;
   align-self: stretch;
   place-items: center;
+  width: 100%;
   color: var(--text-2);
-  border-left: 1px solid var(--line);
-  font-size: 13px;
-  font-weight: 800;
-  line-height: 1;
+  border-left: 0;
+  font-size: 0;
+  line-height: 0;
+}
+
+.settingsSelectChevron::before {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: block;
+  width: 0;
+  height: 0;
+  content: "";
+  border-top: 8px solid currentColor;
+  border-right: 6px solid transparent;
+  border-left: 6px solid transparent;
+  transform: translate(-50%, -50%);
 }
 
 .settingsSelectButtonOpen .settingsSelectChevron {
@@ -1334,30 +2454,37 @@
 .settingsSelectMenu {
   position: absolute;
   z-index: 20;
-  top: calc(100% + 4px);
+  top: calc(100% + 3px);
   right: 0;
   width: 100%;
   overflow: hidden;
-  background: var(--surface);
-  border: 1px solid var(--line-strong);
+  background: color-mix(in srgb, var(--window-bg) 94%, transparent);
+  border: 0;
   border-radius: 4px;
-  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.22);
+  box-shadow: 0 14px 28px rgba(45, 86, 140, 0.18);
+  backdrop-filter: blur(16px) saturate(145%);
 }
 
 .settingsSelectOption {
   width: 100%;
-  min-height: 36px;
-  padding: 0 14px;
-  color: var(--text-2);
+  min-height: 32px;
+  padding: 0 12px;
+  color: var(--text-1);
   text-align: left;
   background: transparent;
   border: 0;
+  font: 400 11px/1 var(--font-ui);
+  transition:
+    color 140ms ease,
+    background 140ms ease,
+    box-shadow 140ms ease;
 }
 
 .settingsSelectOption:hover,
 .settingsSelectOption:focus-visible {
   color: var(--text-1);
-  background: var(--accent-soft);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--hover-surface) 82%, transparent), color-mix(in srgb, var(--hover-surface) 38%, transparent));
+  box-shadow: inset 3px 0 0 var(--hover-border);
   outline: none;
 }
 
@@ -1374,30 +2501,44 @@
 
 .settingStepper {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 38px;
-  min-height: 40px;
+  grid-template-columns: minmax(0, 1fr) 24px;
+  min-height: 28px;
   overflow: hidden;
-  background: color-mix(in srgb, var(--surface) 78%, var(--window-bg) 22%);
-  border: 1px solid var(--line-strong);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--window-bg) 92%, transparent),
+    color-mix(in srgb, var(--surface-2) 68%, transparent)
+  );
+  border: 0;
   border-radius: 4px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 8px 16px rgba(66, 111, 184, 0.06);
+  transition:
+    background 140ms ease,
+    box-shadow 140ms ease,
+    transform 140ms ease;
 }
 
 .settingStepper:focus-within,
 .settingStepper:hover {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 18%, transparent);
+  background: linear-gradient(180deg, var(--hover-surface), var(--hover-surface-strong));
+  box-shadow:
+    inset 0 1px 0 var(--hover-glass),
+    var(--hover-shadow);
+  transform: var(--hover-lift);
 }
 
 .stepperValueButton,
 .stepperEditInput {
   min-width: 0;
-  padding: 0 10px 0 14px;
+  padding: 0 7px 0 10px;
   color: var(--text-1);
   text-align: left;
   background: transparent;
   border: 0;
   outline: none;
-  font-weight: 700;
+  font: 400 11px/1 var(--font-ui);
 }
 
 .stepperEditInput {
@@ -1406,31 +2547,297 @@
 
 .stepperButtons {
   display: grid;
-  grid-template-rows: 1fr 1fr;
-  border-left: 1px solid var(--line);
+  grid-template-rows: 10px 10px;
+  align-content: center;
+  border-left: 0;
 }
 
 .stepperButtons button {
+  position: relative;
   display: grid;
   place-items: center;
   padding: 0;
   color: var(--text-2);
   background: transparent;
   border: 0;
-  font-size: 10px;
-  font-weight: 800;
-  line-height: 1;
+  font-size: 0;
+  line-height: 0;
+  transition:
+    color 140ms ease,
+    background 140ms ease,
+    box-shadow 140ms ease,
+    transform 140ms ease;
 }
 
 .stepperButtons button:first-child {
-  border-bottom: 1px solid var(--line);
+  border-bottom: 0;
+}
+
+.stepperButtons button::before {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: block;
+  width: 0;
+  height: 0;
+  content: "";
+  border-right: 6px solid transparent;
+  border-left: 6px solid transparent;
+  transform: translate(-50%, -50%);
+}
+
+.stepperButtons button:first-child::before {
+  border-bottom: 8px solid currentColor;
+}
+
+.stepperButtons button:last-child::before {
+  border-top: 8px solid currentColor;
+}
+
+:root[data-theme="light"] .settingsSelectButton:not(.settingsSelectButtonOpen) .settingsSelectChevron,
+:root[data-theme="light"] .stepperButtons button {
+  color: color-mix(in srgb, var(--text-2) 34%, white 66%);
+}
+
+:root[data-theme="light"] .settingsSelectButtonOpen .settingsSelectChevron {
+  color: var(--accent);
 }
 
 .stepperButtons button:hover:not(:disabled),
 .stepperButtons button:focus-visible:not(:disabled) {
   color: #fff;
-  background: var(--accent);
+  background: linear-gradient(180deg, var(--accent), var(--accent-strong));
+  box-shadow: inset 0 1px 0 var(--hover-glass), var(--hover-shadow);
+  transform: var(--hover-lift);
   outline: none;
+}
+
+:root[data-theme="light"] .taskStateButton:hover,
+:root[data-theme="light"] .taskStateButton:focus-visible,
+:root[data-theme="light"] .taskBindButton:hover,
+:root[data-theme="light"] .taskBindButton:focus-visible,
+:root[data-theme="light"] .settingsSelectButton:hover,
+:root[data-theme="light"] .settingsSelectButton:focus-visible,
+:root[data-theme="light"] .settingsSelectButtonOpen,
+:root[data-theme="light"] .settingStepper:hover,
+:root[data-theme="light"] .settingStepper:focus-within {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 10px 18px rgba(66, 111, 184, 0.1);
+  transform: var(--hover-lift);
+}
+
+:root[data-theme="light"] .taskStateButton:hover,
+:root[data-theme="light"] .taskStateButton:focus-visible {
+  border-color: color-mix(in srgb, var(--line-strong) 92%, white 8%);
+}
+
+:root[data-theme="dark"] .timerActionButton:not(.startButton) {
+  background: linear-gradient(180deg, rgba(13, 43, 70, 0.82), rgba(8, 29, 48, 0.74));
+  border-color: var(--dark-card-border);
+  box-shadow:
+    inset 0 1px 0 var(--dark-glass-highlight),
+    0 12px 26px rgba(0, 0, 0, 0.18);
+}
+
+:root[data-theme="dark"] .timerActionButton:disabled {
+  color: #a2b4c9;
+  opacity: 0.6;
+}
+
+:root[data-theme="dark"] .timerActionButton:disabled .timerActionIcon {
+  color: color-mix(in srgb, var(--accent) 58%, #7f94ad);
+}
+
+:root[data-theme="dark"] .inlineTaskForm {
+  background: var(--dark-control-bg);
+  border-color: var(--dark-card-border);
+  box-shadow:
+    inset 0 1px 0 var(--dark-glass-highlight),
+    0 12px 24px rgba(0, 0, 0, 0.18);
+}
+
+:root[data-theme="dark"] .inlineTaskForm:focus-within {
+  border-color: color-mix(in srgb, var(--accent) 58%, var(--dark-card-border));
+  box-shadow:
+    inset 0 1px 0 var(--dark-glass-highlight),
+    0 0 0 1px color-mix(in srgb, var(--accent) 22%, transparent),
+    0 14px 28px rgba(0, 0, 0, 0.22);
+}
+
+:root[data-theme="dark"] .inlineTaskForm button {
+  border-left-color: rgba(123, 171, 238, 0.22);
+}
+
+:root[data-theme="dark"] .taskListHeader {
+  color: #91a4ba;
+}
+
+:root[data-theme="dark"] .taskLine {
+  color: #aebdd0;
+  background: transparent;
+  border-color: rgba(61, 88, 119, 0.4);
+  box-shadow: none;
+}
+
+:root[data-theme="dark"] .taskLine::before {
+  content: none;
+}
+
+:root[data-theme="dark"] .taskLineCurrent {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 42%, rgba(61, 88, 119, 0.4));
+}
+
+:root[data-theme="dark"] .taskTitleTooltip {
+  color: #aebdd0;
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--dark-control-bg-strong) 94%, #23476f 6%),
+      color-mix(in srgb, var(--dark-control-bg-strong) 90%, #102a46 10%)
+    );
+  box-shadow:
+    inset 0 1px 0 rgba(214, 231, 255, 0.16),
+    inset 0 -1px 0 rgba(78, 121, 175, 0.18),
+    0 18px 36px rgba(0, 0, 0, 0.32);
+}
+
+:root[data-theme="dark"] .taskDropTarget {
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 54%, rgba(61, 88, 119, 0.4));
+}
+
+:root[data-theme="dark"] .fakeCheck,
+:root[data-theme="dark"] .taskStateButton,
+:root[data-theme="dark"] .checkButton,
+:root[data-theme="dark"] .taskTitleInput,
+:root[data-theme="dark"] .taskEmptyState {
+  background: var(--dark-control-bg);
+  border-color: var(--dark-card-border);
+  box-shadow: inset 0 1px 0 rgba(177, 205, 236, 0.08);
+}
+
+:root[data-theme="dark"] .taskBindButton,
+:root[data-theme="dark"] .taskDangerButton {
+  background: var(--dark-control-bg);
+  box-shadow: inset 0 1px 0 rgba(177, 205, 236, 0.08);
+}
+
+:root[data-theme="dark"] .taskBindButtonActive {
+  color: #fff;
+  background:
+    radial-gradient(circle at 70% 10%, rgba(113, 179, 255, 0.58), transparent 30%),
+    linear-gradient(180deg, #2d87ff, var(--accent-strong));
+  box-shadow: var(--blue-shadow);
+}
+
+:root[data-theme="dark"] .taskBindButton:hover,
+:root[data-theme="dark"] .taskBindButton:focus-visible {
+  color: #eef5ff;
+  background: linear-gradient(180deg, rgba(14, 47, 76, 0.94), rgba(9, 31, 50, 0.9));
+  box-shadow:
+    inset 0 1px 0 rgba(189, 214, 240, 0.12),
+    0 10px 20px rgba(0, 0, 0, 0.22);
+  transform: var(--hover-lift);
+  outline: none;
+}
+
+:root[data-theme="dark"] .taskBindButtonActive:hover,
+:root[data-theme="dark"] .taskBindButtonActive:focus-visible {
+  color: #fff;
+  background:
+    radial-gradient(circle at 18% 12%, rgba(170, 214, 255, 0.72), transparent 30%),
+    linear-gradient(180deg, #2d87ff, var(--accent-strong));
+  box-shadow: var(--hover-shadow-strong);
+  transform: var(--hover-lift);
+  outline: none;
+}
+
+:root[data-theme="dark"] .taskDangerButton:hover,
+:root[data-theme="dark"] .taskDangerButton:focus-visible {
+  color: #ff8a81;
+  background: linear-gradient(180deg, rgba(58, 22, 27, 0.94), rgba(31, 14, 18, 0.9));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 224, 221, 0.08),
+    0 10px 20px rgba(0, 0, 0, 0.24);
+  transform: var(--hover-lift);
+  outline: none;
+}
+
+:root[data-theme="dark"] .taskTitleInput:focus {
+  border-color: var(--accent);
+  box-shadow:
+    inset 0 1px 0 rgba(177, 205, 236, 0.1),
+    0 0 0 1px color-mix(in srgb, var(--accent) 24%, transparent);
+}
+
+:root[data-theme="dark"] .taskStatusTextDone {
+  color: #8498ae;
+}
+
+:root[data-theme="dark"] .taskDangerButton {
+  color: #ff7d74;
+}
+
+:root[data-theme="dark"] .taskEmptyState {
+  border-style: dashed;
+}
+
+:root[data-theme="dark"] .statsSummaryCard {
+  border-color: var(--dark-card-border);
+}
+
+:root[data-theme="dark"] .chartPanel,
+:root[data-theme="dark"] .compositionPanel,
+:root[data-theme="dark"] .rankPanel {
+  background: var(--dark-control-bg);
+  border-color: var(--dark-card-border);
+  box-shadow:
+    inset 0 1px 0 var(--dark-glass-highlight),
+    0 12px 28px rgba(0, 0, 0, 0.18);
+}
+
+:root[data-theme="dark"] .statsSummaryIcon,
+:root[data-theme="dark"] .settingIconBox {
+  background: linear-gradient(180deg, rgba(36, 76, 115, 0.36), var(--dark-icon-bg));
+  border: 1px solid rgba(123, 171, 238, 0.18);
+  box-shadow:
+    inset 0 1px 0 rgba(221, 237, 255, 0.12),
+    0 8px 18px rgba(0, 0, 0, 0.18);
+}
+
+:root[data-theme="dark"] .settingsSelectButton,
+:root[data-theme="dark"] .settingStepper {
+  background: var(--dark-control-bg);
+  border: 0;
+  box-shadow: inset 0 1px 0 rgba(177, 205, 236, 0.08);
+}
+
+:root[data-theme="dark"] .settingsSelectMenu {
+  background: var(--dark-control-bg-strong);
+  border: 0;
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.28);
+}
+
+:root[data-theme="dark"] .autoSwitch input:not(:checked),
+:root[data-theme="dark"] .settingLine input[type="checkbox"]:not(:checked) {
+  background: #36516c;
+  box-shadow: inset 0 1px 0 rgba(221, 237, 255, 0.08);
+}
+
+:root[data-theme="dark"] .autoSwitch input:hover,
+:root[data-theme="dark"] .autoSwitch input:focus-visible,
+:root[data-theme="dark"] .settingLine input[type="checkbox"]:hover,
+:root[data-theme="dark"] .settingLine input[type="checkbox"]:focus-visible {
+  box-shadow:
+    inset 0 1px 0 rgba(177, 205, 236, 0.12),
+    0 10px 18px rgba(0, 0, 0, 0.24);
+}
+
+:root[data-theme="dark"] .settingSwitchInput:not(:checked) + .settingSwitchTrack {
+  background: #36516c;
+  box-shadow: inset 0 1px 0 rgba(221, 237, 255, 0.08);
 }
 
 @media (max-width: 480px) {

@@ -56,7 +56,9 @@ export const aggregateStats = (input: AggregateStatsInput): FocusStats => {
       weeklyBucket.completedPomodoros += 1
     }
 
-    if (dateKey === todayKey && session.taskId && tasksById.has(session.taskId)) {
+    if (dateKey === todayKey && session.taskId) {
+      const task = tasksById.get(session.taskId)
+      if (!task?.completedAt || localDateKey(new Date(task.completedAt)) !== todayKey) continue
       taskTotals.set(session.taskId, (taskTotals.get(session.taskId) ?? 0) + minutes)
     }
   }
@@ -95,7 +97,7 @@ export const aggregateStats = (input: AggregateStatsInput): FocusStats => {
           taskId,
           title: task.title,
           minutes,
-          status: task.completedAt ? ('completed' as const) : ('active' as const)
+          status: 'completed' as const
         }
       })
       .sort((left, right) => right.minutes - left.minutes)

@@ -10,6 +10,7 @@ interface AppShellProps {
   activeView: ViewKey
   children: ReactNode
   onNavigate(view: ViewKey): void
+  onShowMiniWindow(): void
   onToggleTheme(): void
 }
 
@@ -18,6 +19,7 @@ export const AppShell = ({
   activeView,
   children,
   onNavigate,
+  onShowMiniWindow,
   onToggleTheme
 }: AppShellProps): ReactElement => {
   const renderNavIcon = (view: ViewKey): ReactElement => {
@@ -29,7 +31,7 @@ export const AppShell = ({
 
   return (
     <div className={styles.appFrame}>
-      <WindowTitleBar activeTheme={activeTheme} onToggleTheme={onToggleTheme} />
+      <WindowTitleBar activeTheme={activeTheme} onShowMiniWindow={onShowMiniWindow} onToggleTheme={onToggleTheme} />
 
       <aside className={styles.sideRail}>
         <nav className={styles.primaryNav}>

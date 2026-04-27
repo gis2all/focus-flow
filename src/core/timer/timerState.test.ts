@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import {
+  completeTimer,
   createIdleTimer,
   deriveTimerSnapshot,
   getNextPhase,
@@ -96,5 +97,40 @@ describe('timer state machine', () => {
     expect(restored.action).toBe('needs-confirmation')
     expect(restored.state.status).toBe('completed')
     expect(restored.state.remainingMs).toBe(0)
+  })
+
+  test('completes a task-bound focus without incrementing the unbound counter and remembers the task context', () => {
+    const running = startTimer(createIdleTimer(defaultSettings, at('2026-04-25T09:00:00.000')), {
+      now: at('2026-04-25T09:00:00.000'),
+      phase: 'focus',
+      taskId: 'task-1',
+      settings: defaultSettings
+    })
+
+    const completed = completeTimer(running, at('2026-04-25T09:25:00.000')) as typeof running & {
+      unboundFocusCount: number
+      lastFocusTaskId: string | null
+    }
+
+    expect(completed.focusCount).toBe(1)
+    expect(completed.unboundFocusCount).toBe(0)
+    expect(completed.lastFocusTaskId).toBe('task-1')
+  })
+
+  test('completes an unbound focus by incrementing the unbound counter and clearing task context', () => {
+    const running = startTimer(createIdleTimer(defaultSettings, at('2026-04-25T09:00:00.000')), {
+      now: at('2026-04-25T09:00:00.000'),
+      phase: 'focus',
+      settings: defaultSettings
+    })
+
+    const completed = completeTimer(running, at('2026-04-25T09:25:00.000')) as typeof running & {
+      unboundFocusCount: number
+      lastFocusTaskId: string | null
+    }
+
+    expect(completed.focusCount).toBe(1)
+    expect(completed.unboundFocusCount).toBe(1)
+    expect(completed.lastFocusTaskId).toBeNull()
   })
 })

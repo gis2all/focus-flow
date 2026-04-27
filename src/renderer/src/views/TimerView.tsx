@@ -1,18 +1,21 @@
-import type { CSSProperties, ReactElement } from 'react'
+import { useState, type CSSProperties, type ReactElement } from 'react'
 import type { AppSettings, TimerPhase, TimerSnapshot } from '@shared/types'
 import { phaseLabel } from '../appConfig'
 import {
-  ActionArrowIcon,
   CoffeeCupIcon,
   LoungeChairIcon,
   PauseControlIcon,
+  PlayControlIcon,
   SkipNextIcon
 } from '../components/AppIcons'
-import { formatTimerClock } from '../viewModel'
+import { ConfirmModal } from '../components/ConfirmModal'
+import { getTimerActionConfirmation, shouldConfirmTimerAction, type TimerActionConfirmationRequest } from '../timerActionConfirmation'
+import { formatTimerClock, type TimerPomodoroDisplay } from '../viewModel'
 import styles from '../App.module.css'
 
 interface TimerViewProps {
   currentTaskTitle: string
+  pomodoroDisplay?: TimerPomodoroDisplay
   progressPercent: number
   settings: AppSettings
   snapshot: TimerSnapshot
@@ -43,17 +46,73 @@ export const getPrimaryTimerAction = (
 
 export const TimerView = ({
   currentTaskTitle,
+  pomodoroDisplay,
   progressPercent,
   settings,
   snapshot,
   startTimer,
   updateSettings
 }: TimerViewProps): ReactElement => {
+  const [confirmAction, setConfirmAction] = useState<TimerActionConfirmationRequest | null>(null)
+  const [confirmPending, setConfirmPending] = useState(false)
   const autoSwitchEnabled = settings.autoStartBreaks || settings.autoStartFocus
   const [displayMinutes = '00', displaySeconds = '00'] = formatTimerClock(snapshot.remainingMs).split(':')
   const primaryAction = getPrimaryTimerAction(snapshot)
   const canPause = snapshot.status === 'running'
   const canSkip = snapshot.status === 'running' || snapshot.status === 'paused'
+  const normalizedProgress = Math.min(100, Math.max(0, progressPercent))
+  const timerStyle = {
+    '--progress': `${normalizedProgress}%`,
+    '--progress-value': `${normalizedProgress}`
+  } as CSSProperties
+  const longBreakInterval = Math.max(1, settings.longBreakInterval)
+  const completedInCycle = snapshot.focusCount % longBreakInterval
+  const longBreakProgress =
+    snapshot.focusCount === 0 ? 1 : completedInCycle === 0 ? longBreakInterval : completedInCycle
+  const resolvedPomodoroDisplay = pomodoroDisplay ?? {
+    ordinal: Math.max(1, snapshot.focusCount + 1),
+    completed: snapshot.focusCount
+  }
+
+  const runTimerAction = async (action: TimerActionConfirmationRequest): Promise<void> => {
+    switch (action.kind) {
+      case 'startFocus':
+        await startTimer('focus')
+        return
+      case 'skip':
+        await window.focusFlow.timer.skip()
+        return
+      case 'startShortBreak':
+        await startTimer('shortBreak')
+        return
+      case 'startLongBreak':
+        await startTimer('longBreak')
+        return
+      case 'startFocusWithTask':
+        return
+    }
+  }
+
+  const openOrRunTimerAction = (action: TimerActionConfirmationRequest): void => {
+    if (shouldConfirmTimerAction(snapshot)) {
+      setConfirmAction(action)
+      return
+    }
+
+    void runTimerAction(action)
+  }
+
+  const handleConfirmAction = async (): Promise<void> => {
+    if (!confirmAction || confirmPending) return
+    setConfirmPending(true)
+
+    try {
+      await runTimerAction(confirmAction)
+      setConfirmAction(null)
+    } finally {
+      setConfirmPending(false)
+    }
+  }
 
   const handlePrimaryAction = (): void => {
     if (primaryAction.action === 'resume') {
@@ -61,13 +120,19 @@ export const TimerView = ({
       return
     }
 
-    void startTimer('focus')
+    openOrRunTimerAction({ kind: 'startFocus' })
   }
 
   return (
-    <div className={styles.timerView}>
+    <div className={styles.timerView} style={timerStyle}>
       <div className={styles.timerHeader}>
-        <p>{phaseLabel[snapshot.phase]} · 第 {Math.max(1, snapshot.focusCount + 1)} 个番茄钟</p>
+        <p>
+          <span className={styles.timerStatusBadge} aria-hidden="true">
+            <span className={styles.timerStatusHalo} />
+            <span className={styles.timerStatusCore} />
+          </span>
+          {phaseLabel[snapshot.phase]} · 第 {resolvedPomodoroDisplay.ordinal} 个番茄钟
+        </p>
         <label className={styles.autoSwitch}>
           <span>自动切换专注/休息</span>
           <input
@@ -84,24 +149,24 @@ export const TimerView = ({
         <div className={styles.timerClockWrap}>
           <div className={styles.timerDigits}>
             <span className={styles.timerDigitsGroup}>{displayMinutes}</span>
-            <span aria-hidden="true" className={styles.timerDigitsSeparator}>
-              :
-            </span>
+            <span aria-hidden="true" className={styles.timerDigitsSeparator} />
             <span className={styles.timerDigitsGroup}>{displaySeconds}</span>
           </div>
-          <p className={styles.timerQuote}>“沉浸专注，时间为你而在”</p>
         </div>
         <div className={styles.timerMetaRow}>
           <div className={styles.currentTaskCard}>
-            <span>当前任务</span>
             <strong>{currentTaskTitle}</strong>
-            <small>预计专注：2 个番茄钟　已专注：{snapshot.focusCount} 个番茄钟</small>
+            <small>已专注：{resolvedPomodoroDisplay.completed} 个番茄钟</small>
           </div>
           <div className={styles.focusDialCard}>
-            <div className={styles.focusDial} style={{ '--progress': `${progressPercent}%` } as CSSProperties}>
+            <div className={styles.focusDial}>
+              <svg className={styles.focusDialSvg} viewBox="0 0 100 100" aria-hidden="true">
+                <circle className={styles.focusDialTrack} cx="50" cy="50" r="44" pathLength="100" />
+                <circle className={styles.focusDialProgress} cx="50" cy="50" r="44" pathLength="100" />
+              </svg>
               <div className={styles.focusDialContent}>
                 <span>长休进度</span>
-                <strong>{Math.max(1, snapshot.focusCount || 1)}/4</strong>
+                <strong>{longBreakProgress}/{longBreakInterval}轮</strong>
               </div>
             </div>
           </div>
@@ -110,26 +175,48 @@ export const TimerView = ({
 
       <div className={styles.timerActions}>
         <button className={`${styles.timerActionButton} ${styles.startButton}`} onClick={handlePrimaryAction} type="button">
-          <ActionArrowIcon className={styles.timerActionIcon} />
+          <PlayControlIcon className={styles.timerActionIcon} />
           <b>{primaryAction.label}</b>
         </button>
         <button className={styles.timerActionButton} disabled={!canPause} onClick={() => void window.focusFlow.timer.pause()} type="button">
           <PauseControlIcon className={styles.timerActionIcon} />
           <b>暂停</b>
         </button>
-        <button className={styles.timerActionButton} disabled={!canSkip} onClick={() => void window.focusFlow.timer.skip()} type="button">
+        <button
+          className={styles.timerActionButton}
+          disabled={!canSkip}
+          onClick={() => openOrRunTimerAction({ kind: 'skip' })}
+          type="button"
+        >
           <SkipNextIcon className={styles.timerActionIcon} />
           <b>跳过</b>
         </button>
-        <button className={styles.timerActionButton} onClick={() => void startTimer('shortBreak')} type="button">
+        <button
+          className={styles.timerActionButton}
+          onClick={() => openOrRunTimerAction({ kind: 'startShortBreak', minutes: settings.shortBreakMinutes })}
+          type="button"
+        >
           <CoffeeCupIcon className={styles.timerActionIcon} />
           <b>{`短休 · ${settings.shortBreakMinutes} 分钟`}</b>
         </button>
-        <button className={styles.timerActionButton} onClick={() => void startTimer('longBreak')} type="button">
+        <button
+          className={styles.timerActionButton}
+          onClick={() => openOrRunTimerAction({ kind: 'startLongBreak', minutes: settings.longBreakMinutes })}
+          type="button"
+        >
           <LoungeChairIcon className={styles.timerActionIcon} />
           <b>{`长休 · ${settings.longBreakMinutes} 分钟`}</b>
         </button>
       </div>
+
+      {confirmAction ? (
+        <ConfirmModal
+          {...getTimerActionConfirmation(confirmAction)}
+          onCancel={() => !confirmPending && setConfirmAction(null)}
+          onConfirm={() => void handleConfirmAction()}
+          pending={confirmPending}
+        />
+      ) : null}
     </div>
   )
 }

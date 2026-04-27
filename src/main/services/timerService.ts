@@ -39,6 +39,19 @@ export interface StartTimerCommand {
 const isTimerPhase = (value: unknown): value is TimerPhase =>
   value === 'focus' || value === 'shortBreak' || value === 'longBreak'
 
+const normalizeTimerState = (state: TimerState): TimerState => {
+  const persistedState = state as TimerState & {
+    unboundFocusCount?: number
+    lastFocusTaskId?: string | null
+  }
+
+  return {
+    ...state,
+    unboundFocusCount: persistedState.unboundFocusCount ?? 0,
+    lastFocusTaskId: persistedState.lastFocusTaskId ?? null
+  }
+}
+
 export class TimerService {
   private readonly emitter = new EventEmitter()
   private settingsValue: AppSettings | null = null
@@ -53,30 +66,31 @@ export class TimerService {
     const runtimeState = await this.dependencies.runtime.get()
 
     if (runtimeState) {
-      const snapshot = deriveTimerSnapshot(runtimeState, now)
+      const normalizedRuntimeState = normalizeTimerState(runtimeState)
+      const snapshot = deriveTimerSnapshot(normalizedRuntimeState, now)
       this.state = {
-        ...runtimeState,
+        ...normalizedRuntimeState,
         status: snapshot.status,
         remainingMs: snapshot.remainingMs,
         updatedAt: now
       }
 
-      if (runtimeState.status === 'running') {
+      if (normalizedRuntimeState.status === 'running') {
         const action = snapshot.status === 'completed' ? 'needs-confirmation' : 'resume'
         await this.dependencies.events.record(
           'timer.restore',
           {
             action,
-            sessionId: runtimeState.sessionId
+            sessionId: normalizedRuntimeState.sessionId
           },
           this.dependencies.clock.nowIso()
         )
 
-        if (snapshot.status === 'completed' && runtimeState.sessionId) {
+        if (snapshot.status === 'completed' && normalizedRuntimeState.sessionId) {
           await this.dependencies.sessions.finish({
-            id: runtimeState.sessionId,
+            id: normalizedRuntimeState.sessionId,
             endedAt: this.dependencies.clock.nowIso(),
-            actualDurationMs: runtimeState.durationMs,
+            actualDurationMs: normalizedRuntimeState.durationMs,
             completed: false,
             completionReason: 'needs-confirmation'
           })
@@ -183,6 +197,7 @@ export class TimerService {
     this.state = {
       ...state,
       taskId: resolvedTaskId,
+      unboundFocusCount: 0,
       updatedAt: now
     }
     await this.persistState()

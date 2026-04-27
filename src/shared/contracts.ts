@@ -39,6 +39,11 @@ export const IPC_CHANNELS = {
   system: {
     getTheme: 'system:get-theme',
     showWindow: 'system:show-window',
+    showMiniWindow: 'system:show-mini-window',
+    beginWindowDrag: 'system:begin-window-drag',
+    updateWindowDrag: 'system:update-window-drag',
+    endWindowDrag: 'system:end-window-drag',
+    resizeWindow: 'system:resize-window',
     minimizeWindow: 'system:minimize-window',
     toggleMaximizeWindow: 'system:toggle-maximize-window',
     closeWindow: 'system:close-window',
@@ -66,6 +71,16 @@ export interface ReorderTasksRequest {
 
 export interface UpdateSettingsRequest {
   patch: Partial<AppSettings>
+}
+
+export interface ResizeWindowRequest {
+  width: number
+  height: number
+}
+
+export interface WindowDragRequest {
+  pointerScreenX: number
+  pointerScreenY: number
 }
 
 export interface FocusFlowApi {
@@ -99,6 +114,11 @@ export interface FocusFlowApi {
   system: {
     getTheme(): Promise<Exclude<ThemePreference, 'system'>>
     showWindow(): Promise<void>
+    showMiniWindow(): Promise<void>
+    beginWindowDrag(request: WindowDragRequest): void
+    updateWindowDrag(request: WindowDragRequest): void
+    endWindowDrag(): void
+    resizeWindow(request: ResizeWindowRequest): Promise<void>
     minimizeWindow(): Promise<void>
     toggleMaximizeWindow(): Promise<void>
     closeWindow(): Promise<void>
