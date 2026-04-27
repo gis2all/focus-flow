@@ -149,9 +149,8 @@ export const TimerView = ({
         </div>
         <div className={styles.timerMetaRow}>
           <div className={styles.currentTaskCard}>
-            <span>当前任务</span>
             <strong>{currentTaskTitle}</strong>
-            <small>预计专注：2 个番茄钟　已专注：{snapshot.focusCount} 个番茄钟</small>
+            <small>已专注：{snapshot.focusCount} 个番茄钟</small>
           </div>
           <div className={styles.focusDialCard}>
             <div className={styles.focusDial}>
@@ -161,7 +160,7 @@ export const TimerView = ({
               </svg>
               <div className={styles.focusDialContent}>
                 <span>长休进度</span>
-                <strong>{longBreakProgress}/{longBreakInterval}</strong>
+                <strong>{longBreakProgress}/{longBreakInterval}轮</strong>
               </div>
             </div>
           </div>

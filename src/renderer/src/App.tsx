@@ -243,7 +243,7 @@ export const App = ({ windowMode }: AppProps): ReactElement => {
     }
 
     if (activeView === 'stats') {
-      return <StatsView stats={stats} taskBoard={taskBoard} />
+      return <StatsView stats={stats} />
     }
 
     return <SettingsView settings={settings} updateSettings={updateSettings} activeTheme={activeTheme} />

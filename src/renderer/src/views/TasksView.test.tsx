@@ -1,7 +1,9 @@
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, test } from 'vitest'
 import type { TaskBoardSnapshot, TimerPhase, TimerStatus } from '@shared/types'
-import { TasksView } from './TasksView'
+import { getTaskTitleTooltipLayout, isTaskTitleOverflowing, TasksView } from './TasksView'
+
+const LONG_TASK_TITLE = '这是一个很长很长的任务标题，用来验证悬浮时可以看到完整内容'
 
 const createBoard = (): TaskBoardSnapshot => ({
   counts: {
@@ -12,7 +14,7 @@ const createBoard = (): TaskBoardSnapshot => ({
   activeItems: [
     {
       id: 'task-a',
-      title: '任务 A',
+      title: LONG_TASK_TITLE,
       sortOrder: 1,
       completedAt: null,
       createdAt: '2026-04-25T09:00:00.000Z',
@@ -45,11 +47,72 @@ const createBoard = (): TaskBoardSnapshot => ({
   ]
 })
 
+const createBoardWithTabCounts = (): TaskBoardSnapshot => ({
+  ...createBoard(),
+  counts: {
+    all: 15,
+    active: 4,
+    completed: 11
+  }
+})
+
 const noopAsync = async (): Promise<void> => undefined
 const noop = (): void => undefined
 const createTimerContext = (status: TimerStatus, phase: TimerPhase) => ({ status, phase })
 
 describe('TasksView', () => {
+  test('仅在任务标题实际被截断时才显示 tooltip', () => {
+    expect(isTaskTitleOverflowing({ clientWidth: 180, scrollWidth: 181 })).toBe(true)
+    expect(isTaskTitleOverflowing({ clientWidth: 180, scrollWidth: 180 })).toBe(false)
+    expect(isTaskTitleOverflowing({ clientWidth: 180, scrollWidth: 120 })).toBe(false)
+    expect(isTaskTitleOverflowing(null)).toBe(false)
+  })
+
+  test('任务标题 tooltip 固定在上方并在视口内横向夹取', () => {
+    expect(getTaskTitleTooltipLayout({ left: 180, top: 132 }, 900)).toEqual({
+      left: 180,
+      maxWidth: 420,
+      top: 124
+    })
+
+    expect(getTaskTitleTooltipLayout({ left: 520, top: 132 }, 560)).toEqual({
+      left: 128,
+      maxWidth: 420,
+      top: 124
+    })
+  })
+
+  test('任务筛选按进行中 已完成 全部的顺序展示', () => {
+    const html = renderToStaticMarkup(
+      <TasksView
+        activeTab="active"
+        bindCurrentTask={noopAsync}
+        canBindCurrentTask
+        completeTask={noopAsync}
+        createTask={noopAsync}
+        currentTimerTaskId="task-a"
+        deleteTask={noopAsync}
+        newTaskTitle=""
+        onActiveTabChange={noop}
+        reorderTasks={noopAsync}
+        restoreTask={noopAsync}
+        setNewTaskTitle={() => undefined}
+        startFocusWithTask={noopAsync}
+        taskBoard={createBoardWithTabCounts()}
+        timerContext={createTimerContext('running', 'focus')}
+        updateTask={async () => undefined}
+      />
+    )
+
+    const activeIndex = html.indexOf('>进行中</span><b>4</b>')
+    const completedIndex = html.indexOf('>已完成</span><b>11</b>')
+    const allIndex = html.indexOf('>全部</span><b>15</b>')
+
+    expect(activeIndex).toBeGreaterThanOrEqual(0)
+    expect(completedIndex).toBeGreaterThan(activeIndex)
+    expect(allIndex).toBeGreaterThan(completedIndex)
+  })
+
   test('渲染清晰的任务区列结构和当前绑定操作', () => {
     const html = renderToStaticMarkup(
       <TasksView
@@ -79,7 +142,8 @@ describe('TasksView', () => {
     expect(html).toContain('data-task-surface="floating-card"')
     expect(html).toContain('data-current-task="true"')
     expect(html).toContain('aria-pressed="true"')
-    expect(html).not.toContain('title="')
+    expect(html).not.toMatch(/\stitle="/)
+    expect(html).not.toContain('data-full-title=')
     expect(html).toContain('>完成<')
     expect(html).toContain('>状态<')
     expect(html).toContain('>任务<')

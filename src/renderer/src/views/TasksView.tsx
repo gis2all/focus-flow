@@ -1,4 +1,4 @@
-import { useMemo, useState, type DragEvent, type KeyboardEvent, type ReactElement } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type DragEvent, type KeyboardEvent, type ReactElement } from 'react'
 import type { TaskBoardSnapshot, TimerSnapshot } from '@shared/types'
 import styles from '../App.module.css'
 import { ConfirmModal } from '../components/ConfirmModal'
@@ -42,6 +42,136 @@ const emptyStateByTab: Record<TaskViewTab, string> = {
   completed: '还没有已完成的任务。'
 }
 
+const taskTabOrder: TaskViewTab[] = ['active', 'completed', 'all']
+
+type OverflowMetrics = Pick<HTMLElement, 'clientWidth' | 'scrollWidth'>
+
+export const isTaskTitleOverflowing = (metrics: OverflowMetrics | null): boolean =>
+  metrics !== null && metrics.scrollWidth > metrics.clientWidth
+
+type TooltipAnchorRect = Pick<DOMRect, 'left' | 'top'>
+
+interface TaskTitleTooltipLayout {
+  left: number
+  maxWidth: number
+  top: number
+}
+
+export const getTaskTitleTooltipLayout = (
+  anchorRect: TooltipAnchorRect | null,
+  viewportWidth: number
+): TaskTitleTooltipLayout | null => {
+  if (!anchorRect) return null
+
+  const sidePadding = 12
+  const gap = 8
+  const maxWidth = Math.min(420, Math.max(0, viewportWidth - sidePadding * 2))
+  const maxLeft = Math.max(sidePadding, viewportWidth - maxWidth - sidePadding)
+
+  return {
+    top: anchorRect.top - gap,
+    left: Math.min(Math.max(anchorRect.left, sidePadding), maxLeft),
+    maxWidth
+  }
+}
+
+interface TaskTitleTooltipState {
+  color: string | null
+  left: number
+  maxWidth: number
+  text: string
+  top: number
+}
+
+interface TaskTitleButtonProps {
+  onHideTooltip(): void
+  onShowTooltip(payload: { anchorRect: TooltipAnchorRect; color: string | null; text: string }): void
+  onStartEditing(): void
+  title: string
+}
+
+const TaskTitleButton = ({ onHideTooltip, onShowTooltip, onStartEditing, title }: TaskTitleButtonProps): ReactElement => {
+  const titleRef = useRef<HTMLSpanElement | null>(null)
+
+  const hasOverflowingTitle = (): boolean => isTaskTitleOverflowing(titleRef.current)
+
+  useEffect(() => {
+    const updateTooltipVisibility = (): void => {
+      if (!hasOverflowingTitle()) {
+        onHideTooltip()
+      }
+    }
+
+    updateTooltipVisibility()
+
+    const resizeObserver =
+      typeof ResizeObserver !== 'undefined'
+        ? new ResizeObserver(() => {
+            updateTooltipVisibility()
+          })
+        : null
+
+    if (titleRef.current && resizeObserver) {
+      resizeObserver.observe(titleRef.current)
+    }
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('resize', updateTooltipVisibility)
+    }
+
+    return () => {
+      resizeObserver?.disconnect()
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('resize', updateTooltipVisibility)
+      }
+      onHideTooltip()
+    }
+  }, [onHideTooltip, title])
+
+  return (
+    <div className={styles.taskMain}>
+      <button
+        className={styles.taskNameButton}
+        onClick={(event) => {
+          event.stopPropagation()
+        }}
+        onFocus={() => {
+          if (!hasOverflowingTitle() || !titleRef.current) return
+          onShowTooltip({
+            anchorRect: titleRef.current.getBoundingClientRect(),
+            color: typeof window === 'undefined' ? null : window.getComputedStyle(titleRef.current).color,
+            text: title
+          })
+        }}
+        onBlur={() => {
+          onHideTooltip()
+        }}
+        onDoubleClick={(event) => {
+          event.stopPropagation()
+          onHideTooltip()
+          onStartEditing()
+        }}
+        onMouseEnter={() => {
+          if (!hasOverflowingTitle() || !titleRef.current) return
+          onShowTooltip({
+            anchorRect: titleRef.current.getBoundingClientRect(),
+            color: typeof window === 'undefined' ? null : window.getComputedStyle(titleRef.current).color,
+            text: title
+          })
+        }}
+        onMouseLeave={() => {
+          onHideTooltip()
+        }}
+        type="button"
+      >
+        <span className={styles.taskTitleText} ref={titleRef}>
+          {title}
+        </span>
+      </button>
+    </div>
+  )
+}
+
 export const TasksView = ({
   activeTab,
   bindCurrentTask,
@@ -64,6 +194,7 @@ export const TasksView = ({
   const [draftTitle, setDraftTitle] = useState('')
   const [dragSourceTaskId, setDragSourceTaskId] = useState<string | null>(null)
   const [dragTargetTaskId, setDragTargetTaskId] = useState<string | null>(null)
+  const [taskTitleTooltip, setTaskTitleTooltip] = useState<TaskTitleTooltipState | null>(null)
   const [confirmDialog, setConfirmDialog] = useState<ConfirmDialogState>(null)
   const [confirmPending, setConfirmPending] = useState(false)
 
@@ -77,6 +208,7 @@ export const TasksView = ({
   }
 
   const startEditing = (row: TaskRowModel): void => {
+    setTaskTitleTooltip(null)
     setEditingTaskId(row.id)
     setDraftTitle(row.title)
   }
@@ -143,13 +275,33 @@ export const TasksView = ({
     }
   }
 
+  const hideTaskTitleTooltip = useCallback((): void => {
+    setTaskTitleTooltip((currentValue) => (currentValue === null ? currentValue : null))
+  }, [])
+
+  const showTaskTitleTooltip = useCallback(
+    ({ anchorRect, color, text }: { anchorRect: TooltipAnchorRect; color: string | null; text: string }): void => {
+    if (typeof window === 'undefined') return
+
+    const layout = getTaskTitleTooltipLayout(anchorRect, window.innerWidth)
+    if (!layout) return
+
+    setTaskTitleTooltip({
+      color,
+      text,
+      ...layout
+    })
+    },
+    []
+  )
+
   return (
     <div className={styles.listView}>
       <div className={styles.taskControls}>
         <div className={styles.pageTopper}>
           <div className={styles.pageTopperLeft}>
             <div aria-label="任务筛选" className={styles.taskTabs} role="tablist">
-              {(['all', 'active', 'completed'] as TaskViewTab[]).map((tab) => (
+              {taskTabOrder.map((tab) => (
                 <button
                   aria-selected={activeTab === tab}
                   className={`${styles.taskTabButton} ${activeTab === tab ? styles.taskTabActive : ''}`}
@@ -198,7 +350,14 @@ export const TasksView = ({
           <span>操作</span>
         </div>
 
-        <div aria-label="任务列表" className={styles.denseList} role="list">
+        <div
+          aria-label="任务列表"
+          className={styles.denseList}
+          onScroll={() => {
+            hideTaskTitleTooltip()
+          }}
+          role="list"
+        >
           {rows.length === 0 ? (
             <div className={styles.taskEmptyState}>{emptyStateByTab[activeTab]}</div>
           ) : (
@@ -259,8 +418,8 @@ export const TasksView = ({
                     {row.statusLabel}
                   </span>
 
-                  <div className={styles.taskMain}>
-                    {isEditing ? (
+                  {isEditing ? (
+                    <div className={styles.taskMain}>
                       <input
                         autoFocus
                         className={styles.taskTitleInput}
@@ -270,22 +429,15 @@ export const TasksView = ({
                         onKeyDown={(event) => handleEditKeyDown(event, row.id)}
                         value={draftTitle}
                       />
-                    ) : (
-                      <button
-                        className={styles.taskNameButton}
-                        onClick={(event) => {
-                          event.stopPropagation()
-                        }}
-                        onDoubleClick={(event) => {
-                          event.stopPropagation()
-                          startEditing(row)
-                        }}
-                        type="button"
-                      >
-                        {row.title}
-                      </button>
-                    )}
-                  </div>
+                    </div>
+                  ) : (
+                    <TaskTitleButton
+                      onHideTooltip={hideTaskTitleTooltip}
+                      onShowTooltip={showTaskTitleTooltip}
+                      onStartEditing={() => startEditing(row)}
+                      title={row.title}
+                    />
+                  )}
 
                   <div className={styles.taskStats}>
                     <span className={styles.taskStatsInline}>
@@ -343,6 +495,20 @@ export const TasksView = ({
           )}
         </div>
       </div>
+
+      {taskTitleTooltip ? (
+        <div
+          className={styles.taskTitleTooltip}
+          style={{
+            color: taskTitleTooltip.color ?? undefined,
+            left: `${taskTitleTooltip.left}px`,
+            maxWidth: `${taskTitleTooltip.maxWidth}px`,
+            top: `${taskTitleTooltip.top}px`
+          }}
+        >
+          {taskTitleTooltip.text}
+        </div>
+      ) : null}
 
       {confirmDialog ? (
         <ConfirmModal

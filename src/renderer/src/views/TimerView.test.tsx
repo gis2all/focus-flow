@@ -166,4 +166,24 @@ describe('TimerView', () => {
 
     expect(html).toContain('--progress-value:33.3333')
   })
+
+  test('renders focused count without estimated copy and keeps long-break progress unit on one line', () => {
+    const html = renderToStaticMarkup(
+      <TimerView
+        currentTaskTitle="当前尚未开始专注"
+        progressPercent={25}
+        settings={{ ...defaultSettings, longBreakInterval: 5 }}
+        snapshot={createSnapshot({ status: 'idle', phase: 'focus', focusCount: 0, progress: 0.25 })}
+        startTimer={noopAsync}
+        updateSettings={noopAsync}
+      />
+    )
+
+    expect(html).toContain('已专注：0 个番茄钟')
+    expect(html).not.toContain('预计专注')
+    expect(html).not.toContain('当前任务')
+    expect(html).toContain('长休进度')
+    expect(html).toContain('1/5轮')
+    expect(html).not.toContain('>1/5<')
+  })
 })

@@ -1,5 +1,5 @@
 import type { CSSProperties, ReactElement } from 'react'
-import type { FocusStats, TaskBoardSnapshot } from '@shared/types'
+import type { FocusStats } from '@shared/types'
 import {
   StatsSummaryClipboardIcon,
   StatsSummaryClockIcon,
@@ -11,7 +11,6 @@ import styles from '../App.module.css'
 
 interface StatsViewProps {
   stats: FocusStats
-  taskBoard: TaskBoardSnapshot
 }
 
 export const getHourBarHeight = (minutes: number, maxHourly: number): string => {
@@ -24,7 +23,7 @@ export const getRankBarWidth = (minutes: number, maxMinutes: number): string => 
   return `${(minutes / maxMinutes) * 100}%`
 }
 
-export const StatsView = ({ stats, taskBoard }: StatsViewProps): ReactElement => {
+export const StatsView = ({ stats }: StatsViewProps): ReactElement => {
   const hourlyPeak = Math.max(...stats.hourlyFocusMinutes, 0)
   const maxHourly = Math.max(hourlyPeak, 1)
   const focusTotal = Math.max(stats.today.focusMinutes, 0)
@@ -35,14 +34,7 @@ export const StatsView = ({ stats, taskBoard }: StatsViewProps): ReactElement =>
   const totalTracked = Math.max(totalTrackedRaw, 1)
   const focusPercent = Math.round((focusTotal / totalTracked) * 100)
   const breakPercent = Math.round(((focusTotal + shortBreakMinutes) / totalTracked) * 100)
-  const completedTaskDurations = taskBoard.completedItems
-    .filter((item) => item.focusMinutes > 0)
-    .map((item) => ({
-      taskId: item.id,
-      title: item.title,
-      minutes: item.focusMinutes
-    }))
-    .sort((left, right) => right.minutes - left.minutes)
+  const completedTaskDurations = [...stats.taskFocusMinutes].sort((left, right) => right.minutes - left.minutes)
   const maxCompletedTaskMinutes = Math.max(...completedTaskDurations.map((item) => item.minutes), 1)
   const halfHourlyPeak = Math.round(hourlyPeak / 2)
   const yAxisTicks = [hourlyPeak > 0 ? `${hourlyPeak}m` : '0m', `${halfHourlyPeak}m`, '0']
@@ -176,7 +168,7 @@ export const StatsView = ({ stats, taskBoard }: StatsViewProps): ReactElement =>
             <div className={styles.statsEmptyState}>今天还没有已完成任务时长</div>
           ) : (
             <div className={styles.rankList}>
-              {completedTaskDurations.slice(0, 5).map((item) => (
+              {completedTaskDurations.map((item) => (
                 <div className={styles.rankRow} key={item.taskId}>
                   <div className={styles.rankRowTop}>
                     <span>{item.title}</span>
