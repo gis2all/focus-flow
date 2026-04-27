@@ -3,7 +3,7 @@ import type { TaskBoardSnapshot, TimerSnapshot } from '@shared/types'
 import styles from '../App.module.css'
 import { ConfirmModal } from '../components/ConfirmModal'
 import { getTimerActionConfirmation, shouldConfirmTimerAction } from '../timerActionConfirmation'
-import { getTaskRowsForTab, reorderTaskIds, type TaskRowModel, type TaskViewTab } from '../viewModel'
+import { formatDurationLabel, getTaskRowsForTab, reorderTaskIds, type TaskRowModel, type TaskViewTab } from '../viewModel'
 
 interface TasksViewProps {
   activeTab: TaskViewTab
@@ -116,12 +116,52 @@ export const getTaskTitleTooltipLayout = (
   }
 }
 
-interface TaskTitleTooltipState {
+const formatTaskCompletionDate = (completedAt: string | null): string => {
+  if (!completedAt) return ''
+
+  const date = new Date(completedAt)
+  if (Number.isNaN(date.getTime())) return ''
+
+  const month = `${date.getMonth() + 1}`.padStart(2, '0')
+  const day = `${date.getDate()}`.padStart(2, '0')
+  return `${month}-${day}`
+}
+
+interface TaskTooltipState {
   color: string | null
   left: number
   maxWidth: number
   text: string
   top: number
+}
+
+export const TaskTooltipBubble = ({ tooltip }: { tooltip: TaskTooltipState | null }): ReactElement | null => {
+  if (!tooltip) return null
+
+  return (
+    <div
+      className={styles.taskTitleTooltip}
+      role="tooltip"
+      style={{
+        color: tooltip.color ?? undefined,
+        left: `${tooltip.left}px`,
+        maxWidth: `${tooltip.maxWidth}px`,
+        top: `${tooltip.top}px`
+      }}
+    >
+      {tooltip.text}
+    </div>
+  )
+}
+
+const resolveTaskRowTooltipColor = (anchor: HTMLElement): string | null => {
+  if (typeof window === 'undefined') return null
+
+  const row = anchor.closest('[role="listitem"]')
+  const titleText = row?.querySelector<HTMLElement>(`.${styles.taskTitleText}`)
+  if (!titleText) return window.getComputedStyle(anchor).color
+
+  return window.getComputedStyle(titleText).color
 }
 
 interface TaskTitleButtonProps {
@@ -235,7 +275,7 @@ export const TasksView = ({
   const [draftTitle, setDraftTitle] = useState('')
   const [dragSourceTaskId, setDragSourceTaskId] = useState<string | null>(null)
   const [dragTargetTaskId, setDragTargetTaskId] = useState<string | null>(null)
-  const [taskTitleTooltip, setTaskTitleTooltip] = useState<TaskTitleTooltipState | null>(null)
+  const [taskTitleTooltip, setTaskTitleTooltip] = useState<TaskTooltipState | null>(null)
   const [confirmDialog, setConfirmDialog] = useState<ConfirmDialogState>(null)
   const [confirmPending, setConfirmPending] = useState(false)
 
@@ -386,8 +426,9 @@ export const TasksView = ({
       <div className={styles.taskListShell}>
         <div className={styles.taskListHeader}>
           <span>完成</span>
-          <span>状态</span>
           <span>任务</span>
+          <span>完成日期</span>
+          <span>状态</span>
           <span>统计</span>
           <span>绑定</span>
           <span>操作</span>
@@ -448,18 +489,30 @@ export const TasksView = ({
                       }
                       void completeTask(row.id)
                     }}
+                    onFocus={(event) => {
+                      showTaskTitleTooltip({
+                        anchorRect: event.currentTarget.getBoundingClientRect(),
+                        color: resolveTaskRowTooltipColor(event.currentTarget),
+                        text: row.isCompleted ? '恢复任务' : '完成任务'
+                      })
+                    }}
+                    onBlur={() => {
+                      hideTaskTitleTooltip()
+                    }}
+                    onMouseEnter={(event) => {
+                      showTaskTitleTooltip({
+                        anchorRect: event.currentTarget.getBoundingClientRect(),
+                        color: resolveTaskRowTooltipColor(event.currentTarget),
+                        text: row.isCompleted ? '恢复任务' : '完成任务'
+                      })
+                    }}
+                    onMouseLeave={() => {
+                      hideTaskTitleTooltip()
+                    }}
                     type="button"
                   >
                     {row.isCompleted ? '↩' : ''}
                   </button>
-
-                  <span
-                    className={`${styles.taskStatusText} ${
-                      row.isCompleted ? styles.taskStatusTextDone : styles.taskStatusTextActive
-                    }`}
-                  >
-                    {row.statusLabel}
-                  </span>
 
                   {isEditing ? (
                     <div className={styles.taskMain}>
@@ -482,11 +535,21 @@ export const TasksView = ({
                     />
                   )}
 
+                  <span className={styles.taskCompletionDate}>{formatTaskCompletionDate(row.completedAt)}</span>
+
+                  <span
+                    className={`${styles.taskStatusText} ${
+                      row.isCompleted ? styles.taskStatusTextDone : styles.taskStatusTextActive
+                    }`}
+                  >
+                    {row.statusLabel}
+                  </span>
+
                   <div className={styles.taskStats}>
                     <span className={styles.taskStatsInline}>
-                      <span className={styles.taskStatsValue}>{`${row.focusMinutes}m`}</span>
+                      <span className={styles.taskStatsValue}>{formatDurationLabel(row.focusMinutes)}</span>
                       <span aria-hidden="true" className={styles.taskStatsSeparator} />
-                      <span className={styles.taskStatsValue}>{`${row.completedPomodoros}个番茄钟`}</span>
+                      <span className={styles.taskStatsValue}>{`${row.completedPomodoros} 番茄钟`}</span>
                     </span>
                   </div>
 
@@ -559,19 +622,7 @@ export const TasksView = ({
         </div>
       </div>
 
-      {taskTitleTooltip ? (
-        <div
-          className={styles.taskTitleTooltip}
-          style={{
-            color: taskTitleTooltip.color ?? undefined,
-            left: `${taskTitleTooltip.left}px`,
-            maxWidth: `${taskTitleTooltip.maxWidth}px`,
-            top: `${taskTitleTooltip.top}px`
-          }}
-        >
-          {taskTitleTooltip.text}
-        </div>
-      ) : null}
+      <TaskTooltipBubble tooltip={taskTitleTooltip} />
 
       {confirmDialog ? (
         <ConfirmModal

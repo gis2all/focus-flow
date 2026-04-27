@@ -10,7 +10,7 @@ import {
 } from '../components/AppIcons'
 import { ConfirmModal } from '../components/ConfirmModal'
 import { getTimerActionConfirmation, shouldConfirmTimerAction, type TimerActionConfirmationRequest } from '../timerActionConfirmation'
-import { formatTimerClock, type TimerPomodoroDisplay } from '../viewModel'
+import { formatDurationLabel, formatTimerClock, type TimerPomodoroDisplay } from '../viewModel'
 import styles from '../App.module.css'
 
 interface TimerViewProps {
@@ -69,6 +69,7 @@ export const TimerView = ({
   const completedInCycle = snapshot.focusCount % longBreakInterval
   const longBreakProgress =
     snapshot.focusCount === 0 ? 1 : completedInCycle === 0 ? longBreakInterval : completedInCycle
+  const showLongBreakProgress = snapshot.status !== 'idle'
   const resolvedPomodoroDisplay = pomodoroDisplay ?? {
     ordinal: Math.max(1, snapshot.focusCount + 1),
     completed: snapshot.focusCount
@@ -162,7 +163,9 @@ export const TimerView = ({
             <div className={styles.focusDial}>
               <svg className={styles.focusDialSvg} viewBox="0 0 100 100" aria-hidden="true">
                 <circle className={styles.focusDialTrack} cx="50" cy="50" r="44" pathLength="100" />
-                <circle className={styles.focusDialProgress} cx="50" cy="50" r="44" pathLength="100" />
+                {showLongBreakProgress ? (
+                  <circle className={styles.focusDialProgress} cx="50" cy="50" r="44" pathLength="100" />
+                ) : null}
               </svg>
               <div className={styles.focusDialContent}>
                 <span>长休进度</span>
@@ -197,7 +200,7 @@ export const TimerView = ({
           type="button"
         >
           <CoffeeCupIcon className={styles.timerActionIcon} />
-          <b>{`短休 · ${settings.shortBreakMinutes} 分钟`}</b>
+          <b>{`短休 · ${formatDurationLabel(settings.shortBreakMinutes)}`}</b>
         </button>
         <button
           className={styles.timerActionButton}
@@ -205,7 +208,7 @@ export const TimerView = ({
           type="button"
         >
           <LoungeChairIcon className={styles.timerActionIcon} />
-          <b>{`长休 · ${settings.longBreakMinutes} 分钟`}</b>
+          <b>{`长休 · ${formatDurationLabel(settings.longBreakMinutes)}`}</b>
         </button>
       </div>
 

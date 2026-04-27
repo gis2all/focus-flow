@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useRef, useState, type ReactElement } from 'react'
 import { createIdleTimer, deriveTimerSnapshot } from '@core/timer/timerState'
 import { defaultSettings } from '@shared/defaults'
-import type { AppSettings, FocusStats, TaskBoardSnapshot, TimerPhase, TimerSnapshot } from '@shared/types'
+import type { AppSettings, FocusStats, MonthStats, TaskBoardSnapshot, TimerPhase, TimerSnapshot } from '@shared/types'
 import { MINI_WINDOW_SIZE } from '@shared/windowMetrics'
 import { AppShell } from './components/AppShell'
 import type { WindowMode } from './types'
 import { SettingsView } from './views/SettingsView'
 import { MiniTimerView } from './views/MiniTimerView'
-import { StatsView } from './views/StatsView'
+import { StatsView, type CalendarMonthDirection, type StatsTab } from './views/StatsView'
 import { TasksView } from './views/TasksView'
 import { TimerView } from './views/TimerView'
 import type { ViewKey } from './types'
@@ -32,8 +32,71 @@ const fallbackStats: FocusStats = {
   },
   hourlyFocusMinutes: Array.from({ length: 24 }, () => 0),
   weeklyTrend: [],
-  taskFocusMinutes: []
+  taskFocusMinutes: [],
+  unboundFocusMinutes: 0
 }
+
+interface StatsMonth {
+  year: number
+  month: number
+}
+
+const getStatsMonth = (date = new Date()): StatsMonth => ({
+  year: date.getFullYear(),
+  month: date.getMonth() + 1
+})
+
+const localDateKey = (date: Date): string => {
+  const year = date.getFullYear()
+  const month = `${date.getMonth() + 1}`.padStart(2, '0')
+  const day = `${date.getDate()}`.padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+const compareStatsMonths = (left: StatsMonth, right: StatsMonth): number =>
+  left.year === right.year ? left.month - right.month : left.year - right.year
+
+const getAdjacentStatsMonth = (month: StatsMonth, direction: CalendarMonthDirection): StatsMonth => {
+  const date = new Date(month.year, month.month - 1 + (direction === 'previous' ? -1 : 1), 1)
+  return getStatsMonth(date)
+}
+
+const createEmptyMonthStats = ({ year, month }: StatsMonth): MonthStats => {
+  const dayCount = new Date(year, month, 0).getDate()
+  const today = new Date()
+  const todayKey = localDateKey(today)
+  const days = Array.from({ length: dayCount }, (_, index) => {
+    const date = `${year}-${String(month).padStart(2, '0')}-${String(index + 1).padStart(2, '0')}`
+    return {
+      date,
+      focusMinutes: 0,
+      completedPomodoros: 0,
+      completedTasks: 0,
+      shortBreakMinutes: 0,
+      longBreakMinutes: 0,
+      isFuture: date > todayKey,
+      taskFocusMinutes: [],
+      unboundFocusMinutes: 0
+    }
+  })
+
+  return {
+    year,
+    month,
+    summary: {
+      focusMinutes: 0,
+      completedPomodoros: 0,
+      completedTasks: 0,
+      shortBreakMinutes: 0,
+      longBreakMinutes: 0
+    },
+    days,
+    maxFocusMinutes: 0
+  }
+}
+
+const initialStatsMonth = getStatsMonth()
+const initialCalendarDate = localDateKey(new Date())
 
 const fallbackTaskBoard: TaskBoardSnapshot = {
   counts: {
@@ -55,20 +118,45 @@ export const App = ({ windowMode }: AppProps): ReactElement => {
   const [taskBoard, setTaskBoard] = useState<TaskBoardSnapshot>(fallbackTaskBoard)
   const [settings, setSettings] = useState<AppSettings>(defaultSettings)
   const [stats, setStats] = useState<FocusStats>(fallbackStats)
+  const [activeStatsTab, setActiveStatsTab] = useState<StatsTab>('today')
+  const [selectedStatsMonth, setSelectedStatsMonth] = useState<StatsMonth>(initialStatsMonth)
+  const [monthStats, setMonthStats] = useState<MonthStats>(createEmptyMonthStats(initialStatsMonth))
+  const [selectedCalendarDate, setSelectedCalendarDate] = useState(initialCalendarDate)
   const [systemTheme, setSystemTheme] = useState<'light' | 'dark'>('light')
   const [newTaskTitle, setNewTaskTitle] = useState('')
   const [tasksActiveTab, setTasksActiveTab] = useState<TaskViewTab>('active')
   const [displayProgress, setDisplayProgress] = useState(fallbackSnapshot.progress)
   const previousSnapshotRef = useRef<TimerSnapshot>(fallbackSnapshot)
+  const selectedStatsMonthRef = useRef<StatsMonth>(initialStatsMonth)
+  const selectedCalendarDateRef = useRef(initialCalendarDate)
 
   const refreshTaskBoard = async (): Promise<void> => {
     setTaskBoard(await window.focusFlow.tasks.getBoard())
   }
 
   const refreshTaskBoardAndStats = async (): Promise<void> => {
-    const [nextTaskBoard, nextStats] = await Promise.all([window.focusFlow.tasks.getBoard(), window.focusFlow.stats.get()])
+    const [nextTaskBoard, nextStats, nextMonthStats] = await Promise.all([
+      window.focusFlow.tasks.getBoard(),
+      window.focusFlow.stats.get(),
+      window.focusFlow.stats.getMonth(selectedStatsMonthRef.current)
+    ])
     setTaskBoard(nextTaskBoard)
     setStats(nextStats)
+    setMonthStats(nextMonthStats)
+  }
+
+  const changeCalendarMonth = async (direction: CalendarMonthDirection): Promise<void> => {
+    const nextMonth = getAdjacentStatsMonth(selectedStatsMonthRef.current, direction)
+    if (compareStatsMonths(nextMonth, getStatsMonth()) > 0) return
+    selectedStatsMonthRef.current = nextMonth
+    setSelectedStatsMonth(nextMonth)
+    const nextMonthPrefix = `${nextMonth.year}-${String(nextMonth.month).padStart(2, '0')}`
+    if (!selectedCalendarDateRef.current.startsWith(nextMonthPrefix)) {
+      const todayKey = localDateKey(new Date())
+      selectedCalendarDateRef.current = todayKey
+      setSelectedCalendarDate(todayKey)
+    }
+    setMonthStats(await window.focusFlow.stats.getMonth(nextMonth))
   }
 
   useEffect(() => {
@@ -86,14 +174,19 @@ export const App = ({ windowMode }: AppProps): ReactElement => {
       void Promise.all([
         window.focusFlow.timer.getSnapshot(),
         window.focusFlow.tasks.getBoard(),
-        window.focusFlow.settings.get().then(setSettings),
-        window.focusFlow.stats.get().then(setStats),
-        window.focusFlow.system.getTheme().then(setSystemTheme)
-      ]).then(([nextSnapshot, nextTaskBoard]) => {
+        window.focusFlow.settings.get(),
+        window.focusFlow.stats.get(),
+        window.focusFlow.stats.getMonth(initialStatsMonth),
+        window.focusFlow.system.getTheme()
+      ]).then(([nextSnapshot, nextTaskBoard, nextSettings, nextStats, nextMonthStats, nextTheme]) => {
         previousSnapshotRef.current = nextSnapshot
         setSnapshot(nextSnapshot)
         setDisplayProgress(nextSnapshot.progress)
         setTaskBoard(nextTaskBoard)
+        setSettings(nextSettings)
+        setStats(nextStats)
+        setMonthStats(nextMonthStats)
+        setSystemTheme(nextTheme)
       })
     }
 
@@ -120,6 +213,15 @@ export const App = ({ windowMode }: AppProps): ReactElement => {
   useEffect(() => {
     document.documentElement.dataset.theme = resolveEffectiveTheme(settings.themePreference, systemTheme)
   }, [settings.themePreference, systemTheme])
+
+  useEffect(() => {
+    selectedStatsMonthRef.current = selectedStatsMonth
+  }, [selectedStatsMonth])
+
+  const selectCalendarDay = (date: string): void => {
+    selectedCalendarDateRef.current = date
+    setSelectedCalendarDate(date)
+  }
 
   useEffect(() => {
     if (windowMode !== 'mini') return
@@ -246,7 +348,18 @@ export const App = ({ windowMode }: AppProps): ReactElement => {
     }
 
     if (activeView === 'stats') {
-      return <StatsView stats={stats} />
+      return (
+        <StatsView
+          activeStatsTab={activeStatsTab}
+          canGoToNextMonth={compareStatsMonths(selectedStatsMonth, getStatsMonth()) < 0}
+          monthStats={monthStats}
+          onCalendarMonthChange={(direction) => void changeCalendarMonth(direction)}
+          onCalendarDaySelect={selectCalendarDay}
+          onStatsTabChange={setActiveStatsTab}
+          selectedCalendarDate={selectedCalendarDate}
+          stats={stats}
+        />
+      )
     }
 
     return <SettingsView settings={settings} updateSettings={updateSettings} activeTheme={activeTheme} />

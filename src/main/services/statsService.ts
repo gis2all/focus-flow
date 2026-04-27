@@ -1,5 +1,6 @@
-import { aggregateStats } from '@core/stats/statsAggregator'
-import type { FocusStats } from '@shared/types'
+import { aggregateMonthStats, aggregateStats } from '@core/stats/statsAggregator'
+import type { MonthStatsRequest } from '@shared/contracts'
+import type { FocusStats, MonthStats } from '@shared/types'
 import type { ClockPort } from '@main/ports/desktop'
 import type { TaskRepository, TimerSessionRepository } from '@main/ports/repositories'
 
@@ -31,6 +32,17 @@ export class StatsService {
       tasks,
       sessions: await this.sessions.list(),
       completedTasks: countCompletedTasksForLocalDay(tasks, now)
+    })
+  }
+
+  async getMonth(request: MonthStatsRequest): Promise<MonthStats> {
+    const tasks = await this.tasks.list()
+    return aggregateMonthStats({
+      now: new Date(this.clock.now()),
+      year: request.year,
+      month: request.month,
+      tasks,
+      sessions: await this.sessions.list()
     })
   }
 }

@@ -23,7 +23,7 @@ const createSnapshot = (input: Partial<TimerSnapshot> = {}): TimerSnapshot => ({
 })
 
 describe('MiniTimerView', () => {
-  test('adds explicit running pulse hooks for the left status indicator while the timer is active', () => {
+  test('renders the status text without the mini status badge decoration', () => {
     const html = renderToStaticMarkup(
       <MiniTimerView
         activeTheme="light"
@@ -36,8 +36,10 @@ describe('MiniTimerView', () => {
       />
     )
 
-    expect(html).toContain('miniStatusHaloRunning')
-    expect(html).toContain('miniStatusCoreRunning')
+    expect(html).toContain('专注中')
+    expect(html).not.toContain('miniStatusBadge')
+    expect(html).not.toContain('miniStatusHalo')
+    expect(html).not.toContain('miniStatusCore')
   })
 
   test('renders the active phase label and remaining time for running or paused timers', () => {

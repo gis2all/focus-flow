@@ -34,6 +34,7 @@
   align-content: start;
   gap: 4px;
   padding-top: 14px;
+  transform: translateY(-8px);
 }
 
 .navItem {
@@ -331,7 +332,6 @@
 .miniStatus {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
   min-height: 19px;
   color: var(--text-1);
   font-size: 12px;
@@ -340,50 +340,6 @@
   flex: 0 0 auto;
   margin-left: auto;
   transform: translateX(-4px);
-}
-
-.miniStatusBadge {
-  position: relative;
-  display: grid;
-  place-items: center;
-  width: 15px;
-  height: 15px;
-  overflow: visible;
-}
-
-.miniStatusBadgeRunning {
-  filter: drop-shadow(0 0 3px color-mix(in srgb, var(--accent) 18%, transparent));
-}
-
-.miniStatusHalo {
-  grid-area: 1 / 1;
-  width: 15px;
-  height: 15px;
-  border-radius: 999px;
-  box-sizing: border-box;
-  border: 2px solid color-mix(in srgb, var(--accent) 24%, white 10%);
-  background: color-mix(in srgb, var(--accent) 8%, transparent);
-  opacity: 0.68;
-  transform: translateX(-1px);
-}
-
-.miniStatusHaloRunning {
-  animation: miniStatusHaloPulse 1.9s ease-in-out infinite;
-}
-
-.miniStatusCore {
-  grid-area: 1 / 1;
-  width: 7px;
-  height: 7px;
-  border-radius: 999px;
-  background: var(--accent-strong);
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 10%, transparent);
-}
-
-.miniStatusCoreRunning {
-  box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--accent) 12%, transparent),
-    0 0 10px color-mix(in srgb, var(--accent) 42%, transparent);
 }
 
 .miniStatusLabel {
@@ -397,19 +353,6 @@
 
 .miniStatusLabelMuted {
   color: var(--text-2);
-}
-
-@keyframes miniStatusHaloPulse {
-  0%,
-  100% {
-    opacity: 0.54;
-    transform: translateX(-1px) scale(0.96);
-  }
-
-  50% {
-    opacity: 0.78;
-    transform: translateX(-1px) scale(1.08);
-  }
 }
 
 .miniReturnButton {
@@ -586,13 +529,13 @@
 }
 
 .autoSwitch input,
-.settingLine input[type="checkbox"] {
+.settingSwitchInput {
   justify-self: end;
   position: relative;
-  width: 42px;
-  height: 24px;
+  width: 36px;
+  height: 20px;
   margin: 0;
-  padding: 2px;
+  padding: 0;
   appearance: none;
   background: linear-gradient(180deg, #2d87ff, var(--accent-strong));
   border-radius: 999px;
@@ -605,14 +548,8 @@
     transform 140ms ease;
 }
 
-.autoSwitch input {
-  width: 36px;
-  height: 20px;
-  padding: 2px;
-}
-
 .autoSwitch input::after,
-.settingLine input[type="checkbox"]::after {
+.settingSwitchInput::after {
   position: absolute;
   top: 2px;
   left: 2px;
@@ -632,20 +569,20 @@
 }
 
 .autoSwitch input:not(:checked),
-.settingLine input[type="checkbox"]:not(:checked) {
+.settingSwitchInput:not(:checked) {
   background: color-mix(in srgb, var(--switch-off) 76%, white 24%);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.52);
 }
 
 .autoSwitch input:checked,
-.settingLine input[type="checkbox"]:checked {
+.settingSwitchInput:checked {
   background: linear-gradient(180deg, #2d87ff, var(--accent-strong));
 }
 
 .autoSwitch input:hover,
 .autoSwitch input:focus-visible,
-.settingLine input[type="checkbox"]:hover,
-.settingLine input[type="checkbox"]:focus-visible {
+.settingSwitchInput:hover,
+.settingSwitchInput:focus-visible {
   box-shadow:
     inset 0 1px 0 var(--hover-glass),
     var(--hover-shadow);
@@ -654,7 +591,7 @@
 }
 
 .autoSwitch input:checked::after,
-.settingLine input[type="checkbox"]:checked::after {
+.settingSwitchInput:checked::after {
   transform: translateX(16px);
 }
 
@@ -688,6 +625,7 @@
   justify-content: center;
   gap: 0;
   min-width: 5.2ch;
+  --timer-digit-size: clamp(96px, min(10vw, 15vh), 220px);
   color: var(--text-hero);
   font-family: var(--font-display);
   font-variant-numeric: tabular-nums lining-nums proportional-nums;
@@ -701,7 +639,7 @@
   display: block;
   min-width: 2.08ch;
   letter-spacing: -0.02em;
-  font-size: clamp(98px, 19.5vw, 126px);
+  font-size: var(--timer-digit-size);
   font-weight: 900;
   line-height: 0.8;
   text-align: center;
@@ -711,8 +649,8 @@
   position: relative;
   display: block;
   flex: 0 0 auto;
-  width: clamp(20px, 2.2vw, 28px);
-  height: calc(clamp(98px, 19.5vw, 126px) * 0.8);
+  width: clamp(20px, calc(var(--timer-digit-size) * 0.17), 32px);
+  height: calc(var(--timer-digit-size) * 0.8);
   margin: 0 0.09em;
   font-size: 0;
   line-height: 0;
@@ -723,8 +661,8 @@
   position: absolute;
   top: 50%;
   left: 50%;
-  width: clamp(12px, 1.5vw, 16px);
-  height: clamp(12px, 1.5vw, 16px);
+  width: clamp(12px, calc(var(--timer-digit-size) * 0.12), 20px);
+  height: clamp(12px, calc(var(--timer-digit-size) * 0.12), 20px);
   content: "";
   background: currentColor;
   border-radius: 999px;
@@ -907,8 +845,12 @@
     color 140ms ease;
 }
 
-.timerActionButton:hover,
-.timerActionButton:focus-visible {
+.timerActionButton:disabled {
+  cursor: not-allowed;
+}
+
+.timerActionButton:hover:not(:disabled),
+.timerActionButton:focus-visible:not(:disabled) {
   color: var(--text-1);
   border-color: var(--hover-border);
   background: linear-gradient(180deg, var(--hover-surface), var(--hover-surface-strong));
@@ -919,8 +861,8 @@
   outline: none;
 }
 
-:root[data-theme="light"] .timerActionButton:hover,
-:root[data-theme="light"] .timerActionButton:focus-visible {
+:root[data-theme="light"] .timerActionButton:hover:not(:disabled),
+:root[data-theme="light"] .timerActionButton:focus-visible:not(:disabled) {
   border-color: var(--line);
 }
 
@@ -1088,7 +1030,7 @@
 .taskTabActive::after {
   position: absolute;
   right: 0;
-  bottom: -10px;
+  bottom: -6px;
   left: 0;
   height: 2px;
   content: "";
@@ -1139,21 +1081,50 @@
   font-size: 12px;
 }
 
-.tabLine span,
-.tabLine strong {
+.tabLine button {
   position: relative;
-  color: var(--text-1);
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0;
+  color: var(--text-3);
+  font: inherit;
   font-weight: 800;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  transition:
+    color 140ms ease,
+    transform 140ms ease,
+    text-shadow 140ms ease;
 }
 
-.tabLine strong::after {
+.tabLine button:disabled {
+  color: var(--text-3);
+  cursor: not-allowed;
+  opacity: 0.54;
+}
+
+.tabLine button[aria-selected="true"] {
+  color: var(--text-1);
+}
+
+.tabLine button[aria-selected="true"]::after {
   position: absolute;
   right: 0;
-  bottom: -10px;
+  bottom: -6px;
   left: 0;
   height: 2px;
   content: "";
   background: var(--accent);
+}
+
+.tabLine button:hover:not(:disabled),
+.tabLine button:focus-visible:not(:disabled) {
+  color: var(--text-1);
+  text-shadow: 0 0 12px color-mix(in srgb, var(--accent) 18%, transparent);
+  outline: none;
+  transform: translateY(-1px);
 }
 
 .inlineTaskForm {
@@ -1219,11 +1190,11 @@
 
 .taskListHeader {
   display: grid;
-  grid-template-columns: 32px 64px minmax(220px, 1.7fr) minmax(156px, 0.9fr) 96px 78px;
+  grid-template-columns: 32px minmax(clamp(196px, 26vw, 268px), 1fr) 68px 60px 126px 82px 60px;
   align-items: center;
   justify-items: start;
-  column-gap: 12px;
-  padding: 8px 6px 10px;
+  column-gap: 6px;
+  padding: 8px 22px 10px 6px;
   color: color-mix(in srgb, var(--text-3) 94%, white 6%);
   font-size: 11px;
   font-weight: 780;
@@ -1244,10 +1215,10 @@
 .taskLine {
   display: grid;
   position: relative;
-  grid-template-columns: 32px 64px minmax(220px, 1.7fr) minmax(156px, 0.9fr) 96px 78px;
+  grid-template-columns: 32px minmax(clamp(196px, 26vw, 268px), 1fr) 68px 60px 126px 82px 60px;
   align-items: center;
   justify-items: start;
-  gap: 12px;
+  gap: 6px;
   min-height: 48px;
   padding: 0 10px 0 8px;
   color: var(--text-2);
@@ -1297,7 +1268,13 @@
 }
 
 .ghostLine {
-  grid-template-columns: 22px 64px minmax(0, 1fr) 156px 96px 78px;
+  grid-template-columns: 22px minmax(clamp(196px, 26vw, 268px), 1fr) 68px 60px 126px 82px 60px;
+}
+
+.taskListHeader > span,
+.taskLine > * {
+  justify-self: start;
+  text-align: left;
 }
 
 .fakeCheck,
@@ -1421,6 +1398,13 @@
 }
 
 .taskStatusText {
+  color: var(--text-3);
+  font-size: 11px;
+  font-weight: 760;
+  white-space: nowrap;
+}
+
+.taskCompletionDate {
   color: var(--text-3);
   font-size: 11px;
   font-weight: 760;
@@ -1719,7 +1703,7 @@
   position: relative;
   isolation: isolate;
   grid-template-rows: auto minmax(0, 1fr);
-  gap: 10px;
+  gap: 16px;
   background: var(--window-bg);
 }
 
@@ -1781,9 +1765,7 @@
   min-width: 0;
   overflow: hidden;
   padding: 10px 12px;
-  background:
-    radial-gradient(circle at 100% 0%, rgba(72, 144, 255, 0.12), transparent 38%),
-    linear-gradient(180deg, color-mix(in srgb, var(--window-bg) 88%, transparent), color-mix(in srgb, var(--window-bg) 74%, transparent));
+  background: linear-gradient(180deg, color-mix(in srgb, var(--window-bg) 88%, transparent), color-mix(in srgb, var(--window-bg) 74%, transparent));
   border: 1px solid color-mix(in srgb, var(--line-soft) 78%, transparent);
   border-radius: 8px;
   box-shadow:
@@ -1794,21 +1776,8 @@
   backdrop-filter: blur(16px) saturate(145%);
 }
 
-.statsSummaryCard::after {
-  position: absolute;
-  top: -8px;
-  right: -10px;
-  width: 86px;
-  height: 44px;
-  content: "";
-  background: radial-gradient(ellipse at top right, rgba(255, 255, 255, 0.24), transparent 68%);
-  pointer-events: none;
-}
-
 :root[data-theme="dark"] .statsSummaryCard {
-  background:
-    radial-gradient(circle at 100% 0%, rgba(53, 139, 255, 0.16), transparent 38%),
-    linear-gradient(180deg, rgba(18, 42, 66, 0.74), rgba(9, 29, 48, 0.68));
+  background: linear-gradient(180deg, rgba(18, 42, 66, 0.74), rgba(9, 29, 48, 0.68));
   border-color: transparent;
   box-shadow:
     0 10px 18px rgba(0, 0, 0, 0.18),
@@ -1817,27 +1786,25 @@
     inset 0 -1px 0 rgba(93, 128, 178, 0.18);
 }
 
-:root[data-theme="dark"] .statsSummaryCard::after {
-  background: radial-gradient(ellipse at top right, rgba(255, 255, 255, 0.08), transparent 68%);
-}
-
 .statsSummaryCard span {
   color: inherit;
   font-size: 11px;
   font-weight: 700;
+  line-height: 1.2;
   opacity: 0.88;
 }
 
 .statsSummaryContent {
   display: grid;
   align-content: center;
-  gap: 4px;
+  gap: 8px;
   min-width: 0;
 }
 
 .statsNumbers small {
   color: var(--text-3);
   font-size: 10px;
+  line-height: 1.2;
 }
 
 .statsNumbers strong {
@@ -1854,8 +1821,8 @@
   z-index: 1;
   display: grid;
   place-items: center;
-  width: 52px;
-  height: 52px;
+  width: 48px;
+  height: 48px;
   color: var(--accent);
   opacity: 1;
   background:
@@ -1868,8 +1835,8 @@
 }
 
 .statsSummaryIconSvg {
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   flex: 0 0 auto;
 }
 
@@ -1987,10 +1954,16 @@
 }
 
 .chartAxis {
-  display: flex;
-  justify-content: space-between;
+  position: relative;
+  height: 14px;
   color: var(--text-3);
   font-size: 10px;
+}
+
+.chartAxis span {
+  position: absolute;
+  top: 0;
+  white-space: nowrap;
 }
 
 .compositionPanel {
@@ -2014,12 +1987,14 @@
 
 .donut {
   position: relative;
-  width: 138px;
-  height: 138px;
+  width: clamp(138px, 40%, 200px);
+  aspect-ratio: 1;
   border-radius: 50%;
-  background: conic-gradient(var(--accent) 0 var(--focus), #43dec7 var(--focus) var(--break), #d8e8ff var(--break) 100%);
-  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 14px), #000 calc(100% - 13px));
-  mask: radial-gradient(farthest-side, transparent calc(100% - 14px), #000 calc(100% - 13px));
+  background: conic-gradient(var(--accent) 0 var(--focus), #5d6674 var(--focus) var(--break), #98a0ad var(--break) 100%);
+  --donut-ring: clamp(12px, 1.1vw, 16px);
+  --donut-ring-inner: calc(var(--donut-ring) - 1px);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - var(--donut-ring)), #000 calc(100% - var(--donut-ring-inner)));
+  mask: radial-gradient(farthest-side, transparent calc(100% - var(--donut-ring)), #000 calc(100% - var(--donut-ring-inner)));
 }
 
 .donut::before,
@@ -2062,11 +2037,11 @@
 }
 
 .legendList span:nth-child(2) b {
-  background: var(--cyan);
+  background: #5d6674;
 }
 
 .legendList span:nth-child(3) b {
-  background: #d8e8ff;
+  background: #98a0ad;
 }
 
 .rankPanel {
@@ -2091,6 +2066,10 @@
 .rankRow {
   display: grid;
   gap: 5px;
+}
+
+.rankRow[data-rank-kind='unbound'] .rankRowTop {
+  color: color-mix(in srgb, var(--text-2) 76%, #2f5d50 24%);
 }
 
 .rankRowTop {
@@ -2119,6 +2098,11 @@
   line-height: 1.2;
 }
 
+.rankRow[data-rank-kind='unbound'] .rankRowTop span,
+.rankRow[data-rank-kind='unbound'] .rankRowTop strong {
+  color: color-mix(in srgb, var(--text-1) 74%, #245849 26%);
+}
+
 .rankTrack {
   height: 6px;
   overflow: hidden;
@@ -2126,11 +2110,355 @@
   border-radius: 999px;
 }
 
+.rankRow[data-rank-kind='unbound'] .rankTrack {
+  background: color-mix(in srgb, #d6e9e2 82%, white 18%);
+}
+
 .rankTrack span {
   display: block;
   height: 100%;
   background: linear-gradient(90deg, #2b7fff, #58c5ff);
   border-radius: inherit;
+}
+
+.rankRow[data-rank-kind='unbound'] .rankTrack span {
+  background: linear-gradient(90deg, #2f6b59, #5f9786);
+}
+
+.calendarStatsLayout {
+  grid-template-rows: minmax(86px, auto) minmax(0, 1fr) minmax(156px, 0.62fr);
+  grid-template-areas:
+    "numbers numbers"
+    "calendar calendar"
+    "rank rank";
+}
+
+.calendarPanel {
+  grid-area: calendar;
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  gap: 10px;
+  min-width: 0;
+  min-height: 0;
+  padding: 14px 18px;
+  background: color-mix(in srgb, var(--window-bg) 82%, transparent);
+  border: 1px solid color-mix(in srgb, var(--line-soft) 90%, white 10%);
+  border-radius: 8px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.96),
+    0 10px 22px rgba(59, 103, 182, 0.06);
+  backdrop-filter: blur(16px) saturate(140%);
+}
+
+.calendarPanelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-width: 0;
+}
+
+.calendarPanelHeader span {
+  color: var(--text-3);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.calendarPanelHeader h2 {
+  margin: 2px 0 0;
+  color: var(--text-1);
+  font-size: 18px;
+  line-height: 1.1;
+}
+
+.calendarMonthNav {
+  display: flex;
+  gap: 8px;
+}
+
+.calendarMonthNav button {
+  min-width: 48px;
+  height: 28px;
+  color: var(--text-1);
+  font-size: 11px;
+  font-weight: 800;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--window-bg) 92%, white 8%), color-mix(in srgb, var(--window-bg) 76%, transparent));
+  border: 1px solid color-mix(in srgb, var(--line-soft) 88%, white 12%);
+  border-radius: 4px;
+  cursor: pointer;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+  transition:
+    color 140ms ease,
+    background 140ms ease,
+    box-shadow 140ms ease,
+    transform 140ms ease;
+}
+
+.calendarMonthNav button:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
+.calendarMonthNav button:hover:not(:disabled),
+.calendarMonthNav button:focus-visible:not(:disabled) {
+  color: var(--text-1);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--window-bg) 92%, transparent),
+    color-mix(in srgb, var(--window-bg) 78%, transparent)
+  );
+  box-shadow:
+    inset 0 1px 0 var(--hover-glass),
+    0 6px 14px rgba(10, 18, 32, 0.08);
+  transform: var(--hover-lift);
+  outline: none;
+}
+
+.calendarMonthNav button:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.72),
+    0 4px 10px rgba(10, 18, 32, 0.06);
+}
+
+.calendarWeekdays {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.calendarWeekdays span {
+  color: var(--text-3);
+  font-size: 10px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.calendarGrid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  grid-auto-rows: minmax(29px, 1fr);
+  gap: 8px;
+  align-content: stretch;
+  align-items: stretch;
+  min-height: 0;
+  height: 100%;
+}
+
+.calendarGrid > [data-calendar-placeholder="true"] {
+  min-height: 29px;
+}
+
+.calendarDay {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  min-height: 29px;
+  padding: 3px 4px;
+  color: var(--text-1);
+  background: color-mix(in srgb, #eef5ff 66%, var(--window-bg) 34%);
+  border: 1px solid color-mix(in srgb, var(--line-soft) 82%, white 18%);
+  border-radius: 4px;
+  cursor: pointer;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.74),
+    0 6px 14px rgba(59, 103, 182, 0.04);
+}
+
+.calendarDay[data-heat-level="1"] {
+  background: #dceaff;
+}
+
+.calendarDay[data-heat-level="2"] {
+  color: #173d66;
+  background: #b9d7ff;
+}
+
+.calendarDay[data-heat-level="3"] {
+  color: #0f3157;
+  background: #78b6ff;
+}
+
+.calendarDay[data-heat-level="4"] {
+  color: #fff;
+  background: linear-gradient(135deg, #2b7fff, #58c5ff);
+}
+
+.calendarDay[data-calendar-today="true"] {
+  border-color: color-mix(in srgb, var(--line-soft) 82%, white 18%);
+}
+
+.calendarDay[data-calendar-selected="true"] {
+  border-color: color-mix(in srgb, var(--accent) 52%, var(--line-soft));
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--accent) 34%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.78),
+    0 10px 20px color-mix(in srgb, var(--accent) 16%, transparent);
+}
+
+.calendarDay[data-calendar-future="true"] {
+  color: var(--text-3);
+  background: color-mix(in srgb, var(--window-bg) 82%, transparent);
+  cursor: not-allowed;
+  opacity: 0.52;
+}
+
+.calendarDayNumber {
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.calendarTodayDot {
+  position: absolute;
+  top: 7px;
+  left: 7px;
+  width: 6px;
+  height: 6px;
+  background: #2f9e64;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px color-mix(in srgb, #2f9e64 16%, transparent);
+}
+
+.calendarTodayLabel {
+  position: absolute;
+  right: 7px;
+  bottom: 6px;
+  margin: 0;
+  font-size: 9px;
+  font-style: normal;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.calendarTooltip {
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 10px);
+  z-index: 5;
+  display: grid;
+  gap: 4px;
+  min-width: 176px;
+  padding: 10px 12px;
+  color: var(--text-1);
+  text-align: left;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--window-bg) 94%, white 6%), color-mix(in srgb, var(--window-bg) 82%, transparent));
+  border: 1px solid color-mix(in srgb, var(--line-soft) 86%, white 14%);
+  border-radius: 4px;
+  box-shadow:
+    0 12px 24px rgba(50, 83, 133, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.78);
+  opacity: 0;
+  transform: translateY(4px);
+  transition:
+    opacity 0.14s ease,
+    transform 0.14s ease;
+  backdrop-filter: blur(18px) saturate(150%);
+}
+
+.calendarDay[data-calendar-column="5"] .calendarTooltip,
+.calendarDay[data-calendar-column="6"] .calendarTooltip {
+  right: 0;
+  left: auto;
+}
+
+.calendarTooltipDate {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 4px;
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.calendarTooltipToday {
+  flex-shrink: 0;
+  color: var(--text-2);
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 700;
+}
+
+.calendarTooltipMetric {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 10px;
+  line-height: 1.15;
+}
+
+.calendarTooltipMetricLead {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.calendarTooltipMetricIcon {
+  flex-shrink: 0;
+  width: 12px;
+  height: 12px;
+  color: var(--accent);
+}
+
+.calendarTooltipMetricLabel {
+  color: var(--text-2);
+}
+
+.calendarTooltipMetricValue {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.1;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.calendarDay:hover .calendarTooltip,
+.calendarDay:focus .calendarTooltip,
+.calendarDay:focus-visible .calendarTooltip {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.calendarLegend {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 5px;
+  color: var(--text-3);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.calendarLegend i {
+  width: 15px;
+  height: 10px;
+  background: color-mix(in srgb, #eef5ff 66%, var(--window-bg) 34%);
+  border: 1px solid color-mix(in srgb, var(--line-soft) 82%, white 18%);
+  border-radius: 3px;
+}
+
+.calendarLegend i[data-heat-level="1"] {
+  background: #dceaff;
+}
+
+.calendarLegend i[data-heat-level="2"] {
+  background: #b9d7ff;
+}
+
+.calendarLegend i[data-heat-level="3"] {
+  background: #78b6ff;
+}
+
+.calendarLegend i[data-heat-level="4"] {
+  background: #2b7fff;
 }
 
 .statsEmptyState {
@@ -2150,7 +2478,7 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   min-height: 0;
-  padding: 14px 16px 12px;
+  padding: 24px 16px 12px;
   background: var(--window-bg);
 }
 
@@ -2301,27 +2629,37 @@
   white-space: nowrap;
 }
 
-.settingSwitchInput {
-  position: absolute;
+.settingSwitchControl {
   grid-column: 3;
   grid-row: 1;
-  width: 1px;
-  height: 1px;
+  position: relative;
+  justify-self: end;
+  width: 36px;
+  height: 20px;
+}
+
+.settingSwitchInput {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
   opacity: 0;
-  pointer-events: none;
+  cursor: pointer;
+  z-index: 1;
 }
 
 .settingSwitchTrack {
-  grid-column: 3;
-  grid-row: 1;
+  position: absolute;
+  inset: 0;
   display: grid;
   align-items: center;
-  justify-self: end;
   width: 36px;
   height: 20px;
   padding: 2px;
   background: linear-gradient(180deg, #2d87ff, var(--accent-strong));
   border-radius: 999px;
+  pointer-events: none;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.38),
     0 8px 14px rgba(31, 116, 255, 0.18);
@@ -2346,7 +2684,7 @@
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.52);
 }
 
-.settingLine:hover .settingSwitchTrack,
+.settingSwitchControl:hover .settingSwitchTrack,
 .settingSwitchInput:hover + .settingSwitchTrack,
 .settingSwitchInput:focus-visible + .settingSwitchTrack {
   box-shadow:
@@ -2437,13 +2775,12 @@
   top: 50%;
   left: 50%;
   display: block;
-  width: 0;
-  height: 0;
+  width: 6px;
+  height: 6px;
   content: "";
-  border-top: 8px solid currentColor;
-  border-right: 6px solid transparent;
-  border-left: 6px solid transparent;
-  transform: translate(-50%, -50%);
+  border-right: 1.6px solid currentColor;
+  border-bottom: 1.6px solid currentColor;
+  transform: translate(-50%, -62%) rotate(45deg);
 }
 
 .settingsSelectButtonOpen .settingsSelectChevron {
@@ -2458,7 +2795,12 @@
   right: 0;
   width: 100%;
   overflow: hidden;
-  background: color-mix(in srgb, var(--window-bg) 94%, transparent);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--dark-control-bg-strong) 94%, #23476f 6%),
+      color-mix(in srgb, var(--dark-control-bg-strong) 90%, #102a46 10%)
+    );
   border: 0;
   border-radius: 4px;
   box-shadow: 0 14px 28px rgba(45, 86, 140, 0.18);
@@ -2489,19 +2831,21 @@
 }
 
 .settingsSelectOptionActive {
-  color: #fff;
-  background: var(--accent);
+  color: var(--text-1);
+  background: transparent;
 }
 
 .settingsSelectOptionActive:hover,
 .settingsSelectOptionActive:focus-visible {
-  color: #fff;
-  background: var(--accent-strong);
+  color: var(--text-1);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--hover-surface) 82%, transparent), color-mix(in srgb, var(--hover-surface) 38%, transparent));
+  box-shadow: inset 3px 0 0 var(--hover-border);
 }
 
 .settingStepper {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 24px;
+  height: 28px;
   min-height: 28px;
   overflow: hidden;
   background: linear-gradient(
@@ -2547,19 +2891,23 @@
 
 .stepperButtons {
   display: grid;
-  grid-template-rows: 10px 10px;
-  align-content: center;
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  align-content: stretch;
+  height: 100%;
   border-left: 0;
 }
 
 .stepperButtons button {
   position: relative;
   display: grid;
+  width: 100%;
+  height: 100%;
   place-items: center;
   padding: 0;
   color: var(--text-2);
   background: transparent;
   border: 0;
+  min-height: 0;
   font-size: 0;
   line-height: 0;
   transition:
@@ -2581,17 +2929,19 @@
   width: 0;
   height: 0;
   content: "";
-  border-right: 6px solid transparent;
-  border-left: 6px solid transparent;
+  border-right: 5px solid transparent;
+  border-left: 5px solid transparent;
   transform: translate(-50%, -50%);
 }
 
 .stepperButtons button:first-child::before {
-  border-bottom: 8px solid currentColor;
+  top: calc(50% + 2px);
+  border-bottom: 6px solid currentColor;
 }
 
 .stepperButtons button:last-child::before {
-  border-top: 8px solid currentColor;
+  top: calc(50% - 2px);
+  border-top: 6px solid currentColor;
 }
 
 :root[data-theme="light"] .settingsSelectButton:not(.settingsSelectButtonOpen) .settingsSelectChevron,
@@ -2605,9 +2955,15 @@
 
 .stepperButtons button:hover:not(:disabled),
 .stepperButtons button:focus-visible:not(:disabled) {
-  color: #fff;
-  background: linear-gradient(180deg, var(--accent), var(--accent-strong));
-  box-shadow: inset 0 1px 0 var(--hover-glass), var(--hover-shadow);
+  color: var(--text-1);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--window-bg) 92%, transparent),
+    color-mix(in srgb, var(--window-bg) 78%, transparent)
+  );
+  box-shadow:
+    inset 0 1px 0 var(--hover-glass),
+    0 6px 14px rgba(10, 18, 32, 0.08);
   transform: var(--hover-lift);
   outline: none;
 }
@@ -2790,12 +3146,131 @@
 
 :root[data-theme="dark"] .chartPanel,
 :root[data-theme="dark"] .compositionPanel,
-:root[data-theme="dark"] .rankPanel {
+:root[data-theme="dark"] .rankPanel,
+:root[data-theme="dark"] .calendarPanel {
   background: var(--dark-control-bg);
   border-color: var(--dark-card-border);
   box-shadow:
     inset 0 1px 0 var(--dark-glass-highlight),
     0 12px 28px rgba(0, 0, 0, 0.18);
+}
+
+:root[data-theme="dark"] .calendarMonthNav button {
+  color: var(--text-1);
+  background: var(--dark-control-bg);
+  border-color: var(--dark-card-border);
+  box-shadow: inset 0 1px 0 var(--dark-glass-highlight);
+}
+
+:root[data-theme="dark"] .calendarMonthNav button:hover:not(:disabled),
+:root[data-theme="dark"] .calendarMonthNav button:focus-visible:not(:disabled) {
+  background:
+    linear-gradient(180deg, rgba(24, 58, 88, 0.92), rgba(15, 42, 68, 0.92));
+  box-shadow:
+    inset 0 1px 0 var(--dark-glass-highlight),
+    0 10px 18px rgba(0, 0, 0, 0.18);
+}
+
+:root[data-theme="dark"] .calendarMonthNav button:active:not(:disabled) {
+  background: linear-gradient(180deg, rgba(22, 52, 80, 0.94), rgba(11, 33, 54, 0.94));
+  box-shadow:
+    inset 0 1px 0 var(--dark-glass-highlight),
+    0 6px 12px rgba(0, 0, 0, 0.14);
+}
+
+:root[data-theme="dark"] .calendarDay {
+  background: color-mix(in srgb, #183654 58%, rgba(255, 255, 255, 0.05) 42%);
+  border-color: var(--dark-card-border);
+  box-shadow:
+    inset 0 1px 0 var(--dark-glass-highlight),
+    0 8px 18px rgba(0, 0, 0, 0.14);
+}
+
+:root[data-theme="dark"] .calendarDay[data-heat-level="1"] {
+  background: #1f4269;
+}
+
+:root[data-theme="dark"] .calendarDay[data-heat-level="2"] {
+  color: #dcecff;
+  background: #285b93;
+}
+
+:root[data-theme="dark"] .calendarDay[data-heat-level="3"] {
+  color: #f4f9ff;
+  background: #2f75c4;
+}
+
+:root[data-theme="dark"] .calendarDay[data-heat-level="4"] {
+  color: #fff;
+  background: linear-gradient(135deg, #3d8dff, #6fd4ff);
+}
+
+:root[data-theme="dark"] .calendarDay[data-calendar-today="true"] {
+  border-color: var(--dark-card-border);
+}
+
+:root[data-theme="dark"] .calendarDay[data-calendar-selected="true"] {
+  border-color: color-mix(in srgb, var(--accent) 52%, var(--dark-card-border));
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--accent) 32%, transparent),
+    inset 0 1px 0 var(--dark-glass-highlight),
+    0 10px 20px rgba(30, 110, 235, 0.18);
+}
+
+:root[data-theme="dark"] .calendarTodayDot {
+  background: #78d6a1;
+  box-shadow: 0 0 0 2px color-mix(in srgb, #78d6a1 18%, transparent);
+}
+
+:root[data-theme="dark"] .calendarDay[data-calendar-future="true"] {
+  background: color-mix(in srgb, var(--dark-control-bg) 82%, transparent);
+}
+
+:root[data-theme="dark"] .calendarTooltip {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--dark-control-bg-strong) 94%, #23476f 6%), color-mix(in srgb, var(--dark-control-bg-strong) 90%, #102a46 10%));
+  border-color: var(--dark-card-border);
+  box-shadow:
+    0 14px 28px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 var(--dark-glass-highlight);
+}
+
+:root[data-theme="dark"] .calendarLegend i {
+  background: color-mix(in srgb, #183654 58%, rgba(255, 255, 255, 0.05) 42%);
+  border-color: var(--dark-card-border);
+}
+
+:root[data-theme="dark"] .calendarLegend i[data-heat-level="1"] {
+  background: #1f4269;
+}
+
+:root[data-theme="dark"] .calendarLegend i[data-heat-level="2"] {
+  background: #285b93;
+}
+
+:root[data-theme="dark"] .calendarLegend i[data-heat-level="3"] {
+  background: #2f75c4;
+}
+
+:root[data-theme="dark"] .calendarLegend i[data-heat-level="4"] {
+  background: #3d8dff;
+}
+
+:root[data-theme="dark"] .rankRow[data-rank-kind='unbound'] .rankRowTop {
+  color: color-mix(in srgb, var(--text-2) 72%, #7bb9a6 28%);
+}
+
+:root[data-theme="dark"] .rankRow[data-rank-kind='unbound'] .rankRowTop span,
+:root[data-theme="dark"] .rankRow[data-rank-kind='unbound'] .rankRowTop strong {
+  color: color-mix(in srgb, var(--text-1) 70%, #9bd3c1 30%);
+}
+
+:root[data-theme="dark"] .rankRow[data-rank-kind='unbound'] .rankTrack {
+  background: color-mix(in srgb, #213e35 62%, rgba(255, 255, 255, 0.08) 38%);
+}
+
+:root[data-theme="dark"] .rankRow[data-rank-kind='unbound'] .rankTrack span {
+  background: linear-gradient(90deg, #3f7f6d, #81b9a7);
 }
 
 :root[data-theme="dark"] .statsSummaryIcon,
@@ -2815,21 +3290,26 @@
 }
 
 :root[data-theme="dark"] .settingsSelectMenu {
-  background: var(--dark-control-bg-strong);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--dark-control-bg-strong) 94%, #23476f 6%),
+      color-mix(in srgb, var(--dark-control-bg-strong) 90%, #102a46 10%)
+    );
   border: 0;
   box-shadow: 0 16px 32px rgba(0, 0, 0, 0.28);
 }
 
 :root[data-theme="dark"] .autoSwitch input:not(:checked),
-:root[data-theme="dark"] .settingLine input[type="checkbox"]:not(:checked) {
+:root[data-theme="dark"] .settingSwitchInput:not(:checked) {
   background: #36516c;
   box-shadow: inset 0 1px 0 rgba(221, 237, 255, 0.08);
 }
 
 :root[data-theme="dark"] .autoSwitch input:hover,
 :root[data-theme="dark"] .autoSwitch input:focus-visible,
-:root[data-theme="dark"] .settingLine input[type="checkbox"]:hover,
-:root[data-theme="dark"] .settingLine input[type="checkbox"]:focus-visible {
+:root[data-theme="dark"] .settingSwitchInput:hover,
+:root[data-theme="dark"] .settingSwitchInput:focus-visible {
   box-shadow:
     inset 0 1px 0 rgba(177, 205, 236, 0.12),
     0 10px 18px rgba(0, 0, 0, 0.24);
@@ -2860,8 +3340,21 @@
       "rank";
   }
 
+  .calendarStatsLayout {
+    grid-template-rows: auto minmax(320px, 1fr) auto;
+    grid-template-areas:
+      "numbers"
+      "calendar"
+      "rank";
+  }
+
   .statsNumbers {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .calendarPanelHeader {
+    align-items: flex-start;
+    flex-direction: column;
   }
 
   .timerActions {

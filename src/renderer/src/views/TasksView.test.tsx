@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, test } from 'vitest'
 import type { TaskBoardSnapshot, TimerPhase, TimerStatus } from '@shared/types'
-import { getTaskTitleTooltipLayout, isTaskTitleOverflowing, resolveTaskBindAction, TasksView } from './TasksView'
+import { getTaskTitleTooltipLayout, isTaskTitleOverflowing, resolveTaskBindAction, TaskTooltipBubble, TasksView } from './TasksView'
 
 const LONG_TASK_TITLE = '这是一个很长很长的任务标题，用来验证悬浮时可以看到完整内容'
 
@@ -19,7 +19,7 @@ const createBoard = (): TaskBoardSnapshot => ({
       completedAt: null,
       createdAt: '2026-04-25T09:00:00.000Z',
       updatedAt: '2026-04-25T09:00:00.000Z',
-      focusMinutes: 25,
+      focusMinutes: 75,
       completedPomodoros: 1
     },
     {
@@ -104,10 +104,28 @@ describe('TasksView', () => {
     })
   })
 
+  test('完成列 tooltip 复用任务 tooltip 的样式和 role', () => {
+    const html = renderToStaticMarkup(
+      <TaskTooltipBubble
+        tooltip={{
+          color: '#aebdd0',
+          left: 180,
+          maxWidth: 240,
+          text: '完成任务',
+          top: 124
+        }}
+      />
+    )
+
+    expect(html).toContain('role="tooltip"')
+    expect(html).toContain('taskTitleTooltip')
+    expect(html).toContain('完成任务')
+  })
+
   test('任务筛选按进行中 已完成 全部的顺序展示', () => {
     const html = renderToStaticMarkup(
       <TasksView
-        activeTab="active"
+        activeTab="all"
         bindCurrentTask={noopAsync}
         canBindCurrentTask
         completeTask={noopAsync}
@@ -138,7 +156,7 @@ describe('TasksView', () => {
   test('渲染清晰的任务区列结构和当前绑定操作', () => {
     const html = renderToStaticMarkup(
       <TasksView
-        activeTab="active"
+        activeTab="all"
         bindCurrentTask={noopAsync}
         canBindCurrentTask
         completeTask={noopAsync}
@@ -164,18 +182,19 @@ describe('TasksView', () => {
     expect(html).toContain('data-task-surface="floating-card"')
     expect(html).toContain('data-current-task="true"')
     expect(html).toContain('aria-pressed="true"')
-    expect(html).not.toMatch(/\stitle="/)
+    expect(html).not.toContain('title="完成任务"')
+    expect(html).not.toContain('title="恢复任务"')
     expect(html).not.toContain('data-full-title=')
     expect(html).toContain('>完成<')
-    expect(html).toContain('>状态<')
     expect(html).toContain('>任务<')
+    expect(html).toContain('>状态<')
     expect(html).toContain('>统计<')
     expect(html).toContain('>绑定<')
     expect(html).toContain('>操作<')
     expect(html).toContain('>进行中<')
-    expect(html).toContain('25m')
-    expect(html).toContain('1个番茄钟')
-    expect(html).not.toContain('25m | 1个番茄钟')
+    expect(html).toContain('1h 15m')
+    expect(html).toContain('1 番茄钟')
+    expect(html).not.toContain('1h 15m | 1 番茄钟')
     expect(html).toContain('>已绑定<')
     expect(html).toContain('>绑定<')
     expect(html).toContain('>删除<')
@@ -235,5 +254,38 @@ describe('TasksView', () => {
     expect(html).toContain('aria-selected="true"')
     expect(html).toContain('任务 C')
     expect(html).not.toContain('任务 A')
+  })
+
+  test('renders a completion date column with MM-DD labels only for completed tasks', () => {
+    const html = renderToStaticMarkup(
+      <TasksView
+        activeTab="all"
+        bindCurrentTask={noopAsync}
+        canBindCurrentTask={false}
+        completeTask={noopAsync}
+        createTask={noopAsync}
+        currentTimerTaskId={null}
+        deleteTask={noopAsync}
+        newTaskTitle=""
+        onActiveTabChange={noop}
+        reorderTasks={noopAsync}
+        restoreTask={noopAsync}
+        setNewTaskTitle={() => undefined}
+        startFocusWithTask={noopAsync}
+        taskBoard={createBoard()}
+        timerContext={createTimerContext('paused', 'shortBreak')}
+        updateTask={async () => undefined}
+      />
+    )
+
+    const taskIndex = html.indexOf('>任务<')
+    const dateIndex = html.indexOf('>完成日期<')
+    const statusIndex = html.indexOf('>状态<')
+
+    expect(taskIndex).toBeGreaterThanOrEqual(0)
+    expect(dateIndex).toBeGreaterThan(taskIndex)
+    expect(statusIndex).toBeGreaterThan(dateIndex)
+    expect(html).toContain('04-25')
+    expect((html.match(/04-25/g) ?? []).length).toBe(1)
   })
 })

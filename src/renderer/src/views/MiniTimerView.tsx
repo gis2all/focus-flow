@@ -40,7 +40,6 @@ export const MiniTimerView = ({ activeTheme, settings, snapshot }: MiniTimerView
   const activeDragPointerIdRef = useRef<number | null>(null)
   const statusLabel = resolveMiniStatusLabel(snapshot)
   const timeLabel = resolveMiniTime(snapshot, settings)
-  const isRunning = snapshot.status === 'running'
   const shouldUseIconToneStatusLabel =
     snapshot.phase === 'shortBreak' && snapshot.status !== 'idle' && snapshot.status !== 'completed'
   const shouldMuteStatusLabel =
@@ -118,13 +117,6 @@ export const MiniTimerView = ({ activeTheme, settings, snapshot }: MiniTimerView
             <ReturnArrowIcon className={styles.miniReturnIcon} />
           </button>
           <div className={styles.miniStatus}>
-            <span
-              className={`${styles.miniStatusBadge} ${isRunning ? styles.miniStatusBadgeRunning : ''}`}
-              aria-hidden="true"
-            >
-              <span className={`${styles.miniStatusHalo} ${isRunning ? styles.miniStatusHaloRunning : ''}`} />
-              <span className={`${styles.miniStatusCore} ${isRunning ? styles.miniStatusCoreRunning : ''}`} />
-            </span>
             <span
               className={`${styles.miniStatusLabel} ${shouldUseIconToneStatusLabel ? styles.miniStatusLabelSubtle : ''} ${shouldMuteStatusLabel ? styles.miniStatusLabelMuted : ''}`}
             >

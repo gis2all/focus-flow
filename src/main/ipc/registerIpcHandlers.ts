@@ -2,6 +2,7 @@ import { BrowserWindow, ipcMain, screen } from 'electron'
 import {
   IPC_CHANNELS,
   type CreateTaskRequest,
+  type MonthStatsRequest,
   type ResizeWindowRequest,
   type ReorderTasksRequest,
   type StartTimerRequest,
@@ -139,6 +140,7 @@ export const registerIpcHandlers = (services: IpcServices): void => {
     return updated
   })
   ipcMain.handle(IPC_CHANNELS.stats.get, () => services.stats.get())
+  ipcMain.handle(IPC_CHANNELS.stats.getMonth, (_event, request: MonthStatsRequest) => services.stats.getMonth(request))
 
   ipcMain.handle(IPC_CHANNELS.system.getTheme, () => (services.theme.shouldUseDarkColors() ? 'dark' : 'light'))
   ipcMain.handle(IPC_CHANNELS.system.showWindow, () => services.showMainWindow())

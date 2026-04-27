@@ -32,7 +32,8 @@ const api: FocusFlowApi = {
     update: (request) => ipcRenderer.invoke(IPC_CHANNELS.settings.update, request)
   },
   stats: {
-    get: () => ipcRenderer.invoke(IPC_CHANNELS.stats.get)
+    get: () => ipcRenderer.invoke(IPC_CHANNELS.stats.get),
+    getMonth: (request) => ipcRenderer.invoke(IPC_CHANNELS.stats.getMonth, request)
   },
   system: {
     getTheme: () => ipcRenderer.invoke(IPC_CHANNELS.system.getTheme),

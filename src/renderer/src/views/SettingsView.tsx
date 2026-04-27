@@ -89,18 +89,21 @@ interface SettingSwitchProps {
 }
 
 const SettingSwitch = ({ checked, icon, label, onChange }: SettingSwitchProps): ReactElement => (
-  <label className={styles.settingLine}>
+  <div className={styles.settingLine}>
     <SettingIdentity icon={icon} label={label} />
-    <input
-      checked={checked}
-      className={styles.settingSwitchInput}
-      onChange={(event) => onChange(event.target.checked)}
-      type="checkbox"
-    />
-    <span aria-hidden="true" className={styles.settingSwitchTrack}>
-      <span />
-    </span>
-  </label>
+    <div className={styles.settingSwitchControl}>
+      <input
+        aria-label={label}
+        checked={checked}
+        className={styles.settingSwitchInput}
+        onChange={(event) => onChange(event.target.checked)}
+        type="checkbox"
+      />
+      <span aria-hidden="true" className={styles.settingSwitchTrack}>
+        <span />
+      </span>
+    </div>
+  </div>
 )
 
 interface SettingSelectProps<T extends string> {
