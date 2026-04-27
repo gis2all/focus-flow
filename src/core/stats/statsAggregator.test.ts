@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import { aggregateStats } from './statsAggregator'
-import type { Task, TimerSession } from '@shared/types'
+import type { FocusStats, Task, TimerSession } from '@shared/types'
 
 const task = (input: Partial<Task> & Pick<Task, 'id' | 'title'>): Task => ({
   sortOrder: 1,
@@ -23,7 +23,7 @@ const session = (input: Partial<TimerSession> & Pick<TimerSession, 'id' | 'start
 })
 
 describe('stats aggregator', () => {
-  test('aggregates today focus minutes and only ranks tasks completed today with focus time', () => {
+  test('aggregates today focus minutes, tracks unbound focus, and only ranks tasks completed today with focus time', () => {
     const stats = aggregateStats({
       now: new Date('2026-04-25T20:00:00.000'),
       tasks: [
@@ -59,6 +59,12 @@ describe('stats aggregator', () => {
           phase: 'longBreak',
           startedAt: '2026-04-25T18:00:00.000',
           actualDurationMs: 15 * 60_000
+        }),
+        session({
+          id: 'today-unbound-focus',
+          phase: 'focus',
+          startedAt: '2026-04-25T11:00:00.000',
+          actualDurationMs: 18 * 60_000
         }),
         session({
           id: 'yesterday-focus',
@@ -98,15 +104,16 @@ describe('stats aggregator', () => {
           completionReason: 'skipped'
         })
       ]
-    })
+    }) as FocusStats & { unboundFocusMinutes: number }
 
-    expect(stats.today.focusMinutes).toBe(102)
+    expect(stats.today.focusMinutes).toBe(120)
     expect(stats.today.shortBreakMinutes).toBe(5)
     expect(stats.today.longBreakMinutes).toBe(15)
-    expect(stats.today.completedPomodoros).toBe(5)
+    expect(stats.today.completedPomodoros).toBe(6)
     expect(stats.hourlyFocusMinutes[9]).toBe(25)
     expect(stats.hourlyFocusMinutes[10]).toBe(20)
-    expect(stats.weeklyTrend.at(-1)?.focusMinutes).toBe(102)
+    expect(stats.weeklyTrend.at(-1)?.focusMinutes).toBe(120)
+    expect(stats.unboundFocusMinutes).toBe(18)
     expect(stats.taskFocusMinutes).toEqual([
       { taskId: 'done', title: 'Done', minutes: 10, status: 'completed' }
     ])

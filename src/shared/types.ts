@@ -113,6 +113,7 @@ export interface FocusStats {
   hourlyFocusMinutes: number[]
   weeklyTrend: DailyTrendPoint[]
   taskFocusMinutes: TaskFocusPoint[]
+  unboundFocusMinutes: number
 }
 
 export interface AppEvent {

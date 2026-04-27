@@ -23,19 +23,47 @@ export const getRankBarWidth = (minutes: number, maxMinutes: number): string => 
   return `${(minutes / maxMinutes) * 100}%`
 }
 
+interface FocusDurationRow {
+  taskId: string
+  title: string
+  minutes: number
+  kind: 'task' | 'unbound'
+}
+
 export const StatsView = ({ stats }: StatsViewProps): ReactElement => {
   const hourlyPeak = Math.max(...stats.hourlyFocusMinutes, 0)
   const maxHourly = Math.max(hourlyPeak, 1)
   const focusTotal = Math.max(stats.today.focusMinutes, 0)
   const shortBreakMinutes = Math.max(stats.today.shortBreakMinutes, 0)
   const longBreakMinutes = Math.max(stats.today.longBreakMinutes, 0)
+  const unboundFocusMinutes = Math.max(stats.unboundFocusMinutes, 0)
   const breakTotal = shortBreakMinutes + longBreakMinutes
   const totalTrackedRaw = focusTotal + breakTotal
   const totalTracked = Math.max(totalTrackedRaw, 1)
   const focusPercent = Math.round((focusTotal / totalTracked) * 100)
   const breakPercent = Math.round(((focusTotal + shortBreakMinutes) / totalTracked) * 100)
-  const completedTaskDurations = [...stats.taskFocusMinutes].sort((left, right) => right.minutes - left.minutes)
-  const maxCompletedTaskMinutes = Math.max(...completedTaskDurations.map((item) => item.minutes), 1)
+  const completedTaskDurations: FocusDurationRow[] = [...stats.taskFocusMinutes]
+    .sort((left, right) => right.minutes - left.minutes)
+    .map((item) => ({
+      taskId: item.taskId,
+      title: item.title,
+      minutes: item.minutes,
+      kind: 'task'
+    }))
+  const focusDurationRows: FocusDurationRow[] = [
+    ...completedTaskDurations,
+    ...(unboundFocusMinutes > 0
+      ? [
+          {
+            taskId: 'unbound-focus',
+            title: '未绑定专注',
+            minutes: unboundFocusMinutes,
+            kind: 'unbound' as const
+          }
+        ]
+      : [])
+  ].sort((left, right) => right.minutes - left.minutes)
+  const maxCompletedTaskMinutes = Math.max(...focusDurationRows.map((item) => item.minutes), 1)
   const halfHourlyPeak = Math.round(hourlyPeak / 2)
   const yAxisTicks = [hourlyPeak > 0 ? `${hourlyPeak}m` : '0m', `${halfHourlyPeak}m`, '0']
   const summaryCards = [
@@ -161,15 +189,15 @@ export const StatsView = ({ stats }: StatsViewProps): ReactElement => {
 
         <section className={styles.rankPanel}>
           <div className={styles.statsPanelHeader}>
-            <h2>任务时长</h2>
-            <span>今日已完成</span>
+            <h2>专注时长</h2>
+            <span>今日已完成任务 + 未绑定专注</span>
           </div>
-          {completedTaskDurations.length === 0 ? (
-            <div className={styles.statsEmptyState}>今天还没有已完成任务时长</div>
+          {focusDurationRows.length === 0 ? (
+            <div className={styles.statsEmptyState}>今天还没有专注时长记录</div>
           ) : (
             <div className={styles.rankList}>
-              {completedTaskDurations.map((item) => (
-                <div className={styles.rankRow} key={item.taskId}>
+              {focusDurationRows.map((item) => (
+                <div className={styles.rankRow} data-rank-kind={item.kind} key={item.taskId}>
                   <div className={styles.rankRowTop}>
                     <span>{item.title}</span>
                     <strong>{item.minutes}m</strong>

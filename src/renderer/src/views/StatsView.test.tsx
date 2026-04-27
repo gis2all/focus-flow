@@ -3,7 +3,9 @@ import { describe, expect, test } from 'vitest'
 import type { FocusStats } from '@shared/types'
 import { StatsView, getHourBarHeight, getRankBarWidth } from './StatsView'
 
-const createStats = (input: Partial<FocusStats> = {}): FocusStats => ({
+type StatsWithUnboundFocus = FocusStats & { unboundFocusMinutes: number }
+
+const createStats = (input: Partial<StatsWithUnboundFocus> = {}): StatsWithUnboundFocus => ({
   today: {
     focusMinutes: 25,
     shortBreakMinutes: 5,
@@ -14,6 +16,7 @@ const createStats = (input: Partial<FocusStats> = {}): FocusStats => ({
   hourlyFocusMinutes: Array.from({ length: 24 }, () => 0),
   weeklyTrend: [],
   taskFocusMinutes: [],
+  unboundFocusMinutes: 0,
   ...input
 })
 
@@ -39,7 +42,7 @@ describe('StatsView', () => {
     expect(html).toContain('15m')
   })
 
-  test('renders all ranked task duration rows from stats and y-axis ticks', () => {
+  test('renders all ranked task duration rows, sorts unbound focus in order, and shows y-axis ticks', () => {
     const html = renderToStaticMarkup(
       <StatsView
         stats={createStats({
@@ -81,13 +84,14 @@ describe('StatsView', () => {
               minutes: 5,
               status: 'completed'
             }
-          ]
+          ],
+          unboundFocusMinutes: 30
         })}
       />
     )
 
-    expect(html).toContain('任务时长')
-    expect(html).toContain('今日已完成')
+    expect(html).toContain('专注时长')
+    expect(html).toContain('今日已完成任务 + 未绑定专注')
     expect(html).toContain('峰值 50m')
     expect(html).toContain('aria-label="今日专注分布刻度"><span>50m</span><span>25m</span><span>0</span>')
     expect(html).toContain('任务 A')
@@ -99,6 +103,10 @@ describe('StatsView', () => {
     expect(html).toContain('任务 D')
     expect(html).toContain('任务 E')
     expect(html).toContain('任务 F')
+    expect(html).toContain('data-rank-kind="task"')
+    expect(html).toContain('data-rank-kind="unbound"')
+    expect(html).toContain('未绑定专注')
+    expect(html).toContain('30m')
     expect(html).toContain('5m')
     expect(html).not.toContain('进行中')
     expect(html).not.toContain('今日任务总时长')
@@ -106,12 +114,20 @@ describe('StatsView', () => {
     expect(html).not.toContain('进行中任务时长')
     expect(html).not.toContain('已删除任务')
     expect(html).toContain('25m')
+
+    const taskAIndex = html.indexOf('>任务 A<')
+    const unboundIndex = html.indexOf('>未绑定专注<')
+    const taskBIndex = html.indexOf('>任务 B<')
+
+    expect(taskAIndex).toBeGreaterThanOrEqual(0)
+    expect(unboundIndex).toBeGreaterThan(taskAIndex)
+    expect(taskBIndex).toBeGreaterThan(unboundIndex)
   })
 
-  test('renders a clear task ranking empty state', () => {
-    const html = renderToStaticMarkup(<StatsView stats={createStats({ taskFocusMinutes: [] })} />)
+  test('renders a clear focus-duration empty state when tasks and unbound focus are both empty', () => {
+    const html = renderToStaticMarkup(<StatsView stats={createStats({ taskFocusMinutes: [], unboundFocusMinutes: 0 })} />)
 
-    expect(html).toContain('今天还没有已完成任务时长')
+    expect(html).toContain('今天还没有专注时长记录')
   })
 
   test('hides empty hourly bars instead of rendering misleading minimum columns', () => {

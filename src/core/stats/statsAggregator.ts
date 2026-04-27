@@ -38,6 +38,7 @@ export const aggregateStats = (input: AggregateStatsInput): FocusStats => {
   let todayShortBreakMinutes = 0
   let todayLongBreakMinutes = 0
   let todayCompletedPomodoros = 0
+  let todayUnboundFocusMinutes = 0
 
   for (const session of completedFocusSessions) {
     const started = new Date(session.startedAt)
@@ -54,6 +55,10 @@ export const aggregateStats = (input: AggregateStatsInput): FocusStats => {
     if (weeklyBucket) {
       weeklyBucket.focusMinutes += minutes
       weeklyBucket.completedPomodoros += 1
+    }
+
+    if (dateKey === todayKey && session.taskId === null) {
+      todayUnboundFocusMinutes += minutes
     }
 
     if (dateKey === todayKey && session.taskId) {
@@ -100,6 +105,7 @@ export const aggregateStats = (input: AggregateStatsInput): FocusStats => {
           status: 'completed' as const
         }
       })
-      .sort((left, right) => right.minutes - left.minutes)
+      .sort((left, right) => right.minutes - left.minutes),
+    unboundFocusMinutes: todayUnboundFocusMinutes
   }
 }
