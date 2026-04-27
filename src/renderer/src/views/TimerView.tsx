@@ -10,11 +10,12 @@ import {
 } from '../components/AppIcons'
 import { ConfirmModal } from '../components/ConfirmModal'
 import { getTimerActionConfirmation, shouldConfirmTimerAction, type TimerActionConfirmationRequest } from '../timerActionConfirmation'
-import { formatTimerClock } from '../viewModel'
+import { formatTimerClock, type TimerPomodoroDisplay } from '../viewModel'
 import styles from '../App.module.css'
 
 interface TimerViewProps {
   currentTaskTitle: string
+  pomodoroDisplay?: TimerPomodoroDisplay
   progressPercent: number
   settings: AppSettings
   snapshot: TimerSnapshot
@@ -45,6 +46,7 @@ export const getPrimaryTimerAction = (
 
 export const TimerView = ({
   currentTaskTitle,
+  pomodoroDisplay,
   progressPercent,
   settings,
   snapshot,
@@ -67,6 +69,10 @@ export const TimerView = ({
   const completedInCycle = snapshot.focusCount % longBreakInterval
   const longBreakProgress =
     snapshot.focusCount === 0 ? 1 : completedInCycle === 0 ? longBreakInterval : completedInCycle
+  const resolvedPomodoroDisplay = pomodoroDisplay ?? {
+    ordinal: Math.max(1, snapshot.focusCount + 1),
+    completed: snapshot.focusCount
+  }
 
   const runTimerAction = async (action: TimerActionConfirmationRequest): Promise<void> => {
     switch (action.kind) {
@@ -125,7 +131,7 @@ export const TimerView = ({
             <span className={styles.timerStatusHalo} />
             <span className={styles.timerStatusCore} />
           </span>
-          {phaseLabel[snapshot.phase]} · 第 {Math.max(1, snapshot.focusCount + 1)} 个番茄钟
+          {phaseLabel[snapshot.phase]} · 第 {resolvedPomodoroDisplay.ordinal} 个番茄钟
         </p>
         <label className={styles.autoSwitch}>
           <span>自动切换专注/休息</span>
@@ -150,7 +156,7 @@ export const TimerView = ({
         <div className={styles.timerMetaRow}>
           <div className={styles.currentTaskCard}>
             <strong>{currentTaskTitle}</strong>
-            <small>已专注：{snapshot.focusCount} 个番茄钟</small>
+            <small>已专注：{resolvedPomodoroDisplay.completed} 个番茄钟</small>
           </div>
           <div className={styles.focusDialCard}>
             <div className={styles.focusDial}>

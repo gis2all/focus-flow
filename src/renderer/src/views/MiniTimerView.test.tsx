@@ -13,6 +13,8 @@ const createSnapshot = (input: Partial<TimerSnapshot> = {}): TimerSnapshot => ({
   durationMs: 25 * 60_000,
   remainingMs: 25 * 60_000,
   focusCount: 0,
+  unboundFocusCount: 0,
+  lastFocusTaskId: null,
   sessionId: null,
   updatedAt: 0,
   elapsedMs: 0,

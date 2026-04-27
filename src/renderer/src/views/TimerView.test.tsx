@@ -1,9 +1,9 @@
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, test } from 'vitest'
 import { defaultSettings } from '@shared/defaults'
-import type { TimerSnapshot } from '@shared/types'
+import type { TaskBoardSnapshot, TimerSnapshot } from '@shared/types'
 import { TimerView, getPrimaryTimerAction } from './TimerView'
-import { getSmoothedTimerProgress } from '../viewModel'
+import { getSmoothedTimerProgress, resolveTimerPomodoroDisplay } from '../viewModel'
 
 const createSnapshot = (input: Partial<TimerSnapshot> = {}): TimerSnapshot => ({
   status: 'idle',
@@ -14,6 +14,8 @@ const createSnapshot = (input: Partial<TimerSnapshot> = {}): TimerSnapshot => ({
   durationMs: 25 * 60_000,
   remainingMs: 25 * 60_000,
   focusCount: 0,
+  unboundFocusCount: 0,
+  lastFocusTaskId: null,
   sessionId: null,
   updatedAt: 0,
   elapsedMs: 0,
@@ -22,6 +24,37 @@ const createSnapshot = (input: Partial<TimerSnapshot> = {}): TimerSnapshot => ({
 })
 
 const noopAsync = async (): Promise<void> => undefined
+
+const taskBoard: TaskBoardSnapshot = {
+  counts: {
+    all: 2,
+    active: 2,
+    completed: 0
+  },
+  activeItems: [
+    {
+      id: 'task-1',
+      title: '任务 A',
+      sortOrder: 1,
+      completedAt: null,
+      createdAt: '2026-04-25T09:00:00.000Z',
+      updatedAt: '2026-04-25T09:00:00.000Z',
+      focusMinutes: 25,
+      completedPomodoros: 1
+    },
+    {
+      id: 'task-2',
+      title: '任务 B',
+      sortOrder: 2,
+      completedAt: null,
+      createdAt: '2026-04-25T09:00:00.000Z',
+      updatedAt: '2026-04-25T09:00:00.000Z',
+      focusMinutes: 50,
+      completedPomodoros: 4
+    }
+  ],
+  completedItems: []
+}
 
 describe('TimerView', () => {
   test('computes smooth timer progress linearly while running', () => {
@@ -185,5 +218,98 @@ describe('TimerView', () => {
     expect(html).toContain('长休进度')
     expect(html).toContain('1/5轮')
     expect(html).not.toContain('>1/5<')
+  })
+
+  test('derives task-bound pomodoro display from the bound task instead of global focus count', () => {
+    const display = resolveTimerPomodoroDisplay(
+      createSnapshot({
+        status: 'running',
+        phase: 'focus',
+        taskId: 'task-1',
+        focusCount: 7
+      } as any),
+      taskBoard
+    )
+
+    expect(display).toEqual({
+      ordinal: 2,
+      completed: 1
+    })
+  })
+
+  test('derives unbound pomodoro display from the unbound counter when no task is bound', () => {
+    const display = resolveTimerPomodoroDisplay(
+      createSnapshot({
+        status: 'running',
+        phase: 'focus',
+        taskId: null,
+        focusCount: 7,
+        unboundFocusCount: 2
+      } as any),
+      taskBoard
+    )
+
+    expect(display).toEqual({
+      ordinal: 3,
+      completed: 2
+    })
+  })
+
+  test('keeps using the last completed task during break phases', () => {
+    const display = resolveTimerPomodoroDisplay(
+      createSnapshot({
+        status: 'running',
+        phase: 'shortBreak',
+        taskId: null,
+        focusCount: 7,
+        unboundFocusCount: 2,
+        lastFocusTaskId: 'task-1'
+      } as any),
+      taskBoard
+    )
+
+    expect(display).toEqual({
+      ordinal: 2,
+      completed: 1
+    })
+  })
+
+  test('falls back to unbound display when the last task context no longer exists', () => {
+    const display = resolveTimerPomodoroDisplay(
+      createSnapshot({
+        status: 'running',
+        phase: 'shortBreak',
+        taskId: null,
+        focusCount: 7,
+        unboundFocusCount: 2,
+        lastFocusTaskId: 'deleted-task'
+      } as any),
+      taskBoard
+    )
+
+    expect(display).toEqual({
+      ordinal: 3,
+      completed: 2
+    })
+  })
+
+  test('renders task pomodoro copy from display props while keeping long-break progress global', () => {
+    const props = {
+      currentTaskTitle: '任务 A',
+      progressPercent: 25,
+      settings: { ...defaultSettings, longBreakInterval: 5 },
+      snapshot: createSnapshot({ status: 'running', phase: 'focus', focusCount: 7, progress: 0.25 }),
+      pomodoroDisplay: { ordinal: 2, completed: 1 },
+      startTimer: noopAsync,
+      updateSettings: noopAsync
+    } as any
+
+    const html = renderToStaticMarkup(<TimerView {...props} />)
+
+    expect(html).toContain('第 2 个番茄钟')
+    expect(html).toContain('已专注：1 个番茄钟')
+    expect(html).not.toContain('第 8 个番茄钟')
+    expect(html).not.toContain('已专注：7 个番茄钟')
+    expect(html).toContain('2/5轮')
   })
 })

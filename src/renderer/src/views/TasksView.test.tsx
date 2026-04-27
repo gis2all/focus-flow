@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, test } from 'vitest'
 import type { TaskBoardSnapshot, TimerPhase, TimerStatus } from '@shared/types'
-import { getTaskTitleTooltipLayout, isTaskTitleOverflowing, TasksView } from './TasksView'
+import { getTaskTitleTooltipLayout, isTaskTitleOverflowing, resolveTaskBindAction, TasksView } from './TasksView'
 
 const LONG_TASK_TITLE = '这是一个很长很长的任务标题，用来验证悬浮时可以看到完整内容'
 
@@ -61,6 +61,28 @@ const noop = (): void => undefined
 const createTimerContext = (status: TimerStatus, phase: TimerPhase) => ({ status, phase })
 
 describe('TasksView', () => {
+  test('requires confirmation before rebinding the current focus to another task', () => {
+    expect(
+      resolveTaskBindAction({
+        canBindCurrentTask: true,
+        currentTimerTaskId: 'task-a',
+        rowId: 'task-b',
+        timerContext: createTimerContext('running', 'focus')
+      })
+    ).toEqual({ kind: 'confirmRebind' })
+  })
+
+  test('binds directly when the current focus session has no bound task yet', () => {
+    expect(
+      resolveTaskBindAction({
+        canBindCurrentTask: true,
+        currentTimerTaskId: null,
+        rowId: 'task-b',
+        timerContext: createTimerContext('running', 'focus')
+      })
+    ).toEqual({ kind: 'bind' })
+  })
+
   test('仅在任务标题实际被截断时才显示 tooltip', () => {
     expect(isTaskTitleOverflowing({ clientWidth: 180, scrollWidth: 181 })).toBe(true)
     expect(isTaskTitleOverflowing({ clientWidth: 180, scrollWidth: 180 })).toBe(false)

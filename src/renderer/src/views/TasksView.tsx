@@ -26,9 +26,50 @@ interface TasksViewProps {
 
 type ConfirmDialogState =
   | { kind: 'unbind'; taskTitle: string }
+  | { kind: 'rebind'; previousTaskTitle: string; taskId: string; taskTitle: string }
   | { kind: 'delete'; taskId: string; taskTitle: string }
   | { kind: 'startFocusWithTask'; taskId: string; taskTitle: string }
   | null
+
+type TaskBindAction =
+  | { kind: 'unbind' }
+  | { kind: 'rebind' }
+  | { kind: 'bind' }
+  | { kind: 'startFocusWithTask' }
+  | { kind: 'confirmRebind' }
+  | { kind: 'confirmStartFocusWithTask' }
+
+interface ResolveTaskBindActionInput {
+  canBindCurrentTask: boolean
+  currentTimerTaskId: string | null
+  rowId: string
+  timerContext: Pick<TimerSnapshot, 'status' | 'phase'>
+}
+
+export const resolveTaskBindAction = ({
+  canBindCurrentTask,
+  currentTimerTaskId,
+  rowId,
+  timerContext
+}: ResolveTaskBindActionInput): TaskBindAction => {
+  if (canBindCurrentTask) {
+    if (currentTimerTaskId === rowId) {
+      return { kind: 'unbind' }
+    }
+
+    if (currentTimerTaskId !== null) {
+      return { kind: 'confirmRebind' }
+    }
+
+    return { kind: 'bind' }
+  }
+
+  if (shouldConfirmTimerAction(timerContext)) {
+    return { kind: 'confirmStartFocusWithTask' }
+  }
+
+  return { kind: 'startFocusWithTask' }
+}
 
 const tabLabel: Record<TaskViewTab, string> = {
   all: '全部',
@@ -264,6 +305,8 @@ export const TasksView = ({
     try {
       if (confirmDialog.kind === 'unbind') {
         await bindCurrentTask(null)
+      } else if (confirmDialog.kind === 'rebind') {
+        await bindCurrentTask(confirmDialog.taskId)
       } else if (confirmDialog.kind === 'startFocusWithTask') {
         await startFocusWithTask(confirmDialog.taskId)
       } else {
@@ -455,18 +498,38 @@ export const TasksView = ({
                         className={`${styles.taskBindButton} ${isBoundToCurrentTimer ? styles.taskBindButtonActive : ''}`}
                         onClick={(event) => {
                           event.stopPropagation()
-                          if (isBoundToCurrentTimer) {
+                          const bindAction = resolveTaskBindAction({
+                            canBindCurrentTask,
+                            currentTimerTaskId,
+                            rowId: row.id,
+                            timerContext
+                          })
+
+                          if (bindAction.kind === 'unbind') {
                             setConfirmDialog({ kind: 'unbind', taskTitle: row.title })
                             return
                           }
-                          if (!canBindCurrentTask) {
-                            if (shouldConfirmTimerAction(timerContext)) {
-                              setConfirmDialog({ kind: 'startFocusWithTask', taskId: row.id, taskTitle: row.title })
-                              return
-                            }
+
+                          if (bindAction.kind === 'confirmRebind') {
+                            setConfirmDialog({
+                              kind: 'rebind',
+                              previousTaskTitle: rowById.get(currentTimerTaskId ?? '')?.title ?? '当前任务',
+                              taskId: row.id,
+                              taskTitle: row.title
+                            })
+                            return
+                          }
+
+                          if (bindAction.kind === 'confirmStartFocusWithTask') {
+                            setConfirmDialog({ kind: 'startFocusWithTask', taskId: row.id, taskTitle: row.title })
+                            return
+                          }
+
+                          if (bindAction.kind === 'startFocusWithTask') {
                             void startFocusWithTask(row.id)
                             return
                           }
+
                           void bindCurrentTask(row.id)
                         }}
                         type="button"
@@ -515,6 +578,8 @@ export const TasksView = ({
           body={
             confirmDialog.kind === 'unbind'
               ? '解绑后当前专注将不再关联该任务。'
+              : confirmDialog.kind === 'rebind'
+                ? `切换后，当前这轮专注后续记录将关联到任务「${confirmDialog.taskTitle}」，不再继续绑定「${confirmDialog.previousTaskTitle}」。`
               : confirmDialog.kind === 'delete'
                 ? '删除后任务会从列表移除，历史专注统计会按“已删除任务”展示。'
                 : getTimerActionConfirmation({
@@ -525,6 +590,8 @@ export const TasksView = ({
           confirmLabel={
             confirmDialog.kind === 'unbind'
               ? '确认解绑'
+              : confirmDialog.kind === 'rebind'
+                ? '确认切换绑定'
               : confirmDialog.kind === 'delete'
                 ? '确认删除'
                 : getTimerActionConfirmation({
@@ -538,6 +605,8 @@ export const TasksView = ({
           subtitle={
             confirmDialog.kind === 'unbind'
               ? '解绑确认'
+              : confirmDialog.kind === 'rebind'
+                ? '绑定确认'
               : confirmDialog.kind === 'delete'
                 ? '删除确认'
                 : getTimerActionConfirmation({
@@ -548,6 +617,8 @@ export const TasksView = ({
           title={
             confirmDialog.kind === 'unbind'
               ? `确认解绑任务「${confirmDialog.taskTitle}」吗？`
+              : confirmDialog.kind === 'rebind'
+                ? `确认将当前专注从任务「${confirmDialog.previousTaskTitle}」切换绑定到「${confirmDialog.taskTitle}」吗？`
               : confirmDialog.kind === 'delete'
                 ? `确认删除任务「${confirmDialog.taskTitle}」吗？`
                 : getTimerActionConfirmation({
@@ -555,7 +626,7 @@ export const TasksView = ({
                     taskTitle: confirmDialog.taskTitle
                   }).title
           }
-          tone={confirmDialog.kind === 'unbind' ? 'primary' : 'danger'}
+          tone={confirmDialog.kind === 'delete' ? 'danger' : 'primary'}
         />
       ) : null}
     </div>

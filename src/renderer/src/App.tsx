@@ -16,6 +16,7 @@ import {
   getSmoothedTimerProgress,
   resolveCurrentTaskTitle,
   resolveEffectiveTheme,
+  resolveTimerPomodoroDisplay,
   type TaskViewTab
 } from './viewModel'
 
@@ -155,6 +156,7 @@ export const App = ({ windowMode }: AppProps): ReactElement => {
   const progressPercent = displayProgress * 100
   const taskTitleById = useMemo(() => buildTaskTitleById(taskBoard), [taskBoard])
   const currentTaskTitle = resolveCurrentTaskTitle(snapshot, taskTitleById)
+  const pomodoroDisplay = useMemo(() => resolveTimerPomodoroDisplay(snapshot, taskBoard), [snapshot, taskBoard])
 
   const createTask = async (): Promise<void> => {
     if (!newTaskTitle.trim()) return
@@ -210,6 +212,7 @@ export const App = ({ windowMode }: AppProps): ReactElement => {
       return (
         <TimerView
           currentTaskTitle={currentTaskTitle}
+          pomodoroDisplay={pomodoroDisplay}
           progressPercent={progressPercent}
           settings={settings}
           snapshot={snapshot}

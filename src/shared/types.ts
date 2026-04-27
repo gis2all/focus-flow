@@ -76,6 +76,8 @@ export interface TimerState {
   durationMs: number
   remainingMs: number
   focusCount: number
+  unboundFocusCount: number
+  lastFocusTaskId: string | null
   sessionId: string | null
   updatedAt: number
 }

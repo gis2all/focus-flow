@@ -106,14 +106,14 @@ export const MiniTimerView = ({ activeTheme, settings, snapshot }: MiniTimerView
     >
       <div className={styles.miniWindowShell}>
         <header className={styles.miniWindowTopBar}>
-          <div className={styles.miniDragRegion} aria-label="Drag mini window" onPointerDown={handleDragPointerDown}>
+          <div className={styles.miniDragRegion} aria-label="拖动小窗" onPointerDown={handleDragPointerDown}>
             <GripDotsIcon className={styles.miniDragIcon} />
           </div>
           <button
             className={styles.miniReturnButton}
             onClick={() => void window.focusFlow.system.showWindow()}
             type="button"
-            aria-label="Return to main window"
+            aria-label="返回主窗口"
           >
             <ReturnArrowIcon className={styles.miniReturnIcon} />
           </button>
@@ -123,7 +123,7 @@ export const MiniTimerView = ({ activeTheme, settings, snapshot }: MiniTimerView
               aria-hidden="true"
             >
               <span className={`${styles.miniStatusHalo} ${isRunning ? styles.miniStatusHaloRunning : ''}`} />
-              <span className={styles.miniStatusCore} />
+              <span className={`${styles.miniStatusCore} ${isRunning ? styles.miniStatusCoreRunning : ''}`} />
             </span>
             <span
               className={`${styles.miniStatusLabel} ${shouldUseIconToneStatusLabel ? styles.miniStatusLabelSubtle : ''} ${shouldMuteStatusLabel ? styles.miniStatusLabelMuted : ''}`}

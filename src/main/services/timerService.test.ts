@@ -128,6 +128,12 @@ const createSelectionService = (initialValue: string | null): Pick<TaskRepositor
   }
 }
 
+const readExtendedTimerState = <T extends object>(value: T): T & { unboundFocusCount: number; lastFocusTaskId: string | null } =>
+  value as T & {
+    unboundFocusCount: number
+    lastFocusTaskId: string | null
+  }
+
 describe('TimerService', () => {
   test('starts an unbound focus session when no task is provided', async () => {
     const clock = new FakeClock('2026-04-25T09:00:00.000Z')
@@ -266,6 +272,8 @@ describe('TimerService', () => {
       durationMs: 25 * 60_000,
       remainingMs: 12 * 60_000,
       focusCount: 2,
+      unboundFocusCount: 0,
+      lastFocusTaskId: null,
       sessionId: 'session-1',
       updatedAt: new Date('2026-04-25T09:13:00.000Z').getTime()
     })
@@ -285,6 +293,41 @@ describe('TimerService', () => {
     expect(snapshot.status).toBe('paused')
     expect(snapshot.remainingMs).toBe(12 * 60_000)
     expect(snapshot.focusCount).toBe(2)
+  })
+
+  test('defaults missing runtime display fields when restoring an older runtime state', async () => {
+    const clock = new FakeClock('2026-04-25T09:20:00.000Z')
+    const repos = makeRepositories()
+    const selection = createSelectionService('task-1')
+    repos.runtimeRepository.get = async () =>
+      ({
+        status: 'paused',
+        phase: 'focus',
+        taskId: 'task-1',
+        startedAt: null,
+        targetEndAt: null,
+        durationMs: 25 * 60_000,
+        remainingMs: 12 * 60_000,
+        focusCount: 2,
+        sessionId: 'session-1',
+        updatedAt: new Date('2026-04-25T09:13:00.000Z').getTime()
+      }) as TimerState
+    const service = new TimerService({
+      sessions: repos.sessionRepository,
+      settings: repos.settingsRepository,
+      runtime: repos.runtimeRepository,
+      events: repos.eventRepository,
+      tasks: selection,
+      clock,
+      notifier: { showTimerFinished: async () => undefined },
+      sound: { playTimerFinished: async () => undefined }
+    })
+
+    const snapshot = readExtendedTimerState(await service.initialize())
+
+    expect(snapshot.status).toBe('paused')
+    expect(snapshot.unboundFocusCount).toBe(0)
+    expect(snapshot.lastFocusTaskId).toBeNull()
   })
 
   test('uses runtime state to mark overdue running timers for confirmation', async () => {
@@ -307,6 +350,8 @@ describe('TimerService', () => {
       durationMs: 25 * 60_000,
       remainingMs: 25 * 60_000,
       focusCount: 1,
+      unboundFocusCount: 0,
+      lastFocusTaskId: null,
       sessionId: 'session-1',
       updatedAt: new Date('2026-04-25T09:00:00.000Z').getTime()
     })
@@ -554,6 +599,50 @@ describe('TimerService', () => {
     expect(repos.sessions[0].taskId).toBe('task-2')
   })
 
+  test('binding a running focus session resets the unbound display counter', async () => {
+    const clock = new FakeClock('2026-04-25T09:03:00.000Z')
+    const repos = makeRepositories(
+      createSession({
+        id: 'session-1',
+        phase: 'focus',
+        taskId: null,
+        startedAt: '2026-04-25T09:00:00.000Z',
+        durationMs: 25 * 60_000
+      })
+    )
+    const selection = createSelectionService('task-1')
+    await repos.runtimeRepository.save({
+      status: 'running',
+      phase: 'focus',
+      taskId: null,
+      startedAt: new Date('2026-04-25T09:00:00.000Z').getTime(),
+      targetEndAt: new Date('2026-04-25T09:25:00.000Z').getTime(),
+      durationMs: 25 * 60_000,
+      remainingMs: 22 * 60_000,
+      focusCount: 3,
+      sessionId: 'session-1',
+      updatedAt: new Date('2026-04-25T09:03:00.000Z').getTime(),
+      unboundFocusCount: 2,
+      lastFocusTaskId: null
+    } as TimerState)
+    const service = new TimerService({
+      sessions: repos.sessionRepository,
+      settings: repos.settingsRepository,
+      runtime: repos.runtimeRepository,
+      events: repos.eventRepository,
+      tasks: selection,
+      clock,
+      notifier: { showTimerFinished: async () => undefined },
+      sound: { playTimerFinished: async () => undefined }
+    })
+
+    await service.initialize()
+    const snapshot = readExtendedTimerState(await service.bindCurrentTask('task-1'))
+
+    expect(snapshot.taskId).toBe('task-1')
+    expect(snapshot.unboundFocusCount).toBe(0)
+  })
+
   test('unbinds the running focus session when binding task is null', async () => {
     const clock = new FakeClock('2026-04-25T09:00:00.000Z')
     const repos = makeRepositories()
@@ -576,6 +665,50 @@ describe('TimerService', () => {
 
     expect(snapshot.taskId).toBeNull()
     expect(repos.sessions[0].taskId).toBeNull()
+  })
+
+  test('unbinding a running focus session resets the unbound display counter', async () => {
+    const clock = new FakeClock('2026-04-25T09:03:00.000Z')
+    const repos = makeRepositories(
+      createSession({
+        id: 'session-1',
+        phase: 'focus',
+        taskId: 'task-1',
+        startedAt: '2026-04-25T09:00:00.000Z',
+        durationMs: 25 * 60_000
+      })
+    )
+    const selection = createSelectionService('task-1')
+    await repos.runtimeRepository.save({
+      status: 'running',
+      phase: 'focus',
+      taskId: 'task-1',
+      startedAt: new Date('2026-04-25T09:00:00.000Z').getTime(),
+      targetEndAt: new Date('2026-04-25T09:25:00.000Z').getTime(),
+      durationMs: 25 * 60_000,
+      remainingMs: 22 * 60_000,
+      focusCount: 3,
+      sessionId: 'session-1',
+      updatedAt: new Date('2026-04-25T09:03:00.000Z').getTime(),
+      unboundFocusCount: 2,
+      lastFocusTaskId: null
+    } as TimerState)
+    const service = new TimerService({
+      sessions: repos.sessionRepository,
+      settings: repos.settingsRepository,
+      runtime: repos.runtimeRepository,
+      events: repos.eventRepository,
+      tasks: selection,
+      clock,
+      notifier: { showTimerFinished: async () => undefined },
+      sound: { playTimerFinished: async () => undefined }
+    })
+
+    await service.initialize()
+    const snapshot = readExtendedTimerState(await service.bindCurrentTask(null))
+
+    expect(snapshot.taskId).toBeNull()
+    expect(snapshot.unboundFocusCount).toBe(0)
   })
 
   test('rejects binding when the current timer is not a running focus session', async () => {
@@ -699,5 +832,50 @@ describe('TimerService', () => {
     expect(snapshot.status).toBe('completed')
     expect(repos.sessions[0].completed).toBe(true)
     expect(repos.sessions[0].completionReason).toBe('completed')
+  })
+
+  test('reset clears unbound display count and last task context', async () => {
+    const clock = new FakeClock('2026-04-25T09:10:00.000Z')
+    const repos = makeRepositories(
+      createSession({
+        id: 'session-1',
+        phase: 'focus',
+        taskId: 'task-1',
+        startedAt: '2026-04-25T09:00:00.000Z',
+        durationMs: 25 * 60_000
+      })
+    )
+    const selection = createSelectionService('task-1')
+    await repos.runtimeRepository.save({
+      status: 'paused',
+      phase: 'focus',
+      taskId: 'task-1',
+      startedAt: null,
+      targetEndAt: null,
+      durationMs: 25 * 60_000,
+      remainingMs: 15 * 60_000,
+      focusCount: 4,
+      sessionId: 'session-1',
+      updatedAt: new Date('2026-04-25T09:10:00.000Z').getTime(),
+      unboundFocusCount: 2,
+      lastFocusTaskId: 'task-1'
+    } as TimerState)
+    const service = new TimerService({
+      sessions: repos.sessionRepository,
+      settings: repos.settingsRepository,
+      runtime: repos.runtimeRepository,
+      events: repos.eventRepository,
+      tasks: selection,
+      clock,
+      notifier: { showTimerFinished: async () => undefined },
+      sound: { playTimerFinished: async () => undefined }
+    })
+
+    await service.initialize()
+    const snapshot = readExtendedTimerState(await service.reset())
+
+    expect(snapshot.status).toBe('idle')
+    expect(snapshot.unboundFocusCount).toBe(0)
+    expect(snapshot.lastFocusTaskId).toBeNull()
   })
 })

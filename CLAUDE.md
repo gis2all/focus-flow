@@ -6,7 +6,6 @@
 - 定位：本地优先的 Windows 桌面番茄钟客户端
 - 技术栈：`Electron 34 + electron-vite 5 + React 19 + TypeScript 5 + SQLite(sql.js) + electron-log`
 - 包管理器：`npm`
-- 当前分支：`ui`
 - 远端仓库：`git@github.com:gis2all/focus-flow.git`
 - 本地数据库：运行时创建在 `app.getPath('userData')/focusflow.sqlite`
 - 最近一次提交：请以 `git log -1 --oneline` 的实时结果为准
@@ -16,6 +15,21 @@
 1. 先把 V1 功能闭环做完整。
 2. 再继续按参考图收敛 UI 细节。
 3. 所有改动优先保持低耦合分层，不把业务规则重新塞回 React 页面。
+
+最近已落地到当前工作区的进展：
+
+- 统计页“任务时长”已经收紧为真正的“今日全部已完成任务时长”口径：
+  - 只看今天完成的任务
+  - 只累计今天已完成的 `focus` session
+  - 只保留当前仍存在且时长大于 0 的任务
+  - 列表展示全部符合条件的任务，不再截断 top 5
+- 计时页顶部“第 N 个番茄钟”和底部“已专注 X 个番茄钟”已经切到任务/未绑定双口径显示：
+  - 绑定任务时按任务自己的 `completedPomodoros`
+  - 未绑定时按独立的 `unboundFocusCount`
+  - 短休 / 长休阶段沿用刚完成那轮 focus 的任务上下文
+  - 短休 / 长休 / 自动切换节奏仍然继续按全局 `focusCount`
+- `timer_runtime.state_json` 已经兼容新的显示字段 `unboundFocusCount` 和 `lastFocusTaskId`，旧 runtime JSON 缺字段时会以 `0 / null` 默认值恢复
+- 小窗顶部拖动区与返回主窗口按钮当前使用中文 `aria-label`，运行态状态灯包含 badge / halo / core 的运行态样式
 
 ## 当前产品范围
 
@@ -59,6 +73,10 @@ V1 当前已实现或已落地到代码的核心能力：
 - 计时页里的 `开始专注 / 跳过 / 短休 / 长休` 在 `running / paused` 时也需要先确认。
 - `idle / completed` 状态不弹风险确认，直接执行操作。
 - 待办页当前标签页状态由 `App.tsx` 持有，切去别的页面再回来时会保留上次的 `全部 / 进行中 / 已完成` 选择。
+- 计时页顶部“第 N 个番茄钟”和底部“已专注 X 个番茄钟”当前是显示口径，不再直接等于全局 `focusCount`。
+- 绑定任务时，番茄钟显示口径基于任务自己的 `completedPomodoros`；focus 阶段显示“下一个番茄钟序号”，休息阶段沿用 `lastFocusTaskId`。
+- 未绑定时，番茄钟显示口径基于 `snapshot.unboundFocusCount`；绑定任务、解绑任务和 reset 都会把这部分未绑定显示计数清零。
+- 全局 `focusCount` 继续只承担流程节奏语义：短休 / 长休判定、长休进度与自动切换都仍然以它为准。
 - 右下角“长休进度”圆环的进度显示在渲染层做本地时间插值：
   - `running` 时基于 `startedAt / targetEndAt / durationMs` 连续平滑推进
   - `paused / idle / completed` 时回退到快照静态值
@@ -165,6 +183,7 @@ SQLite 当前核心表：
   - 应用设置
 - `timer_runtime`
   - 当前计时器运行快照，用于恢复
+  - `state_json` 中当前包含显示口径相关字段 `focusCount`、`unboundFocusCount`、`lastFocusTaskId`
 - `app_events`
   - 关键事件日志，用于恢复与排查
 
@@ -194,7 +213,8 @@ SQLite 当前核心表：
 注意：
 
 - 如果历史 session 仍引用已删除任务，部分 UI 会使用“已删除任务”兜底。
-- 今日统计里的任务榜单，当前按“今天已完成的 focus session + 当前仍存在的任务”聚合。
+- 今日统计里的任务榜单，当前按“今天完成的任务 + 今天已完成的 focus session + 当前仍存在的任务”聚合。
+- 今日统计里的任务榜单只保留分钟数大于 0 的任务，并按分钟数降序展示全部符合条件的项目。
 - 小窗位置当前不入库、不进设置表，只保存在主进程内存变量 `lastMiniWindowPosition`。
 
 ## IPC / Preload 能力概览
@@ -340,9 +360,14 @@ SQLite 当前核心表：
   - 绑定已删 -> `已删除任务`
   - `focus + idle` -> `当前尚未开始专注`
   - 其他未绑定阶段 -> `当前阶段未绑定任务`
+- 当前任务卡片不再显示“当前任务”前缀，也不再显示“预计专注”；当前只显示任务标题和 `已专注：X 个番茄钟`。
+- 顶部“第 N 个番茄钟”和底部“已专注 X 个番茄钟”来自 renderer 层派生的 `pomodoroDisplay`：
+  - 绑定任务 -> 基于任务 `completedPomodoros`
+  - 未绑定 -> 基于 `snapshot.unboundFocusCount`
+  - 休息阶段 -> 优先沿用 `snapshot.lastFocusTaskId`，找不到任务时回退到未绑定口径
 - 长休进度右下角圆环：
   - 文案为 `长休进度`
-  - 数字为 `{longBreakProgress}/{longBreakInterval}`
+  - 数字为 `{longBreakProgress}/{longBreakInterval}轮`
   - `longBreakProgress` 基于 `focusCount % longBreakInterval` 计算
 - 计时风险确认弹窗当前覆盖：
   - `开始专注`
@@ -386,8 +411,10 @@ SQLite 当前核心表：
 当前任务时长区域的统计口径：
 
 - 只看今天
+- 只看今天完成的任务
 - 只统计已完成的 `focus` session
-- 只保留当前仍存在的任务
+- 只保留当前仍存在且分钟数大于 0 的任务
+- 列表按分钟数降序展示全部符合条件的任务，不再截断 top 5
 
 ## 设置页现状
 

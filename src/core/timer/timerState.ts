@@ -33,23 +33,28 @@ export const createIdleTimer = (settings: AppSettings, now: number): TimerState 
   durationMs: phaseDurationMs('focus', settings),
   remainingMs: phaseDurationMs('focus', settings),
   focusCount: 0,
+  unboundFocusCount: 0,
+  lastFocusTaskId: null,
   sessionId: null,
   updatedAt: now
 })
 
 export const startTimer = (state: TimerState, input: StartTimerInput): TimerState => {
   const durationMs = phaseDurationMs(input.phase, input.settings)
+  const nextTaskId = input.taskId ?? null
+  const isTaskBoundFocus = input.phase === 'focus' && nextTaskId !== null
 
   return {
     ...state,
     status: 'running',
     phase: input.phase,
-    taskId: input.taskId ?? null,
+    taskId: nextTaskId,
     sessionId: input.sessionId ?? null,
     startedAt: input.now,
     targetEndAt: input.now + durationMs,
     durationMs,
     remainingMs: durationMs,
+    unboundFocusCount: isTaskBoundFocus ? 0 : state.unboundFocusCount,
     updatedAt: input.now
   }
 }
@@ -110,6 +115,9 @@ export const completeTimer = (state: TimerState, now: number): TimerState => ({
   remainingMs: 0,
   targetEndAt: now,
   focusCount: state.phase === 'focus' ? state.focusCount + 1 : state.focusCount,
+  unboundFocusCount:
+    state.phase === 'focus' && state.taskId === null ? state.unboundFocusCount + 1 : state.unboundFocusCount,
+  lastFocusTaskId: state.phase === 'focus' ? state.taskId : state.lastFocusTaskId,
   updatedAt: now
 })
 
@@ -132,6 +140,8 @@ export const restoreTimerFromSession = (input: RestoreTimerInput): RestoreTimerR
     durationMs: input.session.durationMs,
     remainingMs,
     focusCount: 0,
+    unboundFocusCount: 0,
+    lastFocusTaskId: null,
     updatedAt: input.now
   }
 

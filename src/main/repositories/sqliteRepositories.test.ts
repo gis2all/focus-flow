@@ -194,6 +194,8 @@ describe('sqlite repositories', () => {
       durationMs: 25 * 60_000,
       remainingMs: 11 * 60_000,
       focusCount: 3,
+      unboundFocusCount: 0,
+      lastFocusTaskId: null,
       sessionId: 'session-1',
       updatedAt: new Date('2026-04-25T09:14:00.000Z').getTime()
     })
@@ -202,7 +204,9 @@ describe('sqlite repositories', () => {
       expect.objectContaining({
         status: 'paused',
         remainingMs: 11 * 60_000,
-        focusCount: 3
+        focusCount: 3,
+        unboundFocusCount: 0,
+        lastFocusTaskId: null
       })
     )
   })
