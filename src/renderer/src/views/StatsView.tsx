@@ -247,7 +247,7 @@ export const StatsView = ({
             </div>
 
             <div className={styles.calendarGrid} role="grid">
-              {calendarGridItems.map((item) => {
+              {calendarGridItems.map((item, index) => {
                 if (!item.day) {
                   return <span aria-hidden="true" data-calendar-placeholder="true" key={item.key} />
                 }
@@ -256,11 +256,13 @@ export const StatsView = ({
                 const isToday = day.date === todayKey
                 const breakMinutes = day.shortBreakMinutes + day.longBreakMinutes
                 const heatLevel = getCalendarHeatLevel(day, monthStats.maxFocusMinutes)
+                const columnIndex = index % 7
 
                 return (
                   <button
                     aria-label={getCalendarDayAriaLabel(day, isToday)}
                     className={styles.calendarDay}
+                    data-calendar-column={columnIndex}
                     data-calendar-date={day.date}
                     data-calendar-future={day.isFuture ? 'true' : undefined}
                     data-calendar-today={isToday ? 'true' : undefined}
@@ -281,14 +283,58 @@ export const StatsView = ({
                     ) : null}
                     {!day.isFuture ? (
                       <span className={styles.calendarTooltip} role="tooltip">
-                        <strong>
-                          {formatCalendarDateLabel(day.date)}
-                          {isToday ? ' · 今天' : ''}
+                        <strong className={styles.calendarTooltipDate}>
+                          <span>{formatCalendarDateLabel(day.date)}</span>
+                          {isToday ? <em className={styles.calendarTooltipToday}>今天</em> : null}
                         </strong>
-                        <span>专注 {formatDurationLabel(day.focusMinutes)}</span>
-                        <span>完成番茄 {day.completedPomodoros}</span>
-                        <span>完成任务 {day.completedTasks}</span>
-                        <span>休息 {formatDurationLabel(breakMinutes)}</span>
+                        <span className={styles.calendarTooltipMetric} data-calendar-tooltip-metric="focus">
+                          <span className={styles.calendarTooltipMetricLead}>
+                            <StatsSummaryClockIcon
+                              className={styles.calendarTooltipMetricIcon}
+                              data-calendar-tooltip-icon="focus"
+                            />
+                            <span className={styles.calendarTooltipMetricLabel}>专注</span>
+                          </span>
+                          <span className={styles.calendarTooltipMetricValue} data-calendar-tooltip-value="focus">
+                            {formatDurationLabel(day.focusMinutes)}
+                          </span>
+                        </span>
+                        <span className={styles.calendarTooltipMetric} data-calendar-tooltip-metric="pomodoros">
+                          <span className={styles.calendarTooltipMetricLead}>
+                            <StatsSummaryRocketIcon
+                              className={styles.calendarTooltipMetricIcon}
+                              data-calendar-tooltip-icon="pomodoros"
+                            />
+                            <span className={styles.calendarTooltipMetricLabel}>完成番茄</span>
+                          </span>
+                          <span className={styles.calendarTooltipMetricValue} data-calendar-tooltip-value="pomodoros">
+                            {day.completedPomodoros}
+                          </span>
+                        </span>
+                        <span className={styles.calendarTooltipMetric} data-calendar-tooltip-metric="tasks">
+                          <span className={styles.calendarTooltipMetricLead}>
+                            <StatsSummaryClipboardIcon
+                              className={styles.calendarTooltipMetricIcon}
+                              data-calendar-tooltip-icon="tasks"
+                            />
+                            <span className={styles.calendarTooltipMetricLabel}>完成任务</span>
+                          </span>
+                          <span className={styles.calendarTooltipMetricValue} data-calendar-tooltip-value="tasks">
+                            {day.completedTasks}
+                          </span>
+                        </span>
+                        <span className={styles.calendarTooltipMetric} data-calendar-tooltip-metric="rest">
+                          <span className={styles.calendarTooltipMetricLead}>
+                            <StatsSummaryCupIcon
+                              className={styles.calendarTooltipMetricIcon}
+                              data-calendar-tooltip-icon="rest"
+                            />
+                            <span className={styles.calendarTooltipMetricLabel}>休息</span>
+                          </span>
+                          <span className={styles.calendarTooltipMetricValue} data-calendar-tooltip-value="rest">
+                            {formatDurationLabel(breakMinutes)}
+                          </span>
+                        </span>
                       </span>
                     ) : null}
                   </button>

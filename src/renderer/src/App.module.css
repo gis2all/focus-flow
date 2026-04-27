@@ -1748,7 +1748,7 @@
   position: relative;
   isolation: isolate;
   grid-template-rows: auto minmax(0, 1fr);
-  gap: 10px;
+  gap: 16px;
   background: var(--window-bg);
 }
 
@@ -2350,13 +2350,13 @@
 
 .calendarTooltip {
   position: absolute;
-  right: 50%;
-  bottom: calc(100% + 8px);
+  left: 0;
+  bottom: calc(100% + 10px);
   z-index: 5;
   display: grid;
-  gap: 3px;
-  min-width: 128px;
-  padding: 8px 9px;
+  gap: 4px;
+  min-width: 176px;
+  padding: 10px 12px;
   color: var(--text-1);
   text-align: left;
   pointer-events: none;
@@ -2368,28 +2368,78 @@
     0 12px 24px rgba(50, 83, 133, 0.16),
     inset 0 1px 0 rgba(255, 255, 255, 0.78);
   opacity: 0;
-  transform: translateX(50%) translateY(4px);
+  transform: translateY(4px);
   transition:
     opacity 0.14s ease,
     transform 0.14s ease;
   backdrop-filter: blur(18px) saturate(150%);
 }
 
-.calendarTooltip strong {
-  font-size: 11px;
+.calendarDay[data-calendar-column="5"] .calendarTooltip,
+.calendarDay[data-calendar-column="6"] .calendarTooltip {
+  right: 0;
+  left: auto;
+}
+
+.calendarTooltipDate {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 4px;
+  font-size: 12px;
   line-height: 1.2;
 }
 
-.calendarTooltip span {
+.calendarTooltipToday {
+  flex-shrink: 0;
+  color: var(--text-2);
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 700;
+}
+
+.calendarTooltipMetric {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   font-size: 10px;
   line-height: 1.15;
+}
+
+.calendarTooltipMetricLead {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.calendarTooltipMetricIcon {
+  flex-shrink: 0;
+  width: 12px;
+  height: 12px;
+  color: var(--accent);
+}
+
+.calendarTooltipMetricLabel {
+  color: var(--text-2);
+}
+
+.calendarTooltipMetricValue {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.1;
+  text-align: right;
+  white-space: nowrap;
 }
 
 .calendarDay:hover .calendarTooltip,
 .calendarDay:focus .calendarTooltip,
 .calendarDay:focus-visible .calendarTooltip {
   opacity: 1;
-  transform: translateX(50%) translateY(0);
+  transform: translateY(0);
 }
 
 .calendarLegend {
