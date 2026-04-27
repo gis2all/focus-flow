@@ -3,7 +3,7 @@ import type { TaskBoardSnapshot, TimerSnapshot } from '@shared/types'
 import styles from '../App.module.css'
 import { ConfirmModal } from '../components/ConfirmModal'
 import { getTimerActionConfirmation, shouldConfirmTimerAction } from '../timerActionConfirmation'
-import { getTaskRowsForTab, reorderTaskIds, type TaskRowModel, type TaskViewTab } from '../viewModel'
+import { formatDurationLabel, getTaskRowsForTab, reorderTaskIds, type TaskRowModel, type TaskViewTab } from '../viewModel'
 
 interface TasksViewProps {
   activeTab: TaskViewTab
@@ -484,7 +484,7 @@ export const TasksView = ({
 
                   <div className={styles.taskStats}>
                     <span className={styles.taskStatsInline}>
-                      <span className={styles.taskStatsValue}>{`${row.focusMinutes}m`}</span>
+                      <span className={styles.taskStatsValue}>{formatDurationLabel(row.focusMinutes)}</span>
                       <span aria-hidden="true" className={styles.taskStatsSeparator} />
                       <span className={styles.taskStatsValue}>{`${row.completedPomodoros}个番茄钟`}</span>
                     </span>

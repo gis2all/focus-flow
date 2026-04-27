@@ -36,6 +36,10 @@ describe('renderer view model', () => {
   test('formats timer and duration labels for the FocusFlow desktop UI', () => {
     expect(formatTimerClock(25 * 60_000)).toBe('25:00')
     expect(formatTimerClock(61_000)).toBe('01:01')
+    expect(formatDurationLabel(0)).toBe('0m')
+    expect(formatDurationLabel(5)).toBe('5m')
+    expect(formatDurationLabel(60)).toBe('60m')
+    expect(formatDurationLabel(61)).toBe('1h 1m')
     expect(formatDurationLabel(225)).toBe('3h 45m')
   })
 

@@ -141,7 +141,7 @@ export const StatsView = ({
   ].sort((left, right) => right.minutes - left.minutes)
   const maxCompletedTaskMinutes = Math.max(...focusDurationRows.map((item) => item.minutes), 1)
   const halfHourlyPeak = Math.round(hourlyPeak / 2)
-  const yAxisTicks = [hourlyPeak > 0 ? `${hourlyPeak}m` : '0m', `${halfHourlyPeak}m`, '0']
+  const yAxisTicks = [formatDurationLabel(hourlyPeak), formatDurationLabel(halfHourlyPeak), formatDurationLabel(0)]
   const summaryCards = [
     {
       label: '专注时长',
@@ -352,7 +352,7 @@ export const StatsView = ({
             <section className={styles.chartPanel}>
               <div className={styles.statsPanelHeader}>
                 <h2>今日专注时长分布</h2>
-                <span>{hourlyPeak > 0 ? `峰值 ${hourlyPeak}m` : '暂无专注'}</span>
+                <span>{hourlyPeak > 0 ? `峰值 ${formatDurationLabel(hourlyPeak)}` : '暂无专注'}</span>
               </div>
               <div className={styles.hourChartFrame}>
                 <div className={styles.yAxisTicks} aria-label="今日专注分布刻度">
@@ -362,7 +362,7 @@ export const StatsView = ({
                 </div>
                 <div className={styles.hourChart}>
                   {stats.hourlyFocusMinutes.map((minutes, hour) => (
-                    <div aria-label={`${hour}:00 ${minutes}m`} className={styles.hourSlot} key={hour}>
+                    <div aria-label={`${hour}:00 ${formatDurationLabel(minutes)}`} className={styles.hourSlot} key={hour}>
                       <div style={{ height: getHourBarHeight(minutes, maxHourly) }} />
                     </div>
                   ))}
@@ -383,7 +383,7 @@ export const StatsView = ({
             <section className={styles.compositionPanel}>
               <div className={styles.statsPanelHeader}>
                 <h2>时间构成</h2>
-                <span>{totalTrackedRaw > 0 ? `${totalTrackedRaw}m` : '无记录'}</span>
+                <span>{formatDurationLabel(totalTrackedRaw)}</span>
               </div>
               <div className={styles.compositionBody}>
                 <div
@@ -394,17 +394,17 @@ export const StatsView = ({
                   <span>
                     <b />
                     <em>专注</em>
-                    <strong>{focusTotal}m</strong>
+                    <strong>{formatDurationLabel(focusTotal)}</strong>
                   </span>
                   <span>
                     <b />
                     <em>短休息</em>
-                    <strong>{shortBreakMinutes}m</strong>
+                    <strong>{formatDurationLabel(shortBreakMinutes)}</strong>
                   </span>
                   <span>
                     <b />
                     <em>长休息</em>
-                    <strong>{longBreakMinutes}m</strong>
+                    <strong>{formatDurationLabel(longBreakMinutes)}</strong>
                   </span>
                 </div>
               </div>
@@ -423,7 +423,7 @@ export const StatsView = ({
                     <div className={styles.rankRow} data-rank-kind={item.kind} key={item.taskId}>
                       <div className={styles.rankRowTop}>
                         <span>{item.title}</span>
-                        <strong>{item.minutes}m</strong>
+                        <strong>{formatDurationLabel(item.minutes)}</strong>
                       </div>
                       <div className={styles.rankTrack}>
                         <span style={{ width: getRankBarWidth(item.minutes, maxCompletedTaskMinutes) }} />

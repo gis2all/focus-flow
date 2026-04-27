@@ -19,7 +19,7 @@ const createBoard = (): TaskBoardSnapshot => ({
       completedAt: null,
       createdAt: '2026-04-25T09:00:00.000Z',
       updatedAt: '2026-04-25T09:00:00.000Z',
-      focusMinutes: 25,
+      focusMinutes: 75,
       completedPomodoros: 1
     },
     {
@@ -173,9 +173,9 @@ describe('TasksView', () => {
     expect(html).toContain('>绑定<')
     expect(html).toContain('>操作<')
     expect(html).toContain('>进行中<')
-    expect(html).toContain('25m')
+    expect(html).toContain('1h 15m')
     expect(html).toContain('1个番茄钟')
-    expect(html).not.toContain('25m | 1个番茄钟')
+    expect(html).not.toContain('1h 15m | 1个番茄钟')
     expect(html).toContain('>已绑定<')
     expect(html).toContain('>绑定<')
     expect(html).toContain('>删除<')

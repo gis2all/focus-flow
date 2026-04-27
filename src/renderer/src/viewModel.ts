@@ -24,8 +24,11 @@ export const formatTimerClock = (milliseconds: number): string => {
 }
 
 export const formatDurationLabel = (minutes: number): string => {
-  const hours = Math.floor(minutes / 60)
-  const rest = minutes % 60
+  const safeMinutes = Math.max(0, Math.floor(minutes))
+  if (safeMinutes <= 60) return `${safeMinutes}m`
+
+  const hours = Math.floor(safeMinutes / 60)
+  const rest = safeMinutes % 60
   return `${hours}h ${rest}m`
 }
 

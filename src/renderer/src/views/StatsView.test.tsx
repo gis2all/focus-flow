@@ -84,7 +84,7 @@ describe('StatsView', () => {
     expect(html).toContain('完成番茄')
     expect(html).toContain('任务完成数')
     expect(html).toContain('休息时长')
-    expect(html).toContain('0h 20m')
+    expect(html).toContain('20m')
     expect(html).toContain('短休息')
     expect(html).toContain('5m')
     expect(html).toContain('长休息')
@@ -99,7 +99,7 @@ describe('StatsView', () => {
             {
               taskId: 'task-a',
               title: '任务 A',
-              minutes: 40,
+              minutes: 75,
               status: 'completed'
             },
             {
@@ -140,9 +140,9 @@ describe('StatsView', () => {
     expect(html).toContain('专注时长')
     expect(html).toContain('今日已完成任务 + 未绑定专注')
     expect(html).toContain('峰值 50m')
-    expect(html).toContain('aria-label="今日专注分布刻度"><span>50m</span><span>25m</span><span>0</span>')
+    expect(html).toContain('aria-label="今日专注分布刻度"><span>50m</span><span>25m</span><span>0m</span>')
     expect(html).toContain('任务 A')
-    expect(html).toContain('40m')
+    expect(html).toContain('1h 15m')
     expect(html).toContain('25m')
     expect(html).toContain('0')
     expect(html).toContain('任务 B')
@@ -236,7 +236,7 @@ describe('StatsView', () => {
     expect(html).toContain('data-calendar-tooltip-value="tasks">2<')
     expect(html).toContain('data-calendar-tooltip-metric="rest"')
     expect(html).toContain('data-calendar-tooltip-icon="rest"')
-    expect(html).toContain('data-calendar-tooltip-value="rest">0h 15m<')
+    expect(html).toContain('data-calendar-tooltip-value="rest">15m<')
   })
 
   test('marks today in the calendar when the selected month contains the local current day', () => {

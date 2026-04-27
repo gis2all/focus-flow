@@ -168,8 +168,8 @@ describe('TimerView', () => {
     expect(pausedBreakHtml).toContain('继续休息')
     expect(pausedBreakHtml).toContain('暂停')
     expect(pausedBreakHtml).toContain('跳过')
-    expect(pausedBreakHtml).toContain('短休 · 5 分钟')
-    expect(pausedBreakHtml).toContain('长休 · 15 分钟')
+    expect(pausedBreakHtml).toContain('短休 · 5m')
+    expect(pausedBreakHtml).toContain('长休 · 15m')
 
     const idleHtml = renderToStaticMarkup(
       <TimerView
@@ -183,6 +183,22 @@ describe('TimerView', () => {
     )
 
     expect(idleHtml).toContain('开始专注')
+  })
+
+  test('formats long action button durations with the shared non-settings label rules', () => {
+    const html = renderToStaticMarkup(
+      <TimerView
+        currentTaskTitle="当前尚未开始专注"
+        progressPercent={0}
+        settings={{ ...defaultSettings, shortBreakMinutes: 60, longBreakMinutes: 75 }}
+        snapshot={createSnapshot({ status: 'idle', phase: 'focus' })}
+        startTimer={noopAsync}
+        updateSettings={noopAsync}
+      />
+    )
+
+    expect(html).toContain('短休 · 60m')
+    expect(html).toContain('长休 · 1h 15m')
   })
 
   test('renders the dial progress style from non-rounded progress values', () => {

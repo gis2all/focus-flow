@@ -10,7 +10,7 @@ import {
 } from '../components/AppIcons'
 import { ConfirmModal } from '../components/ConfirmModal'
 import { getTimerActionConfirmation, shouldConfirmTimerAction, type TimerActionConfirmationRequest } from '../timerActionConfirmation'
-import { formatTimerClock, type TimerPomodoroDisplay } from '../viewModel'
+import { formatDurationLabel, formatTimerClock, type TimerPomodoroDisplay } from '../viewModel'
 import styles from '../App.module.css'
 
 interface TimerViewProps {
@@ -197,7 +197,7 @@ export const TimerView = ({
           type="button"
         >
           <CoffeeCupIcon className={styles.timerActionIcon} />
-          <b>{`短休 · ${settings.shortBreakMinutes} 分钟`}</b>
+          <b>{`短休 · ${formatDurationLabel(settings.shortBreakMinutes)}`}</b>
         </button>
         <button
           className={styles.timerActionButton}
@@ -205,7 +205,7 @@ export const TimerView = ({
           type="button"
         >
           <LoungeChairIcon className={styles.timerActionIcon} />
-          <b>{`长休 · ${settings.longBreakMinutes} 分钟`}</b>
+          <b>{`长休 · ${formatDurationLabel(settings.longBreakMinutes)}`}</b>
         </button>
       </div>
 
