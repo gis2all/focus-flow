@@ -4,7 +4,9 @@
   "description": "A local-first Windows desktop Pomodoro timer.",
   "main": "output/build/main/index.js",
   "type": "module",
-  "author": "",
+  "author": {
+    "name": "Github Gis2all"
+  },
   "license": "MIT",
   "scripts": {
     "dev": "cmd /d /s /c \"set ELECTRON_RUN_AS_NODE=&& electron-vite dev --watch\"",
@@ -12,7 +14,7 @@
     "preview": "cmd /d /s /c \"set ELECTRON_RUN_AS_NODE=&& electron-vite preview\"",
     "test": "vitest run",
     "test:watch": "vitest",
-    "package": "npm run build && node ./package-windows-compat.mjs"
+    "package": "npm run build && node ./package-win.mjs"
   },
   "dependencies": {
     "electron-log": "^5.2.4",
@@ -65,7 +67,8 @@
       ]
     },
     "nsis": {
-      "artifactName": "focusflow-setup.${ext}"
+      "artifactName": "focusflow-setup.${ext}",
+      "uninstallDisplayName": "FocusFlow"
     },
     "portable": {
       "artifactName": "focusflow.${ext}"

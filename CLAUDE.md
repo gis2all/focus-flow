@@ -62,7 +62,7 @@ V1 当前已实现或已落地到代码的核心能力：
 - 主题能力：白天 / 黑暗 / 跟随系统
 - 单实例运行：通过 `app.requestSingleInstanceLock()` 保证不允许多实例常驻
 - Windows 打包：`electron-builder` 已配置 `nsis` 和 `portable`
-- `npm run package` 会先通过 `package-windows-compat.mjs` 走一层项目级打包兼容层：预热 `output/cache/electron-builder` 下的私有 builder cache，并为 `winCodeSign-2.6.0` 提前放入现代 `rcedit`
+- `npm run package` 会先通过 `package-win.mjs` 走一层项目级打包兼容层：预热 `output/cache/electron-builder` 下的私有 builder cache，并为 `winCodeSign-2.6.0` 提前放入现代 `rcedit`
 - 这层兼容的目标只是让 Windows 打包时的 exe 图标与版本资源写入稳定可用；它不是系统权限修复，也不依赖本机开启符号链接相关权限
 - 如果后续 `electron-builder` upstream 不再依赖这条旧 `winCodeSign` 路径，再评估是否删除这层兼容 helper
 - 应用图标：项目内已按用途拆分到 `renderer/assets/` 与 `main/assets/`
@@ -482,7 +482,7 @@ npm run package
 - `npm run dev`：启动 `electron-vite dev --watch`
 - `npm run build`：执行 `tsc --noEmit && electron-vite build`
 - `npm test`：运行 `vitest run`
-- `npm run package`：先构建，再通过 `package-windows-compat.mjs` 预热 Windows 打包兼容层，最后生成安装包和便携版，输出到 `output/release/`
+- `npm run package`：先构建，再通过 `package-win.mjs` 预热 Windows 打包兼容层，最后生成安装包和便携版，输出到 `output/release/`
 - 直接在普通浏览器打开 `http://localhost:5173/` 时，只会看到 renderer 的浏览器态提示页；要验证完整交互、托盘、窗口控制和 preload API，请使用 `npm run dev` 拉起 Electron
 
 Windows / PowerShell 注意事项：
@@ -536,7 +536,7 @@ Windows / PowerShell 注意事项：
 - Windows targets：`nsis`、`portable`
 - 输出目录：`output/release/`
 - 产物文件名模式：安装包 `focusflow-setup.exe`，便携版 `focusflow.exe`，`win-unpacked/` 主程序 `focusflow.exe`
-- Windows 打包兼容层：`package-windows-compat.mjs` 会预热 `output/cache/electron-builder/`，为 legacy `winCodeSign-2.6.0` cache 提前放入现代 `rcedit`
+- Windows 打包兼容层：`package-win.mjs` 会预热 `output/cache/electron-builder/`，为 legacy `winCodeSign-2.6.0` cache 提前放入现代 `rcedit`
 - 兼容层边界：这是项目级 workaround，用来稳定 exe 图标与版本资源写入；不是系统权限修复
 - Windows 图标：`main/assets/focusflow-icon.ico`
 - 运行时额外资源：`focusflow-icon.png`、`focusflow-icon.ico`、`focusflow-tray.png`、`focusflow-tray-dark.png`
@@ -560,7 +560,7 @@ Windows / PowerShell 注意事项：
 
 新一轮开发或新同事接手时，建议按这个顺序熟悉项目：
 
-1. 看 `package.json` 和 `package-windows-compat.mjs`，确认命令、依赖、打包方式和 Windows 打包兼容层
+1. 看 `package.json` 和 `package-win.mjs`，确认命令、依赖、打包方式和 Windows 打包兼容层
 2. 看 `shared/types.ts`、`shared/contracts.ts`、`shared/defaults.ts`、`shared/windowMetrics.ts`，理解共享合同
 3. 看 `main/index.ts`、`main/windowing.ts`、`main/trayMenu.ts` 和 `main/services/`，理解主进程编排
 4. 看 `preload/index.ts`，确认 renderer 能调哪些系统能力
