@@ -7,7 +7,7 @@
 - 技术栈：`Electron 34 + electron-vite 5 + React 19 + TypeScript 5 + SQLite(sql.js) + electron-log`
 - 包管理器：`npm`
 - 远端仓库：`git@github.com:gis2all/focus-flow.git`
-- 本地数据库：运行时创建在 `app.getPath('userData')/focusflow.sqlite`
+- 本地数据库：运行时创建在 `app.getPath('userData')/focusflow.sqlite`；不提交、不随发布包放入 `output/release/`
 - 最近一次提交：请以 `git log -1 --oneline` 的实时结果为准
 
 当前阶段的工作重点：
@@ -197,6 +197,16 @@ SQLite 当前核心表：
   - `state_json` 中当前包含显示口径相关字段 `focusCount`、`unboundFocusCount`、`lastFocusTaskId`
 - `app_events`
   - 关键事件日志，用于恢复与排查
+
+数据库持久化约定：
+
+- 当前项目没有提交初始数据库，也不会把数据库打进安装包或便携版。
+- 启动时由 `main/index.ts` 调用 `createSqliteAppDatabase(join(app.getPath('userData'), 'focusflow.sqlite'))`。
+- 如果 `focusflow.sqlite` 不存在，`sql.js` 会创建空数据库，执行 `main/adapters/sqlite/schema.ts` 中的 schema，并立即 flush 到磁盘。
+- Windows 常见路径：`%APPDATA%/focusflow/focusflow.sqlite`。
+- 安装版、`focusflow-single.exe` 单文件便携版、`win-unpacked/focusflow.exe` 展开版默认共享同一个用户级 `userData` 数据库位置。
+- `focusflow-single.exe` 只是程序分发形态，不是数据便携形态；数据库不会放在 exe 同目录。
+- 删除 `output/` 或重新打包不会删除用户数据库；迁移数据时需要退出应用后手动复制 `focusflow.sqlite`。
 
 共享类型里，和当前 UI / 统计直接相关的几个形状是：
 
@@ -482,7 +492,7 @@ npm run package
 - `npm run dev`：启动 `electron-vite dev --watch`
 - `npm run build`：执行 `tsc --noEmit && electron-vite build`
 - `npm test`：运行 `vitest run`
-- `npm run package`：先构建，再通过 `package-win.mjs` 预热 Windows 打包兼容层，最后生成安装包和便携版，输出到 `output/release/`
+- `npm run package`：先构建，再通过 `package-win.mjs` 预热 Windows 打包兼容层，最后生成安装包和单文件便携版，输出到 `output/release/`
 - 直接在普通浏览器打开 `http://localhost:5173/` 时，只会看到 renderer 的浏览器态提示页；要验证完整交互、托盘、窗口控制和 preload API，请使用 `npm run dev` 拉起 Electron
 
 Windows / PowerShell 注意事项：
@@ -534,10 +544,17 @@ Windows / PowerShell 注意事项：
 - `appId`：`com.focusflow.timer`
 - `productName`：`FocusFlow`
 - Windows targets：`nsis`、`portable`
-- 输出目录：`output/release/`
-- 产物文件名模式：安装包 `focusflow-setup.exe`，便携版 `focusflow.exe`，`win-unpacked/` 主程序 `focusflow.exe`
+- 构建输出目录：`output/build/`
+- 发布输出目录：`output/release/`
+- 安装包：`output/release/focusflow-setup.exe`
+- 单文件便携版：`output/release/focusflow-single.exe`
+- 展开版应用：`output/release/win-unpacked/focusflow.exe`
+- 发布元数据：`output/release/latest.yml`，当前应引用 `focusflow-setup.exe`
+- 差分/更新元数据：`output/release/*.blockmap`
+- 打包诊断文件：`output/release/builder-debug.yml` 可能由 electron-builder 生成
 - Windows 打包兼容层：`package-win.mjs` 会预热 `output/cache/electron-builder/`，为 legacy `winCodeSign-2.6.0` cache 提前放入现代 `rcedit`
 - 兼容层边界：这是项目级 workaround，用来稳定 exe 图标与版本资源写入；不是系统权限修复
+- `output/` 是生成物目录，默认不提交；可删除后通过 `npm run build` 或 `npm run package` 重新生成
 - Windows 图标：`main/assets/focusflow-icon.ico`
 - 运行时额外资源：`focusflow-icon.png`、`focusflow-icon.ico`、`focusflow-tray.png`、`focusflow-tray-dark.png`
 

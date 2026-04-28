@@ -71,7 +71,7 @@
       "uninstallDisplayName": "FocusFlow"
     },
     "portable": {
-      "artifactName": "focusflow.${ext}"
+      "artifactName": "focusflow-single.${ext}"
     }
   }
 }

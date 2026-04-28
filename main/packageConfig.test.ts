@@ -38,7 +38,7 @@ describe('package.json build config', () => {
     expect(packageConfig.build.win.executableName).toBe('focusflow')
     expect(packageConfig.build.nsis.artifactName).toBe('focusflow-setup.${ext}')
     expect(packageConfig.build.nsis.uninstallDisplayName).toBe('FocusFlow')
-    expect(packageConfig.build.portable.artifactName).toBe('focusflow.${ext}')
+    expect(packageConfig.build.portable.artifactName).toBe('focusflow-single.${ext}')
   })
 
   test('does not disable Windows executable icon editing', () => {
