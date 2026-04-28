@@ -51,7 +51,7 @@ const getAssetPath = (...segments: string[]) => join(app.getAppPath(), ...segmen
 const getRuntimeAssetPath = (...segments: string[]) =>
   app.isPackaged
     ? join(process.resourcesPath, 'app-assets', ...segments)
-    : getAssetPath('src', 'main', 'assets', ...segments)
+    : getAssetPath('main', 'assets', ...segments)
 
 let mainWindow: BrowserWindow | null = null
 let miniWindow: BrowserWindow | null = null

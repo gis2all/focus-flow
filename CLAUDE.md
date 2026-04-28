@@ -62,7 +62,7 @@ V1 当前已实现或已落地到代码的核心能力：
 - 主题能力：白天 / 黑暗 / 跟随系统
 - 单实例运行：通过 `app.requestSingleInstanceLock()` 保证不允许多实例常驻
 - Windows 打包：`electron-builder` 已配置 `nsis` 和 `portable`
-- 应用图标：项目内已按用途拆分到 `src/renderer/src/assets/` 与 `src/main/assets/`
+- 应用图标：项目内已按用途拆分到 `renderer/assets/` 与 `main/assets/`
 
 ## 关键产品语义
 
@@ -94,7 +94,7 @@ V1 当前已实现或已落地到代码的核心能力：
 
 `core -> services -> adapters -> UI`
 
-### `src/core`
+### `core`
 
 纯业务逻辑层，不依赖 Electron、React、SQLite 具体实现。
 
@@ -103,7 +103,7 @@ V1 当前已实现或已落地到代码的核心能力：
 
 这里的代码应保持可单测、可复用、可脱离桌面环境运行。
 
-### `src/main`
+### `main`
 
 Electron 主进程层，负责应用编排和桌面能力。
 
@@ -132,17 +132,18 @@ Electron 主进程层，负责应用编排和桌面能力。
 
 不要把计时规则、恢复规则、任务绑定规则重新放回渲染层。
 
-### `src/preload`
+### `preload`
 
 仅通过 `contextBridge` 暴露有限 API，隔离 Electron 与渲染层。
 
 统一暴露在 `window.focusFlow` 下，不让 renderer 直接碰 Electron 对象。
 
-### `src/renderer`
+### `renderer`
 
 React 渲染层，只负责界面、交互和展示状态。
 
 - 单一 renderer 入口，通过 URL query 参数区分 `window=main` 与 `window=mini`
+- `renderer/main.tsx` 会先判断 `window.focusFlow` 是否存在；普通浏览器直接打开 `http://localhost:5173/` 时会渲染 `BrowserEnvironmentNotice` 提示页，避免白屏，完整应用仍需通过 Electron 窗口运行
 - `App.tsx` 负责：
   - 订阅 `timer snapshot`
   - 切主窗口/小窗渲染模式
@@ -158,7 +159,7 @@ React 渲染层，只负责界面、交互和展示状态。
 - `components/`：通用 UI 组件
 - `viewModel.ts`：格式化、任务视图映射、平滑进度等 renderer helper
 
-### `src/shared`
+### `shared`
 
 共享合同层，集中维护：
 
@@ -334,7 +335,7 @@ SQLite 当前核心表：
   - `暂停计时`
   - `跳过当前阶段`
   - `退出`
-- 托盘图标会根据系统深浅色切换 `src/main/assets/focusflow-tray.png / src/main/assets/focusflow-tray-dark.png`
+- 托盘图标会根据系统深浅色切换 `main/assets/focusflow-tray.png / main/assets/focusflow-tray-dark.png`
 
 ### Windows 通知
 
@@ -344,7 +345,7 @@ SQLite 当前核心表：
 - 系统通知文案当前固定为：
   - `focus` 完成：`专注结束 / 该休息一下了。`
   - `shortBreak` / `longBreak` 完成：`休息结束 / 准备开始下一轮专注。`
-- 通知图标复用 `src/main/assets/focusflow-icon.png`
+- 通知图标复用 `main/assets/focusflow-icon.png`
 - 点击通知后会恢复并聚焦主窗口
 - `notificationsEnabled=false` 时不发系统通知
 - `soundEnabled=false` 时只静音提示音，不影响系统通知本身
@@ -353,13 +354,13 @@ SQLite 当前核心表：
 
 项目内图标资源位于：
 
-- `src/renderer/src/assets/icons/focusflow-icon.svg`
-- `src/main/assets/focusflow-icon.png`
-- `src/main/assets/focusflow-icon.ico`
-- `src/main/assets/focusflow-tray.png`
-- `src/main/assets/focusflow-tray-dark.png`
+- `renderer/assets/icons/focusflow-icon.svg`
+- `main/assets/focusflow-icon.png`
+- `main/assets/focusflow-icon.ico`
+- `main/assets/focusflow-tray.png`
+- `main/assets/focusflow-tray-dark.png`
 
-打包时通过 `package.json` 的 `extraResources` 将 `src/main/assets` 复制到 `app-assets/`，主窗口、通知和托盘均从运行时资源路径加载。
+打包时通过 `package.json` 的 `extraResources` 将 `main/assets` 复制到 `app-assets/`，主窗口、通知和托盘均从运行时资源路径加载。
 
 ## 计时页现状
 
@@ -479,10 +480,12 @@ npm run package
 - `npm run build`：执行 `tsc --noEmit && electron-vite build`
 - `npm test`：运行 `vitest run`
 - `npm run package`：先构建，再生成 Windows 安装包和便携版，输出到 `output/release/`
+- 直接在普通浏览器打开 `http://localhost:5173/` 时，只会看到 renderer 的浏览器态提示页；要验证完整交互、托盘、窗口控制和 preload API，请使用 `npm run dev` 拉起 Electron
 
 Windows / PowerShell 注意事项：
 
-- 如果 Electron 误以 Node 模式启动，先执行：`Remove-Item Env:ELECTRON_RUN_AS_NODE -ErrorAction SilentlyContinue`
+- `npm run dev` 和 `npm run preview` 会自动清理 `ELECTRON_RUN_AS_NODE`，避免 Electron 误以 Node 模式启动
+- 如果需要手动执行 `electron.exe .` 或从当前终端直接拉起 Electron，可先执行：`Remove-Item Env:ELECTRON_RUN_AS_NODE -ErrorAction SilentlyContinue`
 - 编辑 `md / ts / tsx / json` 时优先用安全 UTF-8 写法，避免 PowerShell 编码问题
 - 本地辅助目录和产物默认不提交：`.learnings`、`.codex-log`、`.codex-logs`、`.superpowers`、`scripts/`、`docs/`、`output/`、`coverage/`
 - 本地数据库文件默认忽略：`*.sqlite`、`*.sqlite-shm`、`*.sqlite-wal`
@@ -493,27 +496,28 @@ Windows / PowerShell 注意事项：
 
 已有测试覆盖：
 
-- `src/core/timer/timerState.test.ts`
-- `src/core/stats/statsAggregator.test.ts`
-- `src/main/trayMenu.test.ts`
-- `src/main/windowing.test.ts`
-- `src/main/adapters/notificationHelpers.test.ts`
-- `src/main/repositories/sqliteRepositories.test.ts`
-- `src/main/services/settingsService.test.ts`
-- `src/main/services/statsService.test.ts`
-- `src/main/services/taskBoardService.test.ts`
-- `src/main/services/taskService.test.ts`
-- `src/main/services/timerService.test.ts`
-- `src/renderer/src/timerActionConfirmation.test.ts`
-- `src/renderer/src/viewModel.test.ts`
-- `src/renderer/src/windowMode.test.ts`
-- `src/renderer/src/components/ConfirmModal.test.tsx`
-- `src/renderer/src/components/WindowTitleBar.test.tsx`
-- `src/renderer/src/views/MiniTimerView.test.tsx`
-- `src/renderer/src/views/SettingsView.test.tsx`
-- `src/renderer/src/views/StatsView.test.tsx`
-- `src/renderer/src/views/TasksView.test.tsx`
-- `src/renderer/src/views/TimerView.test.tsx`
+- `core/timer/timerState.test.ts`
+- `core/stats/statsAggregator.test.ts`
+- `main/trayMenu.test.ts`
+- `main/windowing.test.ts`
+- `main/adapters/notificationHelpers.test.ts`
+- `main/repositories/sqliteRepositories.test.ts`
+- `main/services/settingsService.test.ts`
+- `main/services/statsService.test.ts`
+- `main/services/taskBoardService.test.ts`
+- `main/services/taskService.test.ts`
+- `main/services/timerService.test.ts`
+- `renderer/timerActionConfirmation.test.ts`
+- `renderer/main.test.tsx`
+- `renderer/viewModel.test.ts`
+- `renderer/windowMode.test.ts`
+- `renderer/components/ConfirmModal.test.tsx`
+- `renderer/components/WindowTitleBar.test.tsx`
+- `renderer/views/MiniTimerView.test.tsx`
+- `renderer/views/SettingsView.test.tsx`
+- `renderer/views/StatsView.test.tsx`
+- `renderer/views/TasksView.test.tsx`
+- `renderer/views/TimerView.test.tsx`
 
 说明：
 
@@ -527,20 +531,21 @@ Windows / PowerShell 注意事项：
 - `productName`：`FocusFlow`
 - Windows targets：`nsis`、`portable`
 - 输出目录：`output/release/`
-- Windows 图标：`src/main/assets/focusflow-icon.ico`
+- 产物文件名模式：安装包 `FocusFlow Setup <version>.exe`，便携版 `FocusFlow <version>.exe`
+- Windows 图标：`main/assets/focusflow-icon.ico`
 - 运行时额外资源：`focusflow-icon.png`、`focusflow-icon.ico`、`focusflow-tray.png`、`focusflow-tray-dark.png`
 
 ## 协作约定
 
 - 优先保持分层清晰，不要把业务规则重新塞回 React 组件
-- 共享类型和 IPC 合同统一维护在 `src/shared`
-- 涉及计时逻辑时，先看 `src/core/timer` 和 `src/main/services/timerService.ts`
-- 涉及待办聚合逻辑时，先看 `src/main/services/taskBoardService.ts`
-- 涉及统计口径时，先看 `src/core/stats/statsAggregator.ts` 和 `src/main/services/statsService.ts`
-- 涉及小窗切换、位置、尺寸与拖动时，先看 `src/main/windowing.ts`、`src/main/ipc/registerIpcHandlers.ts`、`src/renderer/src/views/MiniTimerView.tsx`
-- 涉及托盘行为时，先看 `src/main/trayMenu.ts` 和 `src/main/index.ts`
-- 涉及 Windows 通知时，先看 `src/main/adapters/notificationHelpers.ts` 与 `src/main/adapters/desktop.ts`
-- 新增桌面能力优先走 `src/main/adapters` / `src/main/ports`
+- 共享类型和 IPC 合同统一维护在 `shared`
+- 涉及计时逻辑时，先看 `core/timer` 和 `main/services/timerService.ts`
+- 涉及待办聚合逻辑时，先看 `main/services/taskBoardService.ts`
+- 涉及统计口径时，先看 `core/stats/statsAggregator.ts` 和 `main/services/statsService.ts`
+- 涉及小窗切换、位置、尺寸与拖动时，先看 `main/windowing.ts`、`main/ipc/registerIpcHandlers.ts`、`renderer/views/MiniTimerView.tsx`
+- 涉及托盘行为时，先看 `main/trayMenu.ts` 和 `main/index.ts`
+- 涉及 Windows 通知时，先看 `main/adapters/notificationHelpers.ts` 与 `main/adapters/desktop.ts`
+- 新增桌面能力优先走 `main/adapters` / `main/ports`
 - 数据访问尽量走 repository，不要在 service 外直接写 SQL
 - 渲染层只依赖 preload 暴露的 API，不直接触碰 Electron 主进程对象
 - 不要使用 `git reset --hard` 或 `git checkout --` 回退用户已有修改，除非用户明确要求
@@ -550,8 +555,8 @@ Windows / PowerShell 注意事项：
 新一轮开发或新同事接手时，建议按这个顺序熟悉项目：
 
 1. 看 `package.json`，确认命令、依赖和打包方式
-2. 看 `src/shared/types.ts`、`src/shared/contracts.ts`、`src/shared/defaults.ts`、`src/shared/windowMetrics.ts`，理解共享合同
-3. 看 `src/main/index.ts`、`src/main/windowing.ts`、`src/main/trayMenu.ts` 和 `src/main/services/`，理解主进程编排
-4. 看 `src/preload/index.ts`，确认 renderer 能调哪些系统能力
-5. 看 `src/renderer/src/App.tsx`、`src/renderer/src/views/` 和 `src/renderer/src/viewModel.ts`，理解页面拆分与展示逻辑
+2. 看 `shared/types.ts`、`shared/contracts.ts`、`shared/defaults.ts`、`shared/windowMetrics.ts`，理解共享合同
+3. 看 `main/index.ts`、`main/windowing.ts`、`main/trayMenu.ts` 和 `main/services/`，理解主进程编排
+4. 看 `preload/index.ts`，确认 renderer 能调哪些系统能力
+5. 看 `renderer/main.tsx`、`renderer/App.tsx`、`renderer/views/` 和 `renderer/viewModel.ts`，理解页面入口、浏览器降级页、主界面拆分与展示逻辑
 6. 最后按需执行 `npm test` 和 `npm run build`，确认工作树健康

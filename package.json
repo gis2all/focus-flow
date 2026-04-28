@@ -7,9 +7,9 @@
   "author": "",
   "license": "MIT",
   "scripts": {
-    "dev": "electron-vite dev --watch",
+    "dev": "cmd /d /s /c \"set ELECTRON_RUN_AS_NODE=&& electron-vite dev --watch\"",
     "build": "tsc --noEmit && electron-vite build",
-    "preview": "electron-vite preview",
+    "preview": "cmd /d /s /c \"set ELECTRON_RUN_AS_NODE=&& electron-vite preview\"",
     "test": "vitest run",
     "test:watch": "vitest",
     "package": "npm run build && electron-builder --win nsis portable"
@@ -42,7 +42,7 @@
     },
     "extraResources": [
       {
-        "from": "src/main/assets",
+        "from": "main/assets",
         "to": "app-assets",
         "filter": [
           "focusflow-icon.png",
@@ -57,7 +57,7 @@
       "package.json"
     ],
     "win": {
-      "icon": "src/main/assets/focusflow-icon.ico",
+      "icon": "main/assets/focusflow-icon.ico",
       "signAndEditExecutable": false,
       "target": [
         "nsis",

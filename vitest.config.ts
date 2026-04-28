@@ -5,13 +5,18 @@ export default defineConfig({
   test: {
     environment: 'node',
     globals: true,
-    include: ['src/**/*.test.ts', 'src/**/*.test.tsx']
+    include: [
+      '{core,main,preload,renderer,shared}/**/*.test.ts',
+      '{core,main,preload,renderer,shared}/**/*.test.tsx'
+    ]
   },
   resolve: {
     alias: {
-      '@core': resolve('src/core'),
-      '@main': resolve('src/main'),
-      '@shared': resolve('src/shared')
+      '@core': resolve('core'),
+      '@main': resolve('main'),
+      '@preload': resolve('preload'),
+      '@renderer': resolve('renderer'),
+      '@shared': resolve('shared')
     }
   }
 })

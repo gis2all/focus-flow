@@ -42,7 +42,7 @@ describe('notificationHelpers', () => {
 
     showTimerFinishedNotification({
       snapshot: { phase: 'focus' },
-      iconPath: 'D:\\Code\\pomodoro-timer\\src\\main\\assets\\focusflow-icon.png',
+      iconPath: 'D:\\Code\\pomodoro-timer\\main\\assets\\focusflow-icon.png',
       onClick,
       createNotification: (options) => {
         recordedOptions = options
@@ -60,7 +60,7 @@ describe('notificationHelpers', () => {
     expect(recordedOptions).toEqual({
       title: '专注结束',
       body: '该休息一下了。',
-      icon: 'D:\\Code\\pomodoro-timer\\src\\main\\assets\\focusflow-icon.png'
+      icon: 'D:\\Code\\pomodoro-timer\\main\\assets\\focusflow-icon.png'
     })
     expect(show).toHaveBeenCalledTimes(1)
 

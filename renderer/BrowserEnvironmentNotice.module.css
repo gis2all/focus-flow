@@ -1,0 +1,68 @@
+.page {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  padding: 32px;
+  background:
+    radial-gradient(circle at top, color-mix(in srgb, var(--accent) 18%, transparent), transparent 36%),
+    linear-gradient(160deg, var(--hero-top), var(--hero-bottom) 52%, var(--window-bg));
+}
+
+.panel {
+  width: min(100%, 720px);
+  padding: 32px;
+  color: var(--text-1);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--surface) 92%, white 8%), color-mix(in srgb, var(--surface-2) 92%, white 8%)),
+    var(--window-bg);
+  border: 1px solid color-mix(in srgb, var(--line-strong) 58%, transparent);
+  border-radius: 28px;
+  box-shadow:
+    0 22px 48px rgba(32, 72, 138, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.38);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 14px;
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: color-mix(in srgb, var(--accent) 12%, white 88%);
+  border-radius: 999px;
+}
+
+.title {
+  margin: 20px 0 12px;
+  font: 800 clamp(28px, 4vw, 40px) / 1.08 var(--font-display);
+  letter-spacing: -0.04em;
+}
+
+.body,
+.notes p {
+  margin: 0;
+  color: var(--text-2);
+  font-size: 16px;
+  line-height: 1.65;
+}
+
+.notes {
+  display: grid;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+
+.notes code {
+  padding: 2px 6px;
+  color: var(--accent-strong);
+  font-family: "Cascadia Mono", Consolas, monospace;
+  font-size: 0.95em;
+  background: color-mix(in srgb, var(--accent) 12%, white 88%);
+  border-radius: 8px;
+}
