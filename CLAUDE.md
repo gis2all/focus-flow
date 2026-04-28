@@ -62,7 +62,7 @@ V1 当前已实现或已落地到代码的核心能力：
 - 主题能力：白天 / 黑暗 / 跟随系统
 - 单实例运行：通过 `app.requestSingleInstanceLock()` 保证不允许多实例常驻
 - Windows 打包：`electron-builder` 已配置 `nsis` 和 `portable`
-- 应用图标：项目内已接入 `resources/` 下的自定义图标资源
+- 应用图标：项目内已按用途拆分到 `src/renderer/src/assets/` 与 `src/main/assets/`
 
 ## 关键产品语义
 
@@ -334,7 +334,7 @@ SQLite 当前核心表：
   - `暂停计时`
   - `跳过当前阶段`
   - `退出`
-- 托盘图标会根据系统深浅色切换 `focusflow-tray.png / focusflow-tray-dark.png`
+- 托盘图标会根据系统深浅色切换 `src/main/assets/focusflow-tray.png / src/main/assets/focusflow-tray-dark.png`
 
 ### Windows 通知
 
@@ -344,7 +344,7 @@ SQLite 当前核心表：
 - 系统通知文案当前固定为：
   - `focus` 完成：`专注结束 / 该休息一下了。`
   - `shortBreak` / `longBreak` 完成：`休息结束 / 准备开始下一轮专注。`
-- 通知图标复用 `focusflow-icon.png`
+- 通知图标复用 `src/main/assets/focusflow-icon.png`
 - 点击通知后会恢复并聚焦主窗口
 - `notificationsEnabled=false` 时不发系统通知
 - `soundEnabled=false` 时只静音提示音，不影响系统通知本身
@@ -353,13 +353,13 @@ SQLite 当前核心表：
 
 项目内图标资源位于：
 
-- `resources/focusflow-icon.svg`
-- `resources/focusflow-icon.png`
-- `resources/focusflow-icon.ico`
-- `resources/focusflow-tray.png`
-- `resources/focusflow-tray-dark.png`
+- `src/renderer/src/assets/icons/focusflow-icon.svg`
+- `src/main/assets/focusflow-icon.png`
+- `src/main/assets/focusflow-icon.ico`
+- `src/main/assets/focusflow-tray.png`
+- `src/main/assets/focusflow-tray-dark.png`
 
-打包时通过 `package.json` 的 `extraResources` 复制到 `app-assets/`，主窗口、通知和托盘均从运行时资源路径加载。
+打包时通过 `package.json` 的 `extraResources` 将 `src/main/assets` 复制到 `app-assets/`，主窗口、通知和托盘均从运行时资源路径加载。
 
 ## 计时页现状
 
@@ -478,13 +478,13 @@ npm run package
 - `npm run dev`：启动 `electron-vite dev --watch`
 - `npm run build`：执行 `tsc --noEmit && electron-vite build`
 - `npm test`：运行 `vitest run`
-- `npm run package`：先构建，再生成 Windows 安装包和便携版，输出到 `release/`
+- `npm run package`：先构建，再生成 Windows 安装包和便携版，输出到 `output/release/`
 
 Windows / PowerShell 注意事项：
 
 - 如果 Electron 误以 Node 模式启动，先执行：`Remove-Item Env:ELECTRON_RUN_AS_NODE -ErrorAction SilentlyContinue`
 - 编辑 `md / ts / tsx / json` 时优先用安全 UTF-8 写法，避免 PowerShell 编码问题
-- 本地辅助目录和产物默认不提交：`.learnings`、`.codex-log`、`.codex-logs`、`.superpowers`、`scripts/`、`docs/`、`release/`、`coverage/`
+- 本地辅助目录和产物默认不提交：`.learnings`、`.codex-log`、`.codex-logs`、`.superpowers`、`scripts/`、`docs/`、`output/`、`coverage/`
 - 本地数据库文件默认忽略：`*.sqlite`、`*.sqlite-shm`、`*.sqlite-wal`
 
 ## 测试现状
@@ -526,8 +526,8 @@ Windows / PowerShell 注意事项：
 - `appId`：`com.focusflow.timer`
 - `productName`：`FocusFlow`
 - Windows targets：`nsis`、`portable`
-- 输出目录：`release/`
-- Windows 图标：`resources/focusflow-icon.ico`
+- 输出目录：`output/release/`
+- Windows 图标：`src/main/assets/focusflow-icon.ico`
 - 运行时额外资源：`focusflow-icon.png`、`focusflow-icon.ico`、`focusflow-tray.png`、`focusflow-tray-dark.png`
 
 ## 协作约定

@@ -1,7 +1,6 @@
 node_modules
 dist
-out
-release
+output/
 coverage
 *.log
 *.sqlite

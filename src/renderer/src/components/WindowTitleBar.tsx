@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react'
-import appIconUrl from '../../../../resources/focusflow-icon.svg'
+import appIconUrl from '../assets/icons/focusflow-icon.svg'
 import styles from '../App.module.css'
 import { CloseIcon, MaximizeIcon, MiniWindowIcon, MinimizeIcon, MoonIcon, SunIcon } from './AppIcons'
 

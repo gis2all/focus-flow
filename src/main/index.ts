@@ -48,8 +48,10 @@ import {
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const getAssetPath = (...segments: string[]) => join(app.getAppPath(), ...segments)
-const getRuntimeAssetPath = (filename: string) =>
-  app.isPackaged ? join(process.resourcesPath, 'app-assets', filename) : getAssetPath('resources', filename)
+const getRuntimeAssetPath = (...segments: string[]) =>
+  app.isPackaged
+    ? join(process.resourcesPath, 'app-assets', ...segments)
+    : getAssetPath('src', 'main', 'assets', ...segments)
 
 let mainWindow: BrowserWindow | null = null
 let miniWindow: BrowserWindow | null = null
@@ -74,8 +76,8 @@ const loadRendererWindow = (window: BrowserWindow, mode: 'main' | 'mini'): void 
   })
 }
 
-const loadTrayImage = (filename: string) => {
-  const image = nativeImage.createFromPath(getRuntimeAssetPath(filename))
+const loadTrayImage = (...segments: string[]) => {
+  const image = nativeImage.createFromPath(getRuntimeAssetPath(...segments))
   if (image.isEmpty()) return null
 
   return image.resize({

@@ -2,7 +2,7 @@
   "name": "focusflow",
   "version": "0.1.0",
   "description": "A local-first Windows desktop Pomodoro timer.",
-  "main": "out/main/index.js",
+  "main": "output/build/main/index.js",
   "type": "module",
   "author": "",
   "license": "MIT",
@@ -38,11 +38,11 @@
     "appId": "com.focusflow.timer",
     "productName": "FocusFlow",
     "directories": {
-      "output": "release"
+      "output": "output/release"
     },
     "extraResources": [
       {
-        "from": "resources",
+        "from": "src/main/assets",
         "to": "app-assets",
         "filter": [
           "focusflow-icon.png",
@@ -53,11 +53,11 @@
       }
     ],
     "files": [
-      "out/**/*",
+      "output/build/**/*",
       "package.json"
     ],
     "win": {
-      "icon": "resources/focusflow-icon.ico",
+      "icon": "src/main/assets/focusflow-icon.ico",
       "signAndEditExecutable": false,
       "target": [
         "nsis",
