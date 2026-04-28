@@ -185,6 +185,8 @@ export const StatsView = ({
   ]
   const todayKey = localDateKey(new Date())
   const calendarGridItems = getCalendarGridItems(monthStats)
+  // selectedCalendarDate is the detail-pane anchor, so it may legally point to
+  // absolute today even when the visible historical month has no matching day cell.
   const selectedCalendarDay = monthStats.days.find((day) => day.date === selectedCalendarDate) ?? null
   const isSelectedCalendarDateToday = selectedCalendarDate === todayKey
   const selectedCalendarFocusDurationRows = isSelectedCalendarDateToday

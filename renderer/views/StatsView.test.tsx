@@ -355,6 +355,47 @@ describe('StatsView', () => {
     expect(emptyHtml).toContain('这一天还没有专注时长记录')
   })
 
+  test('keeps the detail pane anchored to today when browsing a historical month', () => {
+    const now = new Date()
+    const todayKey = localDateKey(now)
+    const previousMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+    const previousMonthYear = previousMonthDate.getFullYear()
+    const previousMonth = previousMonthDate.getMonth() + 1
+    const days = createCalendarDays(previousMonthYear, previousMonth)
+    days[0] = {
+      ...days[0],
+      focusMinutes: 40,
+      completedPomodoros: 2,
+      completedTasks: 1,
+      taskFocusMinutes: [{ taskId: 'historical-task', title: 'Historical task', minutes: 40, status: 'completed' }]
+    }
+
+    const html = renderStatsView(
+      createStats({
+        taskFocusMinutes: [{ taskId: 'today-task', title: 'Today task', minutes: 25, status: 'completed' }],
+        unboundFocusMinutes: 15
+      }),
+      {
+        activeStatsTab: 'calendar',
+        monthStats: createMonthStats({
+          year: previousMonthYear,
+          month: previousMonth,
+          days,
+          maxFocusMinutes: 40
+        }),
+        selectedCalendarDate: todayKey
+      }
+    )
+
+    expect(html).not.toContain('data-calendar-selected="true"')
+    expect(html).toContain(`${todayKey.slice(5)} 专注时长`)
+    expect(html).toContain('Today task')
+    expect(html).toContain('25m')
+    expect(html).toContain('未绑定专注')
+    expect(html).toContain('15m')
+    expect(html).not.toContain('Historical task')
+  })
+
   test('marks today in the calendar when the selected month contains the local current day', () => {
     const now = new Date()
     const year = now.getFullYear()

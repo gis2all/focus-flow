@@ -151,6 +151,9 @@ export const App = ({ windowMode }: AppProps): ReactElement => {
     setSelectedStatsMonth(nextMonth)
     const nextMonthPrefix = `${nextMonth.year}-${String(nextMonth.month).padStart(2, '0')}`
     if (!selectedCalendarDateRef.current.startsWith(nextMonthPrefix)) {
+      // Product design: the detail pane's date anchor falls back to absolute today
+      // when browsing a month that does not contain the current anchor. That can
+      // intentionally leave the historical month grid without a selected day cell.
       const todayKey = localDateKey(new Date())
       selectedCalendarDateRef.current = todayKey
       setSelectedCalendarDate(todayKey)
