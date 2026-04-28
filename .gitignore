@@ -9,6 +9,7 @@ coverage
 .learnings
 .codex-log
 .codex-logs
+.vscode/
 scripts/
 docs/
 .superpowers/

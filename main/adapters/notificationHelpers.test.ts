@@ -7,17 +7,17 @@ import {
   type NotificationOptionsLike
 } from './notificationHelpers'
 
+const packagedExecPath = 'C:\\Users\\test-user\\AppData\\Local\\Programs\\focusflow\\focusflow.exe'
+const developmentExecPath = 'C:\\dev\\focusflow\\node_modules\\electron\\dist\\electron.exe'
+const notificationIconPath = 'C:\\dev\\focusflow\\main\\assets\\focusflow-icon.png'
+
 describe('notificationHelpers', () => {
   test('returns the packaged Windows AppUserModelId', () => {
-    expect(resolveWindowsAppUserModelId(true, 'C:\\Users\\12620\\AppData\\Local\\Programs\\FocusFlow\\FocusFlow.exe')).toBe(
-      WINDOWS_APP_USER_MODEL_ID
-    )
+    expect(resolveWindowsAppUserModelId(true, packagedExecPath)).toBe(WINDOWS_APP_USER_MODEL_ID)
   })
 
   test('returns process.execPath as the development Windows AppUserModelId', () => {
-    expect(resolveWindowsAppUserModelId(false, 'D:\\Code\\pomodoro-timer\\node_modules\\electron\\dist\\electron.exe')).toBe(
-      'D:\\Code\\pomodoro-timer\\node_modules\\electron\\dist\\electron.exe'
-    )
+    expect(resolveWindowsAppUserModelId(false, developmentExecPath)).toBe(developmentExecPath)
   })
 
   test('builds Chinese copy for completed focus notifications', () => {
@@ -42,7 +42,7 @@ describe('notificationHelpers', () => {
 
     showTimerFinishedNotification({
       snapshot: { phase: 'focus' },
-      iconPath: 'D:\\Code\\pomodoro-timer\\main\\assets\\focusflow-icon.png',
+      iconPath: notificationIconPath,
       onClick,
       createNotification: (options) => {
         recordedOptions = options
@@ -60,7 +60,7 @@ describe('notificationHelpers', () => {
     expect(recordedOptions).toEqual({
       title: '专注结束',
       body: '该休息一下了。',
-      icon: 'D:\\Code\\pomodoro-timer\\main\\assets\\focusflow-icon.png'
+      icon: notificationIconPath
     })
     expect(show).toHaveBeenCalledTimes(1)
 
