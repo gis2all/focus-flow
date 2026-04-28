@@ -2,17 +2,19 @@
   "name": "focusflow",
   "version": "0.1.0",
   "description": "A local-first Windows desktop Pomodoro timer.",
-  "main": "out/main/index.js",
+  "main": "output/build/main/index.js",
   "type": "module",
-  "author": "",
+  "author": {
+    "name": "Github Gis2all"
+  },
   "license": "MIT",
   "scripts": {
-    "dev": "electron-vite dev --watch",
+    "dev": "cmd /d /s /c \"set ELECTRON_RUN_AS_NODE=&& electron-vite dev --watch\"",
     "build": "tsc --noEmit && electron-vite build",
-    "preview": "electron-vite preview",
+    "preview": "cmd /d /s /c \"set ELECTRON_RUN_AS_NODE=&& electron-vite preview\"",
     "test": "vitest run",
     "test:watch": "vitest",
-    "package": "npm run build && electron-builder --win nsis portable"
+    "package": "npm run build && node ./package-win.mjs"
   },
   "dependencies": {
     "electron-log": "^5.2.4",
@@ -27,7 +29,7 @@
     "@types/sql.js": "^1.4.9",
     "@vitejs/plugin-react": "^4.3.4",
     "electron": "^34.0.0",
-    "electron-builder": "^25.1.8",
+    "electron-builder": "^26.8.1",
     "@swc/core": "^1.10.7",
     "electron-vite": "^5.0.0",
     "typescript": "^5.7.3",
@@ -38,11 +40,11 @@
     "appId": "com.focusflow.timer",
     "productName": "FocusFlow",
     "directories": {
-      "output": "release"
+      "output": "output/release"
     },
     "extraResources": [
       {
-        "from": "resources",
+        "from": "main/assets",
         "to": "app-assets",
         "filter": [
           "focusflow-icon.png",
@@ -53,16 +55,23 @@
       }
     ],
     "files": [
-      "out/**/*",
+      "output/build/**/*",
       "package.json"
     ],
     "win": {
-      "icon": "resources/focusflow-icon.ico",
-      "signAndEditExecutable": false,
+      "icon": "main/assets/focusflow-icon.ico",
+      "executableName": "focusflow",
       "target": [
         "nsis",
         "portable"
       ]
+    },
+    "nsis": {
+      "artifactName": "focusflow-setup.${ext}",
+      "uninstallDisplayName": "FocusFlow"
+    },
+    "portable": {
+      "artifactName": "focusflow-single.${ext}"
     }
   }
 }

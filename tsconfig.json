@@ -17,13 +17,13 @@
     "jsx": "react-jsx",
     "types": ["node", "vitest/globals"],
     "paths": {
-      "@core/*": ["./src/core/*"],
-      "@main/*": ["./src/main/*"],
-      "@preload/*": ["./src/preload/*"],
-      "@renderer/*": ["./src/renderer/src/*"],
-      "@shared/*": ["./src/shared/*"]
+      "@core/*": ["./core/*"],
+      "@main/*": ["./main/*"],
+      "@preload/*": ["./preload/*"],
+      "@renderer/*": ["./renderer/*"],
+      "@shared/*": ["./shared/*"]
     }
   },
-  "include": ["src", "electron.vite.config.ts", "vitest.config.ts"],
+  "include": ["core", "main", "preload", "renderer", "shared", "electron.vite.config.ts", "vitest.config.ts"],
   "references": []
 }
