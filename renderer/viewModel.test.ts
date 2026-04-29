@@ -41,6 +41,9 @@ describe('renderer view model', () => {
     expect(formatDurationLabel(60)).toBe('60m')
     expect(formatDurationLabel(61)).toBe('1h 1m')
     expect(formatDurationLabel(225)).toBe('3h 45m')
+    expect(formatDurationLabel(Number.NaN)).toBe('0m')
+    expect(formatDurationLabel(Number.POSITIVE_INFINITY)).toBe('0m')
+    expect(formatDurationLabel(Number.NEGATIVE_INFINITY)).toBe('0m')
   })
 
   test('resolves explicit theme preference before system theme', () => {

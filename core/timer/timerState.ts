@@ -1,3 +1,4 @@
+import { getNormalizedNumericSetting } from '@shared/settingsValidation'
 import type { AppSettings, TimerPhase, TimerSession, TimerSnapshot, TimerState } from '@shared/types'
 
 export interface StartTimerInput {
@@ -19,9 +20,9 @@ export interface RestoreTimerResult {
 }
 
 export const phaseDurationMs = (phase: TimerPhase, settings: AppSettings): number => {
-  if (phase === 'focus') return settings.focusMinutes * 60_000
-  if (phase === 'shortBreak') return settings.shortBreakMinutes * 60_000
-  return settings.longBreakMinutes * 60_000
+  if (phase === 'focus') return getNormalizedNumericSetting(settings, 'focusMinutes') * 60_000
+  if (phase === 'shortBreak') return getNormalizedNumericSetting(settings, 'shortBreakMinutes') * 60_000
+  return getNormalizedNumericSetting(settings, 'longBreakMinutes') * 60_000
 }
 
 export const createIdleTimer = (settings: AppSettings, now: number): TimerState => ({
@@ -123,7 +124,7 @@ export const completeTimer = (state: TimerState, now: number): TimerState => ({
 
 export const getNextPhase = (phase: TimerPhase, completedFocusCount: number, settings: AppSettings): TimerPhase => {
   if (phase !== 'focus') return 'focus'
-  return completedFocusCount % settings.longBreakInterval === 0 ? 'longBreak' : 'shortBreak'
+  return completedFocusCount % getNormalizedNumericSetting(settings, 'longBreakInterval') === 0 ? 'longBreak' : 'shortBreak'
 }
 
 export const restoreTimerFromSession = (input: RestoreTimerInput): RestoreTimerResult => {

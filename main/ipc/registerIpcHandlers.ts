@@ -13,6 +13,7 @@ import {
 import { MINI_WINDOW_HEIGHT, MINI_WINDOW_WIDTH } from '@main/windowing'
 import type { AppSettings } from '@shared/types'
 import type { SystemThemePort } from '@main/ports/desktop'
+import { getSettingsUpdatePatch } from './settingsUpdateRequest'
 import type { SettingsService } from '@main/services/settingsService'
 import type { StatsService } from '@main/services/statsService'
 import type { TaskBoardService } from '@main/services/taskBoardService'
@@ -135,8 +136,8 @@ export const registerIpcHandlers = (services: IpcServices): void => {
   ipcMain.handle(IPC_CHANNELS.tasks.delete, (_event, id: string) => services.taskDeletion.delete(id))
 
   ipcMain.handle(IPC_CHANNELS.settings.get, () => services.settings.get())
-  ipcMain.handle(IPC_CHANNELS.settings.update, async (_event, request: UpdateSettingsRequest) => {
-    const updated = await services.settings.update(request.patch)
+  ipcMain.handle(IPC_CHANNELS.settings.update, async (_event, request: UpdateSettingsRequest | unknown) => {
+    const updated = await services.settings.update(getSettingsUpdatePatch(request))
     await services.timer.applySettings(updated)
     await services.onSettingsUpdated?.(updated)
     return updated

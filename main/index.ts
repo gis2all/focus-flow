@@ -289,7 +289,7 @@ if (hasSingleInstanceLock) {
 
   const timer = new TimerService({
     sessions: sessionRepository,
-    settings: settingsRepository,
+    settings,
     runtime: runtimeRepository,
     events: eventRepository,
     tasks: taskRepository,
