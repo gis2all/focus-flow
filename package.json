@@ -14,7 +14,8 @@
     "preview": "cmd /d /s /c \"set ELECTRON_RUN_AS_NODE=&& electron-vite preview\"",
     "test": "vitest run",
     "test:watch": "vitest",
-    "package": "npm run build && node ./package-win.mjs"
+    "package": "npm run build && node ./package-win.mjs",
+    "package:appx:dev": "powershell -NoProfile -ExecutionPolicy Bypass -File .\\tools\\appx\\package-dev.ps1"
   },
   "dependencies": {
     "electron-log": "^5.2.4",
@@ -39,8 +40,12 @@
   "build": {
     "appId": "com.focusflow.timer",
     "productName": "FocusFlow",
+    "toolsets": {
+      "winCodeSign": "1.1.0"
+    },
     "directories": {
-      "output": "output/release"
+      "output": "output/release",
+      "buildResources": "main/assets"
     },
     "extraResources": [
       {
@@ -67,11 +72,23 @@
       ]
     },
     "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "selectPerMachineByDefault": false,
       "artifactName": "focusflow-setup.${ext}",
       "uninstallDisplayName": "FocusFlow"
     },
     "portable": {
       "artifactName": "focusflow-single.${ext}"
+    },
+    "appx": {
+      "identityName": "FocusFlow.Desktop",
+      "applicationId": "FocusFlow",
+      "displayName": "FocusFlow",
+      "backgroundColor": "transparent",
+      "publisherDisplayName": "Github Gis2all",
+      "publisher": "CN=gis2all",
+      "artifactName": "focusflow-appx.${ext}"
     }
   }
 }

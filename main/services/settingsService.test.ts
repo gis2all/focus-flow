@@ -7,11 +7,11 @@ const createMutableSettingsRepository = (initialSettings: Record<string, unknown
   const updates: Partial<Record<keyof typeof defaultSettings, unknown>>[] = []
   const stored: Record<string, unknown> = { ...initialSettings }
   const repository: SettingsRepository = {
-    get: async () => ({ ...stored } as typeof defaultSettings),
+    get: async () => ({ ...stored } as unknown as typeof defaultSettings),
     update: async (patch) => {
       updates.push({ ...patch })
       Object.assign(stored, patch)
-      return { ...stored } as typeof defaultSettings
+      return { ...stored } as unknown as typeof defaultSettings
     }
   }
 
