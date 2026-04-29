@@ -27,6 +27,9 @@ type BuildConfig = {
       signAndEditExecutable?: boolean
     }
     nsis: {
+      oneClick?: boolean
+      allowToChangeInstallationDirectory?: boolean
+      selectPerMachineByDefault?: boolean
       artifactName: string
       uninstallDisplayName: string
     }
@@ -58,6 +61,9 @@ describe('package.json build config', () => {
     expect(packageConfig.build.win.target).toEqual(['nsis', 'portable'])
     expect(packageConfig.build.win.icon).toBe('main/assets/focusflow-icon.ico')
     expect(packageConfig.build.win.executableName).toBe('focusflow')
+    expect(packageConfig.build.nsis.oneClick).toBe(false)
+    expect(packageConfig.build.nsis.allowToChangeInstallationDirectory).toBe(true)
+    expect(packageConfig.build.nsis.selectPerMachineByDefault).toBe(false)
     expect(packageConfig.build.nsis.artifactName).toBe('focusflow-setup.${ext}')
     expect(packageConfig.build.nsis.uninstallDisplayName).toBe('FocusFlow')
     expect(packageConfig.build.portable.artifactName).toBe('focusflow-single.${ext}')

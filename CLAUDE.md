@@ -178,6 +178,9 @@ npm run package:appx:dev
 - 默认 `npm run package` 仍只打 `nsis + portable`
 - `package.json > build.win.icon`：`main/assets/focusflow-icon.ico`
 - `package.json > build.win.executableName`：`focusflow`
+- `package.json > build.nsis.oneClick`：`false`，保持 `focusflow-setup.exe` 为标准辅助安装向导，而不是一键安装。
+- `package.json > build.nsis.allowToChangeInstallationDirectory`：`true`，允许用户修改安装目录。
+- `package.json > build.nsis.selectPerMachineByDefault`：`false`，安装模式页默认选当前用户安装。
 - `package.json > build.nsis.artifactName`：`focusflow-setup.${ext}`
 - `package.json > build.portable.artifactName`：`focusflow-single.${ext}`
 - `package.json > build.appx.artifactName`：`focusflow-appx.${ext}`
@@ -195,7 +198,7 @@ npm run package:appx:dev
 
 - 当前 Windows 包面向 x64 Windows，建议按 Windows 10/11 x64 验证；更旧系统不作为默认支持范围。
 - `focusflow-single.exe` 可以只拷贝这一个文件；运行时会自解包到 `%TEMP%`。
-- `focusflow-setup.exe` 可以只拷贝这一个文件安装运行。
+- `focusflow-setup.exe` 可以只拷贝这一个文件安装运行；它现在是标准辅助安装向导，默认当前用户安装，并允许切换到所有用户安装和修改安装目录。
 - `win-unpacked/focusflow.exe` 必须随整个 `win-unpacked/` 目录一起拷贝。
 - 不要求目标机器预装 Node.js、npm、SQLite、WebView2 或项目依赖。
 - Electron 自带 Chromium 与 Node runtime；`react`、`sql.js`、`electron-log` 等运行依赖打入 `resources/app.asar`。

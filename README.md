@@ -38,7 +38,7 @@ npm run package:appx:dev
 - `npm run build`：执行 TypeScript 类型检查，并构建 main、preload、renderer 三端产物到 `output/build/`。
 - `npm test`：运行 Vitest 测试。
 - `npm run preview`：预览构建后的 Electron 应用。
-- `npm run package`：默认 Windows 发布链路，产出 `nsis + portable`，输出到 `output/release/`。
+- `npm run package`：默认 Windows 发布链路，产出标准安装向导版 `nsis` 安装包和 `portable` 单文件版，输出到 `output/release/`。
 - `npm run package:appx:dev`：唯一 AppX 打包入口，内部会自动准备或复用本地开发证书，并产出当前机器可直接安装的签名 `appx`。
 
 ## 技术栈
@@ -90,9 +90,9 @@ flowchart LR
 
 - `output/` 是生成物目录，需要时可删除后通过 `npm run build`、`npm run package` 或 `npm run package:appx:dev` 重新生成。
 - `output/build/`：`npm run build` 生成的 Electron main、preload、renderer 构建产物。
-- `output/release/focusflow-setup.exe`：Windows 安装包，需要安装使用。
+- `output/release/focusflow-setup.exe`：Windows 标准安装向导，可选当前用户或所有用户安装，并可修改安装目录。
 - `output/release/focusflow-single.exe`：Windows 单文件便携版，双击即可运行。
-- `output/release/focusflow-appx.appx`：微软商店安装包。
+- `output/release/focusflow-appx.appx`：微软商店安装包，安装目录由 Windows 系统托管，不支持自选路径。
 - `output/release/win-unpacked/focusflow.exe`：展开版应用，主要用于开发者烟测。
 - `output/release/latest.yml` 和 `output/release/*.blockmap`：发布与更新相关元数据。
 - `output/cache/electron-builder/`：`package-win.mjs` 使用的项目级 `electron-builder` cache。

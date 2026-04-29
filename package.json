@@ -72,6 +72,9 @@
       ]
     },
     "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "selectPerMachineByDefault": false,
       "artifactName": "focusflow-setup.${ext}",
       "uninstallDisplayName": "FocusFlow"
     },
