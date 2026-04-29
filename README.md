@@ -1,5 +1,7 @@
 # FocusFlow
 
+[![CI](https://github.com/gis2all/focus-flow/actions/workflows/ci.yml/badge.svg)](https://github.com/gis2all/focus-flow/actions/workflows/ci.yml)
+
 FocusFlow 是一个本地优先的 Windows 桌面番茄钟客户端，面向个人专注、任务绑定和本地统计场景。它把番茄钟、待办任务、专注统计、系统托盘、小窗和 Windows 通知整合在一个轻量桌面应用里。
 
 项目以本地数据为核心，不依赖账号体系或云同步，保持业务规则、桌面能力和 React 界面的解耦。
@@ -84,7 +86,7 @@ flowchart LR
 - 首次启动如果 `focusflow.sqlite` 不存在，程序会自动创建空库并完成建表。
 - 数据库不打进发布包；删除 `output/` 或重新打包不会删除用户数据。
 - 如需迁移数据，先退出 FocusFlow，再复制 `focusflow.sqlite` 到新电脑对应的 `userData` 目录。
-- 安装版、单文件便携版、`appx` 包和 `win-unpacked/` 展开版默认共享同一个 `userData` 数据库位置
+- 安装版、单文件便携版、`appx` 包和 `win-unpacked/` 展开版默认共享同一个 `userData` 数据库位置。
 
 ### 输出目录与发布包
 
@@ -92,11 +94,18 @@ flowchart LR
 - `output/build/`：`npm run build` 生成的 Electron main、preload、renderer 构建产物。
 - `output/release/focusflow-setup.exe`：Windows 标准安装向导，可选当前用户或所有用户安装，并可修改安装目录。
 - `output/release/focusflow-single.exe`：Windows 单文件便携版，双击即可运行。
-- `output/release/focusflow-appx.appx`：微软商店安装包，安装目录由 Windows 系统托管，不支持自选路径。
+- `output/release/focusflow-appx.appx`：Windows `appx` 开发验证包，安装目录由 Windows 系统托管，不支持自选路径，当前不作为公开下载承诺。
 - `output/release/win-unpacked/focusflow.exe`：展开版应用，主要用于开发者烟测。
 - `output/release/latest.yml` 和 `output/release/*.blockmap`：发布与更新相关元数据。
 - `output/cache/electron-builder/`：`package-win.mjs` 使用的项目级 `electron-builder` cache。
 - Windows 打包通过根目录的 `package-win.mjs` 驱动 `electron-builder`；默认无参数时打 `nsis portable`，显式传 `appx` 时只打 `appx`。
+
+### 公开发布
+
+- 当前正式对外分发优先使用 `focusflow-setup.exe` 和 `focusflow-single.exe`。
+- `win-unpacked/` 仅用于开发者烟测，不作为正式下载项。
+- `focusflow-appx.appx` 当前是开发验证链路，仍依赖本地开发证书与占位身份信息，不作为公开下载承诺。
+- 如需手动制作公开发布，建议流程是：从 `main` 拉取最新代码，运行 `npm ci`、`npm test`、`npm run package`，手动验证 `focusflow-setup.exe` 与 `focusflow-single.exe` 后，再创建 GitHub Release 并上传这两个产物。
 
 ### 运行依赖
 
