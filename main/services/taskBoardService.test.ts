@@ -69,6 +69,9 @@ describe('TaskBoardService', () => {
       updateTask: async () => {
         throw new Error('not used')
       },
+      deleteHistoricalFocusByTaskId: async () => {
+        throw new Error('not used')
+      },
       findActive: async () => null
     }
     const service = new TaskBoardService(tasks, sessions)

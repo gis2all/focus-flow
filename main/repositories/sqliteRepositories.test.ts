@@ -125,6 +125,88 @@ describe('sqlite repositories', () => {
     })
   })
 
+  test('deletes only focus sessions associated with the specified task', async () => {
+    const sessions = new SqliteTimerSessionRepository(database)
+
+    const targetFocusMorning = await sessions.create({
+      phase: 'focus',
+      taskId: 'task-1',
+      startedAt: '2026-04-25T09:00:00.000',
+      durationMs: 25 * 60_000
+    })
+    await sessions.finish({
+      id: targetFocusMorning.id,
+      endedAt: '2026-04-25T09:25:00.000',
+      actualDurationMs: 25 * 60_000,
+      completed: true,
+      completionReason: 'completed'
+    })
+
+    const targetFocusAfternoon = await sessions.create({
+      phase: 'focus',
+      taskId: 'task-1',
+      startedAt: '2026-04-25T13:00:00.000',
+      durationMs: 25 * 60_000
+    })
+    await sessions.finish({
+      id: targetFocusAfternoon.id,
+      endedAt: '2026-04-25T13:20:00.000',
+      actualDurationMs: 20 * 60_000,
+      completed: false,
+      completionReason: 'abandoned'
+    })
+
+    const otherTaskFocus = await sessions.create({
+      phase: 'focus',
+      taskId: 'task-2',
+      startedAt: '2026-04-25T15:00:00.000',
+      durationMs: 25 * 60_000
+    })
+    await sessions.finish({
+      id: otherTaskFocus.id,
+      endedAt: '2026-04-25T15:25:00.000',
+      actualDurationMs: 25 * 60_000,
+      completed: true,
+      completionReason: 'completed'
+    })
+
+    const unboundFocus = await sessions.create({
+      phase: 'focus',
+      taskId: null,
+      startedAt: '2026-04-25T16:00:00.000',
+      durationMs: 25 * 60_000
+    })
+    await sessions.finish({
+      id: unboundFocus.id,
+      endedAt: '2026-04-25T16:10:00.000',
+      actualDurationMs: 10 * 60_000,
+      completed: false,
+      completionReason: 'skipped'
+    })
+
+    const targetBreak = await sessions.create({
+      phase: 'shortBreak',
+      taskId: 'task-1',
+      startedAt: '2026-04-25T17:00:00.000',
+      durationMs: 5 * 60_000
+    })
+    await sessions.finish({
+      id: targetBreak.id,
+      endedAt: '2026-04-25T17:05:00.000',
+      actualDurationMs: 5 * 60_000,
+      completed: true,
+      completionReason: 'completed'
+    })
+
+    await sessions.deleteHistoricalFocusByTaskId('task-1')
+
+    expect((await sessions.list()).map((session) => [session.id, session.phase, session.taskId])).toEqual([
+      [otherTaskFocus.id, 'focus', 'task-2'],
+      [unboundFocus.id, 'focus', null],
+      [targetBreak.id, 'shortBreak', 'task-1']
+    ])
+  })
+
   test('throws when deleting a task that does not exist', async () => {
     const tasks = new SqliteTaskRepository(database)
 

@@ -1,7 +1,14 @@
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, test } from 'vitest'
 import type { TaskBoardSnapshot, TimerPhase, TimerStatus } from '@shared/types'
-import { getTaskTitleTooltipLayout, isTaskTitleOverflowing, resolveTaskBindAction, TaskTooltipBubble, TasksView } from './TasksView'
+import {
+  getDeleteTaskConfirmationBody,
+  getTaskTitleTooltipLayout,
+  isTaskTitleOverflowing,
+  resolveTaskBindAction,
+  TaskTooltipBubble,
+  TasksView
+} from './TasksView'
 
 const LONG_TASK_TITLE = '这是一个很长很长的任务标题，用来验证悬浮时可以看到完整内容'
 
@@ -81,6 +88,26 @@ describe('TasksView', () => {
         timerContext: createTimerContext('running', 'focus')
       })
     ).toEqual({ kind: 'bind' })
+  })
+
+  test('uses the standard delete copy when the task is not the current active focus binding', () => {
+    expect(
+      getDeleteTaskConfirmationBody({
+        currentTimerTaskId: 'task-a',
+        taskId: 'task-a',
+        timerContext: createTimerContext('paused', 'shortBreak')
+      })
+    ).toBe('删除后任务会从列表移除，并会同时删除关联的历史专注记录。')
+  })
+
+  test('mentions auto-unbinding when deleting the current running or paused focus task', () => {
+    expect(
+      getDeleteTaskConfirmationBody({
+        currentTimerTaskId: 'task-a',
+        taskId: 'task-a',
+        timerContext: createTimerContext('paused', 'focus')
+      })
+    ).toBe('删除后任务会从列表移除，并会同时删除关联的历史专注记录；当前这轮专注会自动改为未绑定。')
   })
 
   test('仅在任务标题实际被截断时才显示 tooltip', () => {

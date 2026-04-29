@@ -16,12 +16,14 @@ import type { SystemThemePort } from '@main/ports/desktop'
 import type { SettingsService } from '@main/services/settingsService'
 import type { StatsService } from '@main/services/statsService'
 import type { TaskBoardService } from '@main/services/taskBoardService'
+import type { TaskDeletionService } from '@main/services/taskDeletionService'
 import type { TaskService } from '@main/services/taskService'
 import type { TimerService } from '@main/services/timerService'
 
 export interface IpcServices {
   timer: TimerService
   tasks: TaskService
+  taskDeletion: TaskDeletionService
   taskBoard: TaskBoardService
   settings: SettingsService
   stats: StatsService
@@ -130,7 +132,7 @@ export const registerIpcHandlers = (services: IpcServices): void => {
   ipcMain.handle(IPC_CHANNELS.tasks.complete, (_event, id: string) => services.tasks.complete(id))
   ipcMain.handle(IPC_CHANNELS.tasks.restore, (_event, id: string) => services.tasks.restore(id))
   ipcMain.handle(IPC_CHANNELS.tasks.reorder, (_event, request: ReorderTasksRequest) => services.tasks.reorder(request.ids))
-  ipcMain.handle(IPC_CHANNELS.tasks.delete, (_event, id: string) => services.tasks.delete(id))
+  ipcMain.handle(IPC_CHANNELS.tasks.delete, (_event, id: string) => services.taskDeletion.delete(id))
 
   ipcMain.handle(IPC_CHANNELS.settings.get, () => services.settings.get())
   ipcMain.handle(IPC_CHANNELS.settings.update, async (_event, request: UpdateSettingsRequest) => {

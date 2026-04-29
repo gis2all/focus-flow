@@ -34,6 +34,7 @@ import {
 import { SettingsService } from '@main/services/settingsService'
 import { StatsService } from '@main/services/statsService'
 import { TaskBoardService } from '@main/services/taskBoardService'
+import { TaskDeletionService } from '@main/services/taskDeletionService'
 import { TaskService } from '@main/services/taskService'
 import { TimerService } from '@main/services/timerService'
 import { buildTrayMenuTemplate } from './trayMenu'
@@ -301,6 +302,11 @@ if (hasSingleInstanceLock) {
     }),
     sound: new ElectronSoundAdapter()
   })
+  const taskDeletion = new TaskDeletionService({
+    tasks: taskRepository,
+    sessions: sessionRepository,
+    timer
+  })
 
   await timer.initialize()
 
@@ -364,6 +370,7 @@ if (hasSingleInstanceLock) {
   registerIpcHandlers({
     timer,
     tasks,
+    taskDeletion,
     taskBoard,
     settings,
     stats,

@@ -74,6 +74,13 @@ const makeRepositories = (activeSession: TimerSession | null = null, settingsVal
       if (!session) throw new Error('missing session')
       session.taskId = input.taskId
       session.updatedAt = input.updatedAt
+    },
+    deleteHistoricalFocusByTaskId: async (taskId) => {
+      for (let index = sessions.length - 1; index >= 0; index -= 1) {
+        if (sessions[index].phase === 'focus' && sessions[index].taskId === taskId) {
+          sessions.splice(index, 1)
+        }
+      }
     }
   }
   const settingsRepository: SettingsRepository = {
@@ -709,6 +716,110 @@ describe('TimerService', () => {
 
     expect(snapshot.taskId).toBeNull()
     expect(snapshot.unboundFocusCount).toBe(0)
+  })
+
+  test('clears a deleted task binding from the current running focus session and publishes a snapshot', async () => {
+    const clock = new FakeClock('2026-04-25T09:00:00.000Z')
+    const repos = makeRepositories()
+    const selection = createSelectionService('task-1')
+    const service = new TimerService({
+      sessions: repos.sessionRepository,
+      settings: repos.settingsRepository,
+      runtime: repos.runtimeRepository,
+      events: repos.eventRepository,
+      tasks: selection,
+      clock,
+      notifier: { showTimerFinished: async () => undefined },
+      sound: { playTimerFinished: async () => undefined }
+    })
+
+    await service.initialize()
+    await service.start({ phase: 'focus', taskId: 'task-1' })
+    const published: Array<ReturnType<TimerService['getSnapshot']>> = []
+    const unsubscribe = service.onSnapshot((snapshot) => {
+      published.push(snapshot)
+    })
+
+    clock.set('2026-04-25T09:03:00.000Z')
+    await service.clearDeletedTaskBinding('task-1')
+    unsubscribe()
+
+    const snapshot = readExtendedTimerState(service.getSnapshot())
+    const persistedState = readExtendedTimerState((await repos.runtimeRepository.get())!)
+
+    expect(snapshot.status).toBe('running')
+    expect(snapshot.phase).toBe('focus')
+    expect(snapshot.taskId).toBeNull()
+    expect(snapshot.unboundFocusCount).toBe(0)
+    expect(repos.sessions[0].taskId).toBeNull()
+    expect(persistedState.taskId).toBeNull()
+    expect(published).toEqual([expect.objectContaining({ status: 'running', phase: 'focus', taskId: null })])
+  })
+
+  test('clears a deleted task binding from the current paused focus session and keeps it paused', async () => {
+    const clock = new FakeClock('2026-04-25T09:00:00.000Z')
+    const repos = makeRepositories()
+    const selection = createSelectionService('task-1')
+    const service = new TimerService({
+      sessions: repos.sessionRepository,
+      settings: repos.settingsRepository,
+      runtime: repos.runtimeRepository,
+      events: repos.eventRepository,
+      tasks: selection,
+      clock,
+      notifier: { showTimerFinished: async () => undefined },
+      sound: { playTimerFinished: async () => undefined }
+    })
+
+    await service.initialize()
+    await service.start({ phase: 'focus', taskId: 'task-1' })
+    clock.set('2026-04-25T09:04:00.000Z')
+    await service.pause()
+    const published: Array<ReturnType<TimerService['getSnapshot']>> = []
+    const unsubscribe = service.onSnapshot((snapshot) => {
+      published.push(snapshot)
+    })
+
+    await service.clearDeletedTaskBinding('task-1')
+    unsubscribe()
+
+    const snapshot = readExtendedTimerState(service.getSnapshot())
+
+    expect(snapshot.status).toBe('paused')
+    expect(snapshot.phase).toBe('focus')
+    expect(snapshot.taskId).toBeNull()
+    expect(repos.sessions[0].taskId).toBeNull()
+    expect(published).toEqual([expect.objectContaining({ status: 'paused', phase: 'focus', taskId: null })])
+  })
+
+  test('does nothing when the deleted task is not bound to the current focus session', async () => {
+    const clock = new FakeClock('2026-04-25T09:00:00.000Z')
+    const repos = makeRepositories()
+    const selection = createSelectionService('task-1')
+    const service = new TimerService({
+      sessions: repos.sessionRepository,
+      settings: repos.settingsRepository,
+      runtime: repos.runtimeRepository,
+      events: repos.eventRepository,
+      tasks: selection,
+      clock,
+      notifier: { showTimerFinished: async () => undefined },
+      sound: { playTimerFinished: async () => undefined }
+    })
+
+    await service.initialize()
+    await service.start({ phase: 'focus', taskId: 'task-1' })
+    const published: Array<ReturnType<TimerService['getSnapshot']>> = []
+    const unsubscribe = service.onSnapshot((snapshot) => {
+      published.push(snapshot)
+    })
+
+    await service.clearDeletedTaskBinding('task-2')
+    unsubscribe()
+
+    expect(service.getSnapshot().taskId).toBe('task-1')
+    expect(repos.sessions[0].taskId).toBe('task-1')
+    expect(published).toEqual([])
   })
 
   test('rejects binding when the current timer is not a running focus session', async () => {

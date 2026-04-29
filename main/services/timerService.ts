@@ -204,6 +204,31 @@ export class TimerService {
     return this.publish()
   }
 
+  async clearDeletedTaskBinding(taskId: string): Promise<void> {
+    const state = this.requireState()
+    if (state.phase !== 'focus' || !state.sessionId) return
+    if (state.status !== 'running' && state.status !== 'paused') return
+    if (state.taskId !== taskId) return
+
+    const now = this.dependencies.clock.now()
+    const nowIso = this.dependencies.clock.nowIso()
+
+    await this.dependencies.sessions.updateTask({
+      id: state.sessionId,
+      taskId: null,
+      updatedAt: nowIso
+    })
+
+    this.state = {
+      ...state,
+      taskId: null,
+      unboundFocusCount: 0,
+      updatedAt: now
+    }
+    await this.persistState()
+    this.publish()
+  }
+
   async resume(): Promise<TimerSnapshot> {
     this.state = resumeTimer(this.requireState(), this.dependencies.clock.now())
     await this.persistState()
