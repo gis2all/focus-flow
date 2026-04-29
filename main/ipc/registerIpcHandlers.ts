@@ -110,12 +110,6 @@ export const registerIpcHandlers = (services: IpcServices): void => {
     activeWindowDrags.delete(webContentsId)
   }
 
-  const broadcastSnapshot = (snapshot: ReturnType<TimerService['getSnapshot']>): void => {
-    for (const window of services.getWindows()) {
-      window.webContents.send(IPC_CHANNELS.timer.snapshot, snapshot)
-    }
-  }
-
   ipcMain.handle(IPC_CHANNELS.timer.getSnapshot, () => services.timer.getSnapshot())
   ipcMain.handle(IPC_CHANNELS.timer.start, (_event, request?: StartTimerRequest) => services.timer.start(request))
   ipcMain.handle(IPC_CHANNELS.timer.bindCurrentTask, (_event, taskId: string | null) => services.timer.bindCurrentTask(taskId))
@@ -184,7 +178,4 @@ export const registerIpcHandlers = (services: IpcServices): void => {
   })
   ipcMain.handle(IPC_CHANNELS.system.quit, () => services.quit())
 
-  services.timer.onSnapshot((snapshot) => {
-    broadcastSnapshot(snapshot)
-  })
 }

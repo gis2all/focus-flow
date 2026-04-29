@@ -12,8 +12,7 @@ import {
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import log from 'electron-log'
-import { IPC_CHANNELS } from '@shared/contracts'
-import type { AppSettings, TimerSnapshot } from '@shared/types'
+import type { AppSettings } from '@shared/types'
 import { createSqliteAppDatabase } from '@main/adapters/sqlite/sqliteDatabase'
 import {
   ElectronAutoLaunchAdapter,
@@ -37,6 +36,7 @@ import { TaskBoardService } from '@main/services/taskBoardService'
 import { TaskDeletionService } from '@main/services/taskDeletionService'
 import { TaskService } from '@main/services/taskService'
 import { TimerService } from '@main/services/timerService'
+import { createBroadcastTimerSnapshot, createTimerTickRunner } from '@main/timerSnapshotBroadcast'
 import { buildTrayMenuTemplate } from './trayMenu'
 import {
   MINI_WINDOW_HEIGHT,
@@ -210,11 +210,7 @@ if (hasSingleInstanceLock) {
   const getWindows = (): BrowserWindow[] =>
     [mainWindow, miniWindow].filter((window): window is BrowserWindow => window !== null && !window.isDestroyed())
 
-  const broadcastSnapshot = (snapshot: TimerSnapshot): void => {
-    for (const window of getWindows()) {
-      window.webContents.send(IPC_CHANNELS.timer.snapshot, snapshot)
-    }
-  }
+  const broadcastTimerSnapshot = createBroadcastTimerSnapshot(getWindows)
 
   const saveMiniWindowPosition = async (): Promise<void> => {
     if (!miniWindow || miniWindow.isDestroyed()) return
@@ -307,6 +303,11 @@ if (hasSingleInstanceLock) {
     sessions: sessionRepository,
     timer
   })
+  const runTimerTick = createTimerTickRunner({
+    timer,
+    onError: (error) => log.error(error)
+  })
+  const unsubscribeTimerSnapshotBroadcast = timer.onSnapshot(broadcastTimerSnapshot)
 
   await timer.initialize()
 
@@ -418,14 +419,14 @@ if (hasSingleInstanceLock) {
   })
 
   setInterval(() => {
-    timer
-      .tick()
-      .then((snapshot) => broadcastSnapshot(snapshot))
-      .catch((error) => log.error(error))
+    void runTimerTick()
   }, 1_000)
 
   app.on('activate', () => {
     void showMainWindow().catch((error) => log.error(error))
+  })
+  app.on('before-quit', () => {
+    unsubscribeTimerSnapshotBroadcast()
   })
   })
 }
