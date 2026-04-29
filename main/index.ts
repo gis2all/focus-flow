@@ -355,15 +355,6 @@ if (hasSingleInstanceLock) {
         showMiniWindow: () => {
           void showMiniWindow().catch((error) => log.error(error))
         },
-        startFocus: () => {
-          void timer.start({ phase: 'focus' }).catch((error) => log.error(error))
-        },
-        pauseTimer: () => {
-          void timer.pause().catch((error) => log.error(error))
-        },
-        skipPhase: () => {
-          void timer.skip().catch((error) => log.error(error))
-        },
         quit: requestQuit
       })
     )
