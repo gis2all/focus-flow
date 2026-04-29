@@ -25,7 +25,9 @@ describe('timer snapshot broadcast wiring', () => {
     const snapshot = createSnapshot()
     const sendToMain = vi.fn()
     const sendToMini = vi.fn()
-    let publish: ((value: TimerSnapshot) => void) | null = null
+    let publish: (value: TimerSnapshot) => void = () => {
+      throw new Error('Expected snapshot listener to be registered')
+    }
     const timer = {
       onSnapshot: vi.fn((listener: (value: TimerSnapshot) => void) => {
         publish = listener
@@ -42,7 +44,7 @@ describe('timer snapshot broadcast wiring', () => {
         ] as Array<{ webContents: { send: typeof sendToMain } }>
     })
 
-    publish?.(snapshot)
+    publish(snapshot)
 
     expect(timer.onSnapshot).toHaveBeenCalledTimes(1)
     expect(sendToMain).toHaveBeenCalledTimes(1)
@@ -53,7 +55,9 @@ describe('timer snapshot broadcast wiring', () => {
 
   test('publishing a snapshot is a safe no-op when no windows are open', () => {
     const snapshot = createSnapshot()
-    let publish: ((value: TimerSnapshot) => void) | null = null
+    let publish: (value: TimerSnapshot) => void = () => {
+      throw new Error('Expected snapshot listener to be registered')
+    }
 
     wireTimerSnapshotBroadcast({
       timer: {
@@ -65,20 +69,22 @@ describe('timer snapshot broadcast wiring', () => {
       getWindows: () => []
     })
 
-    expect(() => publish?.(snapshot)).not.toThrow()
+    expect(() => publish(snapshot)).not.toThrow()
   })
 
   test('tick relies on TimerService publish and does not manually broadcast the returned snapshot again', async () => {
     const snapshot = createSnapshot()
     const send = vi.fn()
-    let publish: ((value: TimerSnapshot) => void) | null = null
+    let publish: (value: TimerSnapshot) => void = () => {
+      throw new Error('Expected snapshot listener to be registered')
+    }
     const timer = {
       onSnapshot: vi.fn((listener: (value: TimerSnapshot) => void) => {
         publish = listener
         return vi.fn()
       }),
       tick: vi.fn(async () => {
-        publish?.(snapshot)
+        publish(snapshot)
         return snapshot
       })
     }

@@ -9,6 +9,7 @@
 - 源码目录：`core/`、`main/`、`preload/`、`renderer/`、`shared/`
 - 构建产物：`output/build/`
 - 发布产物：`output/release/`
+- 可选商店包：`output/release/focusflow-appx.appx`
 - 本地数据库：运行时创建在 `app.getPath('userData')/focusflow.sqlite`，不提交、不随发布包放入 `output/release/`。
 - 远端仓库：`git@github.com:gis2all/focus-flow.git`
 - 最近一次提交：以 `git log -1 --oneline` 的实时结果为准。
@@ -47,9 +48,10 @@
 - 主进程启动时在 `main/index.ts` 调用 `createSqliteAppDatabase(join(app.getPath('userData'), 'focusflow.sqlite'))`。
 - 如果 `focusflow.sqlite` 不存在，`sql.js` 会创建空数据库，执行 schema，并立即 flush 到磁盘。
 - Windows 常见路径：`%APPDATA%/focusflow/focusflow.sqlite`。
-- 安装版、`focusflow-single.exe` 单文件便携版、`win-unpacked/focusflow.exe` 展开版默认共享同一个用户级 `userData` 数据库位置。
+- 安装版、`focusflow-single.exe` 单文件便携版、`output/release/focusflow-appx.appx` 安装出的 AppX 版本、`win-unpacked/focusflow.exe` 展开版默认共享同一个用户级 `userData` 数据库位置。
 - `focusflow-single.exe` 是程序分发形态，不是数据便携形态；数据库不会放在 exe 同目录。
 - 删除 `output/` 或重新打包不会删除用户数据库；迁移数据时需要退出应用后手动复制 `focusflow.sqlite`。
+- AppX 身份信息当前允许使用本地验证占位值，但正式发布前必须替换。
 
 当前核心表：
 
@@ -63,6 +65,7 @@
 
 - 安装包：`output/release/focusflow-setup.exe`
 - 单文件便携版：`output/release/focusflow-single.exe`
+- 可选 AppX 包：`output/release/focusflow-appx.appx`
 - 展开版应用：`output/release/win-unpacked/focusflow.exe`
 - 发布元数据：`output/release/latest.yml`，当前应引用 `focusflow-setup.exe`
 - 差分/更新元数据：`output/release/*.blockmap`
@@ -148,13 +151,15 @@ npm run build
 npm test
 npm run preview
 npm run package
+npm run package:appx:dev
 ```
 
 - `npm run dev`：启动 `electron-vite dev --watch`，用于完整 Electron 开发态。
 - `npm run build`：执行 `tsc --noEmit && electron-vite build`，输出到 `output/build/`。
 - `npm test`：运行 `vitest run`。
 - `npm run preview`：预览构建后的 Electron 应用。
-- `npm run package`：先构建，再通过 `package-win.mjs` 预热 Windows 打包兼容层，最后生成安装包和单文件便携版，输出到 `output/release/`。
+- `npm run package`：默认 Windows 发布链路；先构建，再通过 `package-win.mjs` 预热 Windows 打包兼容层，最后生成 `nsis + portable`，输出到 `output/release/`。
+- `npm run package:appx:dev`：唯一 AppX 打包入口；内部会自动准备或复用开发证书、在需要时拉起管理员导入机器级信任、执行构建，并通过 `package-win.mjs appx` 产出当前机器可直接安装的签名 `appx`。
 
 直接在普通浏览器打开 `http://localhost:5173/` 时，只会看到 renderer 的浏览器态提示页。要验证完整交互、托盘、窗口控制和 preload API，请使用 `npm run dev` 拉起 Electron。
 
@@ -169,13 +174,22 @@ npm run package
 ### Windows 打包兼容层
 
 - 打包工具：`electron-builder`
-- Windows targets：`nsis`、`portable`
+- Windows targets：`nsis`、`portable`、`appx`
+- 默认 `npm run package` 仍只打 `nsis + portable`
 - `package.json > build.win.icon`：`main/assets/focusflow-icon.ico`
 - `package.json > build.win.executableName`：`focusflow`
 - `package.json > build.nsis.artifactName`：`focusflow-setup.${ext}`
 - `package.json > build.portable.artifactName`：`focusflow-single.${ext}`
-- `package-win.mjs` 会预热 `output/cache/electron-builder/`，为 legacy `winCodeSign-2.6.0` cache 提前放入现代 `rcedit`。
+- `package.json > build.appx.artifactName`：`focusflow-appx.${ext}`
+- `package.json > build.appx`：集中定义 `identityName`、`applicationId`、`publisherDisplayName`、`publisher` 等 AppX 元数据；当前允许本地验证占位值，正式发布前必须替换。
+- `package.json > build.toolsets.winCodeSign`：固定为 `1.1.0`，让 `electron-builder` 在 Windows 上使用现代签名工具链并补齐 SHA256 摘要参数。
+- AppX 资源位于 `main/assets/appx/`，由现有 `main/assets/focusflow-icon.png` 派生生成。
+- `package-win.mjs` 会预热 `output/cache/electron-builder/`，为 legacy `winCodeSign-2.6.0` cache 提前放入现代 `rcedit`，默认无参数打 `nsis portable`，显式传 `appx` 时只打 `appx`。
 - 兼容层目标是稳定 exe 图标与版本资源写入；这是项目级 workaround，不是系统权限修复。
+- 开发证书脚本位于 `tools/appx/prepare-dev-cert.ps1` 和 `tools/appx/package-dev.ps1`，不要放回被忽略的 `scripts/`。
+- 本地开发证书私钥创建在 `CurrentUser\My`，但 AppX 安装信任要导入 `LocalMachine\TrustedPeople`；脚本会优先复用已有机器级信任，缺失时拉起管理员 PowerShell 完成导入。
+- `package.json > build.appx.publisher` 必须与开发证书 subject 完全一致；当前本地占位发布者是 `CN=gis2all`。
+- 本地开发证书导出文件位于 `output/dev-cert/`，包含 `.pfx`、`.cer`、密码文件和 `metadata.json`，仅用于本机验证，不提交仓库。
 
 ### 干净 Windows 运行依赖
 
@@ -187,6 +201,8 @@ npm run package
 - Electron 自带 Chromium 与 Node runtime；`react`、`sql.js`、`electron-log` 等运行依赖打入 `resources/app.asar`。
 - `sql.js` 的 `sql-wasm.wasm` 应随应用一起打包，数据库不依赖系统 SQLite。
 - 目标机器需要允许写入 `%APPDATA%` 与 `%TEMP%`；前者用于 `focusflow.sqlite`，后者用于单文件便携版自解包。
+- `appx` 包同样使用 `%APPDATA%` 下的 `focusflow.sqlite`；不要假设它会把运行时数据写入安装目录。
+- `openAtLogin` 在 `appx` 下按平台能力处理；如需承诺与安装版完全一致，先单独验证，不要默认视为等价。
 - Windows Defender、SmartScreen、企业安全策略或杀毒软件拦截属于系统安全策略问题，不应误判为缺少 Node、SQLite 或 WebView2。
 
 ## 功能索引
@@ -309,6 +325,7 @@ npm run package
 - 打包配置：跑 `npm test -- main/packageConfig.test.ts`。
 - 构建路径、alias、资源路径：跑 `npm run build`。
 - Windows 发布产物：跑 `npm run package`，检查 `output/release/` 中安装包、单文件便携版、`win-unpacked/` 和 `latest.yml`。
+- AppX 打包链路：统一跑 `npm run package:appx:dev`，并检查 `output/release/` 中 `.appx` 产物与 `output/dev-cert/` 证书导出文件。
 - 启动烟测：用 `output/release/focusflow-single.exe` 和 `output/release/win-unpacked/focusflow.exe` 分别验证；注意单文件版会自解包到 `%TEMP%`，可能受单实例锁影响。
 
 当前测试框架：`vitest`
