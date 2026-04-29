@@ -882,7 +882,10 @@
   white-space: nowrap;
 }
 
-.startButton {
+.timerPhaseButton {
+}
+
+.timerPhaseButton[data-phase-active='true'] {
   color: #fff;
   background:
     radial-gradient(circle at 4% 6%, rgba(186, 226, 255, 0.24), transparent 22%),
@@ -891,8 +894,8 @@
   box-shadow: var(--blue-shadow);
 }
 
-.startButton:hover,
-.startButton:focus-visible {
+.timerPhaseButton[data-phase-active='true']:hover,
+.timerPhaseButton[data-phase-active='true']:focus-visible {
   color: #fff;
   border-color: transparent;
   box-shadow:
@@ -901,21 +904,17 @@
   transform: var(--hover-lift);
 }
 
-.startButton .timerActionIcon {
-  width: 28px;
-  height: 28px;
+.timerPhaseButton[data-phase-active='true'] .timerActionIcon {
   color: #fff;
   filter:
     drop-shadow(0 1px 0 rgba(30, 76, 168, 0.22))
     drop-shadow(0 0 2px rgba(22, 70, 160, 0.18));
 }
 
-.startButton b {
-  color: inherit;
-}
+.startButton {}
 
-:root[data-theme="dark"] .startButton:hover,
-:root[data-theme="dark"] .startButton:focus-visible {
+:root[data-theme="dark"] .timerPhaseButton[data-phase-active='true']:hover,
+:root[data-theme="dark"] .timerPhaseButton[data-phase-active='true']:focus-visible {
   color: #fff;
   border-color: transparent;
   background:
@@ -928,8 +927,8 @@
   outline: none;
 }
 
-:root[data-theme="light"] .startButton:hover,
-:root[data-theme="light"] .startButton:focus-visible {
+:root[data-theme="light"] .timerPhaseButton[data-phase-active='true']:hover,
+:root[data-theme="light"] .timerPhaseButton[data-phase-active='true']:focus-visible {
   color: #fff;
   border-color: transparent;
   background:
@@ -2988,7 +2987,7 @@
   border-color: color-mix(in srgb, var(--line-strong) 92%, white 8%);
 }
 
-:root[data-theme="dark"] .timerActionButton:not(.startButton) {
+:root[data-theme="dark"] .timerActionButton:not([data-phase-active='true']) {
   background: linear-gradient(180deg, rgba(13, 43, 70, 0.82), rgba(8, 29, 48, 0.74));
   border-color: var(--dark-card-border);
   box-shadow:

@@ -1,9 +1,11 @@
+import { readFileSync } from 'node:fs'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, test } from 'vitest'
 import { defaultSettings } from '@shared/defaults'
 import type { TaskBoardSnapshot, TimerSnapshot } from '@shared/types'
 import { TimerView, getPrimaryTimerAction } from './TimerView'
 import { getSmoothedTimerProgress, resolveTimerPomodoroDisplay } from '../viewModel'
+import styles from '../App.module.css'
 
 const createSnapshot = (input: Partial<TimerSnapshot> = {}): TimerSnapshot => ({
   status: 'idle',
@@ -24,6 +26,18 @@ const createSnapshot = (input: Partial<TimerSnapshot> = {}): TimerSnapshot => ({
 })
 
 const noopAsync = async (): Promise<void> => undefined
+
+const renderTimerViewHtml = (snapshot: Partial<TimerSnapshot>): string =>
+  renderToStaticMarkup(
+    <TimerView
+      currentTaskTitle="当前尚未开始专注"
+      progressPercent={snapshot.progress ? snapshot.progress * 100 : 0}
+      settings={defaultSettings}
+      snapshot={createSnapshot(snapshot)}
+      startTimer={noopAsync}
+      updateSettings={noopAsync}
+    />
+  )
 
 const taskBoard: TaskBoardSnapshot = {
   counts: {
@@ -117,6 +131,10 @@ describe('TimerView', () => {
       label: '开始专注',
       action: 'start'
     })
+    expect(getPrimaryTimerAction(createSnapshot({ status: 'running', phase: 'focus' }))).toMatchObject({
+      label: '专注中',
+      action: 'start'
+    })
     expect(getPrimaryTimerAction(createSnapshot({ status: 'completed', phase: 'focus' }))).toMatchObject({
       label: '开始专注',
       action: 'start'
@@ -185,6 +203,104 @@ describe('TimerView', () => {
     expect(idleHtml).toContain('开始专注')
   })
 
+  test('renders the running focus copy on the active focus button', () => {
+    const html = renderTimerViewHtml({ status: 'running', phase: 'focus' })
+
+    expect(html).toContain('<b>专注中</b>')
+    expect(html).toContain('专注中 · 第 1 个番茄钟')
+  })
+
+  test('renders the running short-break copy on the short-break button and header', () => {
+    const html = renderTimerViewHtml({ status: 'running', phase: 'shortBreak' })
+
+    expect(html).toContain('<b>短休中 · 5m</b>')
+    expect(html).toContain('短休中 · 第 1 个番茄钟')
+    expect(html).toContain('<b>开始专注</b>')
+  })
+
+  test('renders the running long-break copy on the long-break button and header', () => {
+    const html = renderTimerViewHtml({ status: 'running', phase: 'longBreak' })
+
+    expect(html).toContain('<b>长休中 · 15m</b>')
+    expect(html).toContain('长休中 · 第 1 个番茄钟')
+  })
+
+  test('keeps resume wording for paused breaks while the header stays on the current phase', () => {
+    const html = renderTimerViewHtml({ status: 'paused', phase: 'shortBreak' })
+
+    expect(html).toContain('<b>继续休息</b>')
+    expect(html).toContain('<b>短休 · 5m</b>')
+    expect(html).toContain('短休中 · 第 1 个番茄钟')
+  })
+
+  test('renders the idle header as pending start', () => {
+    const html = renderTimerViewHtml({ status: 'idle', phase: 'focus' })
+
+    expect(html).toContain('待开始 · 第 1 个番茄钟')
+    expect(html).toContain('<b>开始专注</b>')
+  })
+
+  test('renders the completed focus header as pending start', () => {
+    const html = renderTimerViewHtml({ status: 'completed', phase: 'focus' })
+
+    expect(html).toContain('待开始 · 第 1 个番茄钟')
+  })
+
+  test('renders the completed long-break header as pending start while preserving phase highlight coverage', () => {
+    const html = renderTimerViewHtml({ status: 'completed', phase: 'longBreak' })
+
+    expect(html).toContain('待开始 · 第 1 个番茄钟')
+    expect(html).toContain('data-phase-button="longBreak" data-phase-active="true"')
+  })
+
+  test('does not highlight any phase button while idle', () => {
+    const html = renderTimerViewHtml({ status: 'idle', phase: 'focus' })
+
+    expect(html).toContain('data-phase-button="focus" data-phase-active="false"')
+    expect(html).toContain('data-phase-button="shortBreak" data-phase-active="false"')
+    expect(html).toContain('data-phase-button="longBreak" data-phase-active="false"')
+    expect(html).not.toContain('data-phase-active="true"')
+    expect(html).not.toContain(styles.startButton)
+  })
+
+  test('highlights only the focus button while a focus session is running', () => {
+    const html = renderTimerViewHtml({ status: 'running', phase: 'focus' })
+
+    expect(html).toContain('data-phase-button="focus" data-phase-active="true"')
+    expect(html).toContain('data-phase-button="shortBreak" data-phase-active="false"')
+    expect(html).toContain('data-phase-button="longBreak" data-phase-active="false"')
+  })
+
+  test('keeps only the short-break button highlighted while paused', () => {
+    const html = renderTimerViewHtml({ status: 'paused', phase: 'shortBreak' })
+
+    expect(html).toContain('data-phase-button="focus" data-phase-active="false"')
+    expect(html).toContain('data-phase-button="shortBreak" data-phase-active="true"')
+    expect(html).toContain('data-phase-button="longBreak" data-phase-active="false"')
+  })
+
+  test('keeps only the long-break button highlighted after completing a long break', () => {
+    const html = renderTimerViewHtml({ status: 'completed', phase: 'longBreak' })
+
+    expect(html).toContain('data-phase-button="focus" data-phase-active="false"')
+    expect(html).toContain('data-phase-button="shortBreak" data-phase-active="false"')
+    expect(html).toContain('data-phase-button="longBreak" data-phase-active="true"')
+  })
+
+  test('keeps only the focus button highlighted after completing a focus session', () => {
+    const html = renderTimerViewHtml({ status: 'completed', phase: 'focus' })
+
+    expect(html).toContain('data-phase-button="focus" data-phase-active="true"')
+    expect(html).toContain('data-phase-button="shortBreak" data-phase-active="false"')
+    expect(html).toContain('data-phase-button="longBreak" data-phase-active="false"')
+  })
+
+  test('dark-mode base button styling excludes active phase buttons', () => {
+    const css = readFileSync(new URL('../App.module.css', import.meta.url), 'utf-8')
+
+    expect(css).toContain(':root[data-theme="dark"] .timerActionButton:not([data-phase-active=\'true\'])')
+  })
+
   test('formats long action button durations with the shared non-settings label rules', () => {
     const html = renderToStaticMarkup(
       <TimerView
@@ -233,7 +349,7 @@ describe('TimerView', () => {
     expect(html).not.toContain('当前任务')
     expect(html).toContain('长休进度')
     expect(html).not.toContain('focusDialProgress')
-    expect(html).toContain('1/5轮')
+    expect(html).toContain('1/5 轮')
     expect(html).not.toContain('>1/5<')
   })
 
@@ -250,7 +366,7 @@ describe('TimerView', () => {
     )
 
     expect(html).toContain('focusDialProgress')
-    expect(html).toContain('1/5轮')
+    expect(html).toContain('1/5 轮')
   })
 
   test('renders the progress circle while a session is running even before the first completed focus', () => {
@@ -266,7 +382,7 @@ describe('TimerView', () => {
     )
 
     expect(html).toContain('focusDialProgress')
-    expect(html).toContain('1/5轮')
+    expect(html).toContain('1/5 轮')
   })
 
   test('derives task-bound pomodoro display from the bound task instead of global focus count', () => {
@@ -359,6 +475,6 @@ describe('TimerView', () => {
     expect(html).toContain('已专注：1 个番茄钟')
     expect(html).not.toContain('第 8 个番茄钟')
     expect(html).not.toContain('已专注：7 个番茄钟')
-    expect(html).toContain('2/5轮')
+    expect(html).toContain('2/5 轮')
   })
 })

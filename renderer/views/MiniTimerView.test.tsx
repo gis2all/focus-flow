@@ -55,13 +55,31 @@ describe('MiniTimerView', () => {
       />
     )
 
-    expect(html).toContain('长休息')
+    expect(html).toContain('长休中')
     expect(html).toContain('14')
     expect(html).toContain('32')
     expect(html).toContain('aria-label="拖动小窗"')
     expect(html).toContain('aria-label="返回主窗口"')
     expect(html).toContain('timerDigits')
     expect(html).not.toContain('miniStatusPill')
+  })
+
+  test('renders short-break as an active in-progress label while running', () => {
+    const html = renderToStaticMarkup(
+      <MiniTimerView
+        activeTheme="light"
+        settings={defaultSettings}
+        snapshot={createSnapshot({
+          status: 'running',
+          phase: 'shortBreak',
+          remainingMs: 4 * 60_000 + 8_000
+        })}
+      />
+    )
+
+    expect(html).toContain('短休中')
+    expect(html).toContain('04')
+    expect(html).toContain('08')
   })
 
   test('renders a pending state with the next focus duration when no timer is active', () => {

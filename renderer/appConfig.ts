@@ -1,10 +1,11 @@
 import type { TimerPhase } from '@shared/types'
 import type { ViewKey } from './types'
 
+// Activity-phase labels are consumed by compact status surfaces such as the mini timer.
 export const phaseLabel: Record<TimerPhase, string> = {
   focus: '专注中',
-  shortBreak: '短休息',
-  longBreak: '长休息'
+  shortBreak: '短休中',
+  longBreak: '长休中'
 }
 
 export const navItems: Array<{ key: ViewKey; label: string }> = [
