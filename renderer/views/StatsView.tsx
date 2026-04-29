@@ -458,17 +458,17 @@ export const StatsView = ({
                   style={{ '--focus': `${focusPercent}%`, '--break': `${breakPercent}%` } as CSSProperties}
                 />
                 <div className={styles.legendList}>
-                  <span>
+                  <span data-composition-kind="focus">
                     <b />
                     <em>专注</em>
                     <strong>{formatDurationLabel(focusTotal)}</strong>
                   </span>
-                  <span>
+                  <span data-composition-kind="shortBreak">
                     <b />
                     <em>短休息</em>
                     <strong>{formatDurationLabel(shortBreakMinutes)}</strong>
                   </span>
-                  <span>
+                  <span data-composition-kind="longBreak">
                     <b />
                     <em>长休息</em>
                     <strong>{formatDurationLabel(longBreakMinutes)}</strong>

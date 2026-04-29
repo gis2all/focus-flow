@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, test } from 'vitest'
 import type { CalendarDayStats, FocusStats, MonthStats } from '@shared/types'
@@ -107,6 +108,24 @@ describe('StatsView', () => {
     expect(html).toContain('5m')
     expect(html).toContain('长休息')
     expect(html).toContain('15m')
+    expect(html).toContain('data-composition-kind="focus"')
+    expect(html).toContain('data-composition-kind="shortBreak"')
+    expect(html).toContain('data-composition-kind="longBreak"')
+  })
+
+  test('uses semantic composition color variables instead of nth-child legend coloring', () => {
+    const css = readFileSync(new URL('../App.module.css', import.meta.url), 'utf-8')
+
+    expect(css).toContain('--composition-focus-color: var(--accent);')
+    expect(css).toContain('--composition-short-break-color: #4d5fe0;')
+    expect(css).toContain('--composition-long-break-color: #57bfd0;')
+    expect(css).toContain(':root[data-theme="dark"] .compositionPanel {')
+    expect(css).toContain('--composition-short-break-color: #a3b1ff;')
+    expect(css).toContain('--composition-long-break-color: #63d1e2;')
+    expect(css).toContain('[data-composition-kind="shortBreak"] b')
+    expect(css).toContain('[data-composition-kind="longBreak"] b')
+    expect(css).not.toContain('.legendList span:nth-child(2) b')
+    expect(css).not.toContain('.legendList span:nth-child(3) b')
   })
 
   test('renders all ranked task duration rows, sorts unbound focus in order, and shows y-axis ticks', () => {
