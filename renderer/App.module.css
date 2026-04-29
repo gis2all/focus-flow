@@ -882,7 +882,10 @@
   white-space: nowrap;
 }
 
-.startButton {
+.timerPhaseButton {
+}
+
+.timerPhaseButton[data-phase-active='true'] {
   color: #fff;
   background:
     radial-gradient(circle at 4% 6%, rgba(186, 226, 255, 0.24), transparent 22%),
@@ -891,8 +894,8 @@
   box-shadow: var(--blue-shadow);
 }
 
-.startButton:hover,
-.startButton:focus-visible {
+.timerPhaseButton[data-phase-active='true']:hover,
+.timerPhaseButton[data-phase-active='true']:focus-visible {
   color: #fff;
   border-color: transparent;
   box-shadow:
@@ -901,21 +904,17 @@
   transform: var(--hover-lift);
 }
 
-.startButton .timerActionIcon {
-  width: 28px;
-  height: 28px;
+.timerPhaseButton[data-phase-active='true'] .timerActionIcon {
   color: #fff;
   filter:
     drop-shadow(0 1px 0 rgba(30, 76, 168, 0.22))
     drop-shadow(0 0 2px rgba(22, 70, 160, 0.18));
 }
 
-.startButton b {
-  color: inherit;
-}
+.startButton {}
 
-:root[data-theme="dark"] .startButton:hover,
-:root[data-theme="dark"] .startButton:focus-visible {
+:root[data-theme="dark"] .timerPhaseButton[data-phase-active='true']:hover,
+:root[data-theme="dark"] .timerPhaseButton[data-phase-active='true']:focus-visible {
   color: #fff;
   border-color: transparent;
   background:
@@ -928,8 +927,8 @@
   outline: none;
 }
 
-:root[data-theme="light"] .startButton:hover,
-:root[data-theme="light"] .startButton:focus-visible {
+:root[data-theme="light"] .timerPhaseButton[data-phase-active='true']:hover,
+:root[data-theme="light"] .timerPhaseButton[data-phase-active='true']:focus-visible {
   color: #fff;
   border-color: transparent;
   background:
@@ -1972,6 +1971,9 @@
   grid-template-rows: auto minmax(0, 1fr);
   min-height: 0;
   padding: 14px 16px 12px;
+  --composition-focus-color: var(--accent);
+  --composition-short-break-color: #4d5fe0;
+  --composition-long-break-color: #57bfd0;
 }
 
 .compositionBody {
@@ -1990,7 +1992,11 @@
   width: clamp(138px, 40%, 200px);
   aspect-ratio: 1;
   border-radius: 50%;
-  background: conic-gradient(var(--accent) 0 var(--focus), #5d6674 var(--focus) var(--break), #98a0ad var(--break) 100%);
+  background: conic-gradient(
+    var(--composition-focus-color) 0 var(--focus),
+    var(--composition-short-break-color) var(--focus) var(--break),
+    var(--composition-long-break-color) var(--break) 100%
+  );
   --donut-ring: clamp(12px, 1.1vw, 16px);
   --donut-ring-inner: calc(var(--donut-ring) - 1px);
   -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - var(--donut-ring)), #000 calc(100% - var(--donut-ring-inner)));
@@ -2021,7 +2027,7 @@
   display: inline-block;
   width: 8px;
   height: 8px;
-  background: var(--accent);
+  background: var(--composition-focus-color);
 }
 
 .legendList em {
@@ -2036,12 +2042,12 @@
   font-size: 11px;
 }
 
-.legendList span:nth-child(2) b {
-  background: #5d6674;
+.legendList [data-composition-kind="shortBreak"] b {
+  background: var(--composition-short-break-color);
 }
 
-.legendList span:nth-child(3) b {
-  background: #98a0ad;
+.legendList [data-composition-kind="longBreak"] b {
+  background: var(--composition-long-break-color);
 }
 
 .rankPanel {
@@ -2988,7 +2994,7 @@
   border-color: color-mix(in srgb, var(--line-strong) 92%, white 8%);
 }
 
-:root[data-theme="dark"] .timerActionButton:not(.startButton) {
+:root[data-theme="dark"] .timerActionButton:not([data-phase-active='true']) {
   background: linear-gradient(180deg, rgba(13, 43, 70, 0.82), rgba(8, 29, 48, 0.74));
   border-color: var(--dark-card-border);
   box-shadow:
@@ -3153,6 +3159,11 @@
   box-shadow:
     inset 0 1px 0 var(--dark-glass-highlight),
     0 12px 28px rgba(0, 0, 0, 0.18);
+}
+
+:root[data-theme="dark"] .compositionPanel {
+  --composition-short-break-color: #a3b1ff;
+  --composition-long-break-color: #63d1e2;
 }
 
 :root[data-theme="dark"] .calendarMonthNav button {

@@ -49,6 +49,9 @@ describe('StatsService', () => {
       updateTask: async () => {
         throw new Error('not used')
       },
+      deleteHistoricalFocusByTaskId: async () => {
+        throw new Error('not used')
+      },
       findActive: async () => null
     }
     const tasks: TaskRepository = {
@@ -113,6 +116,9 @@ describe('StatsService', () => {
         throw new Error('not used')
       },
       updateTask: async () => {
+        throw new Error('not used')
+      },
+      deleteHistoricalFocusByTaskId: async () => {
         throw new Error('not used')
       },
       findActive: async () => null

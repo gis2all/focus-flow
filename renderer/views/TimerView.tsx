@@ -1,6 +1,5 @@
 import { useState, type CSSProperties, type ReactElement } from 'react'
 import type { AppSettings, TimerPhase, TimerSnapshot } from '@shared/types'
-import { phaseLabel } from '../appConfig'
 import {
   CoffeeCupIcon,
   LoungeChairIcon,
@@ -28,6 +27,17 @@ interface PrimaryTimerAction {
   label: string
 }
 
+const timerHeaderPhaseLabel: Record<TimerPhase, string> = {
+  focus: '专注中',
+  shortBreak: '短休中',
+  longBreak: '长休中'
+}
+
+const timerPhaseButtonBaseLabel: Record<Exclude<TimerPhase, 'focus'>, string> = {
+  shortBreak: '短休',
+  longBreak: '长休'
+}
+
 export const getPrimaryTimerAction = (
   snapshot: Pick<TimerSnapshot, 'status' | 'phase'>
 ): PrimaryTimerAction => {
@@ -38,10 +48,39 @@ export const getPrimaryTimerAction = (
     }
   }
 
+  if (snapshot.status === 'running' && snapshot.phase === 'focus') {
+    return {
+      action: 'start',
+      label: '专注中'
+    }
+  }
+
   return {
     action: 'start',
     label: '开始专注'
   }
+}
+
+const getTimerHeaderLabel = (snapshot: Pick<TimerSnapshot, 'status' | 'phase'>): string => {
+  if (snapshot.status === 'idle' || snapshot.status === 'completed') {
+    return '待开始'
+  }
+
+  return timerHeaderPhaseLabel[snapshot.phase]
+}
+
+const getTimerPhaseButtonLabel = (
+  phase: Exclude<TimerPhase, 'focus'>,
+  snapshot: Pick<TimerSnapshot, 'status' | 'phase'>,
+  minutes: number
+): string => {
+  const phaseDuration = formatDurationLabel(minutes)
+
+  if (snapshot.status === 'running' && snapshot.phase === phase) {
+    return `${timerHeaderPhaseLabel[phase]} · ${phaseDuration}`
+  }
+
+  return `${timerPhaseButtonBaseLabel[phase]} · ${phaseDuration}`
 }
 
 export const TimerView = ({
@@ -58,8 +97,12 @@ export const TimerView = ({
   const autoSwitchEnabled = settings.autoStartBreaks || settings.autoStartFocus
   const [displayMinutes = '00', displaySeconds = '00'] = formatTimerClock(snapshot.remainingMs).split(':')
   const primaryAction = getPrimaryTimerAction(snapshot)
+  const timerHeaderLabel = getTimerHeaderLabel(snapshot)
+  const shortBreakActionLabel = getTimerPhaseButtonLabel('shortBreak', snapshot, settings.shortBreakMinutes)
+  const longBreakActionLabel = getTimerPhaseButtonLabel('longBreak', snapshot, settings.longBreakMinutes)
   const canPause = snapshot.status === 'running'
   const canSkip = snapshot.status === 'running' || snapshot.status === 'paused'
+  const shouldHighlightPhase = snapshot.status !== 'idle'
   const normalizedProgress = Math.min(100, Math.max(0, progressPercent))
   const timerStyle = {
     '--progress': `${normalizedProgress}%`,
@@ -124,6 +167,8 @@ export const TimerView = ({
     openOrRunTimerAction({ kind: 'startFocus' })
   }
 
+  const isPhaseButtonActive = (phase: TimerPhase): boolean => shouldHighlightPhase && snapshot.phase === phase
+
   return (
     <div className={styles.timerView} style={timerStyle}>
       <div className={styles.timerHeader}>
@@ -132,7 +177,7 @@ export const TimerView = ({
             <span className={styles.timerStatusHalo} />
             <span className={styles.timerStatusCore} />
           </span>
-          {phaseLabel[snapshot.phase]} · 第 {resolvedPomodoroDisplay.ordinal} 个番茄钟
+          {timerHeaderLabel} · 第 {resolvedPomodoroDisplay.ordinal} 个番茄钟
         </p>
         <label className={styles.autoSwitch}>
           <span>自动切换专注/休息</span>
@@ -169,7 +214,7 @@ export const TimerView = ({
               </svg>
               <div className={styles.focusDialContent}>
                 <span>长休进度</span>
-                <strong>{longBreakProgress}/{longBreakInterval}轮</strong>
+                <strong>{longBreakProgress}/{longBreakInterval} 轮</strong>
               </div>
             </div>
           </div>
@@ -177,7 +222,13 @@ export const TimerView = ({
       </div>
 
       <div className={styles.timerActions}>
-        <button className={`${styles.timerActionButton} ${styles.startButton}`} onClick={handlePrimaryAction} type="button">
+        <button
+          data-phase-button="focus"
+          data-phase-active={isPhaseButtonActive('focus')}
+          className={`${styles.timerActionButton} ${styles.timerPhaseButton}`}
+          onClick={handlePrimaryAction}
+          type="button"
+        >
           <PlayControlIcon className={styles.timerActionIcon} />
           <b>{primaryAction.label}</b>
         </button>
@@ -195,20 +246,24 @@ export const TimerView = ({
           <b>跳过</b>
         </button>
         <button
-          className={styles.timerActionButton}
+          data-phase-button="shortBreak"
+          data-phase-active={isPhaseButtonActive('shortBreak')}
+          className={`${styles.timerActionButton} ${styles.timerPhaseButton}`}
           onClick={() => openOrRunTimerAction({ kind: 'startShortBreak', minutes: settings.shortBreakMinutes })}
           type="button"
         >
           <CoffeeCupIcon className={styles.timerActionIcon} />
-          <b>{`短休 · ${formatDurationLabel(settings.shortBreakMinutes)}`}</b>
+          <b>{shortBreakActionLabel}</b>
         </button>
         <button
-          className={styles.timerActionButton}
+          data-phase-button="longBreak"
+          data-phase-active={isPhaseButtonActive('longBreak')}
+          className={`${styles.timerActionButton} ${styles.timerPhaseButton}`}
           onClick={() => openOrRunTimerAction({ kind: 'startLongBreak', minutes: settings.longBreakMinutes })}
           type="button"
         >
           <LoungeChairIcon className={styles.timerActionIcon} />
-          <b>{`长休 · ${formatDurationLabel(settings.longBreakMinutes)}`}</b>
+          <b>{longBreakActionLabel}</b>
         </button>
       </div>
 

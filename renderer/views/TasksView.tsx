@@ -71,6 +71,24 @@ export const resolveTaskBindAction = ({
   return { kind: 'startFocusWithTask' }
 }
 
+interface DeleteTaskConfirmationBodyInput {
+  currentTimerTaskId: string | null
+  taskId: string
+  timerContext: Pick<TimerSnapshot, 'status' | 'phase'>
+}
+
+export const getDeleteTaskConfirmationBody = ({
+  currentTimerTaskId,
+  taskId,
+  timerContext
+}: DeleteTaskConfirmationBodyInput): string => {
+  if (currentTimerTaskId === taskId && timerContext.phase === 'focus' && shouldConfirmTimerAction(timerContext)) {
+    return '删除后任务会从列表移除，并会同时删除关联的历史专注记录；当前这轮专注会自动改为未绑定。'
+  }
+
+  return '删除后任务会从列表移除，并会同时删除关联的历史专注记录。'
+}
+
 const tabLabel: Record<TaskViewTab, string> = {
   all: '全部',
   active: '进行中',
@@ -632,7 +650,11 @@ export const TasksView = ({
               : confirmDialog.kind === 'rebind'
                 ? `切换后，当前这轮专注后续记录将关联到任务「${confirmDialog.taskTitle}」，不再继续绑定「${confirmDialog.previousTaskTitle}」。`
               : confirmDialog.kind === 'delete'
-                ? '删除后任务会从列表移除，历史专注统计会按“已删除任务”展示。'
+                ? getDeleteTaskConfirmationBody({
+                    currentTimerTaskId,
+                    taskId: confirmDialog.taskId,
+                    timerContext
+                  })
                 : getTimerActionConfirmation({
                     kind: 'startFocusWithTask',
                     taskTitle: confirmDialog.taskTitle

@@ -25,7 +25,7 @@ export const formatTimerClock = (milliseconds: number): string => {
 }
 
 export const formatDurationLabel = (minutes: number): string => {
-  const safeMinutes = Math.max(0, Math.floor(minutes))
+  const safeMinutes = Number.isFinite(minutes) ? Math.max(0, Math.floor(minutes)) : 0
   if (safeMinutes <= 60) return `${safeMinutes}m`
 
   const hours = Math.floor(safeMinutes / 60)

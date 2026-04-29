@@ -13,15 +13,18 @@ import {
 import { MINI_WINDOW_HEIGHT, MINI_WINDOW_WIDTH } from '@main/windowing'
 import type { AppSettings } from '@shared/types'
 import type { SystemThemePort } from '@main/ports/desktop'
+import { getSettingsUpdatePatch } from './settingsUpdateRequest'
 import type { SettingsService } from '@main/services/settingsService'
 import type { StatsService } from '@main/services/statsService'
 import type { TaskBoardService } from '@main/services/taskBoardService'
+import type { TaskDeletionService } from '@main/services/taskDeletionService'
 import type { TaskService } from '@main/services/taskService'
 import type { TimerService } from '@main/services/timerService'
 
 export interface IpcServices {
   timer: TimerService
   tasks: TaskService
+  taskDeletion: TaskDeletionService
   taskBoard: TaskBoardService
   settings: SettingsService
   stats: StatsService
@@ -107,12 +110,6 @@ export const registerIpcHandlers = (services: IpcServices): void => {
     activeWindowDrags.delete(webContentsId)
   }
 
-  const broadcastSnapshot = (snapshot: ReturnType<TimerService['getSnapshot']>): void => {
-    for (const window of services.getWindows()) {
-      window.webContents.send(IPC_CHANNELS.timer.snapshot, snapshot)
-    }
-  }
-
   ipcMain.handle(IPC_CHANNELS.timer.getSnapshot, () => services.timer.getSnapshot())
   ipcMain.handle(IPC_CHANNELS.timer.start, (_event, request?: StartTimerRequest) => services.timer.start(request))
   ipcMain.handle(IPC_CHANNELS.timer.bindCurrentTask, (_event, taskId: string | null) => services.timer.bindCurrentTask(taskId))
@@ -130,11 +127,11 @@ export const registerIpcHandlers = (services: IpcServices): void => {
   ipcMain.handle(IPC_CHANNELS.tasks.complete, (_event, id: string) => services.tasks.complete(id))
   ipcMain.handle(IPC_CHANNELS.tasks.restore, (_event, id: string) => services.tasks.restore(id))
   ipcMain.handle(IPC_CHANNELS.tasks.reorder, (_event, request: ReorderTasksRequest) => services.tasks.reorder(request.ids))
-  ipcMain.handle(IPC_CHANNELS.tasks.delete, (_event, id: string) => services.tasks.delete(id))
+  ipcMain.handle(IPC_CHANNELS.tasks.delete, (_event, id: string) => services.taskDeletion.delete(id))
 
   ipcMain.handle(IPC_CHANNELS.settings.get, () => services.settings.get())
-  ipcMain.handle(IPC_CHANNELS.settings.update, async (_event, request: UpdateSettingsRequest) => {
-    const updated = await services.settings.update(request.patch)
+  ipcMain.handle(IPC_CHANNELS.settings.update, async (_event, request: UpdateSettingsRequest | unknown) => {
+    const updated = await services.settings.update(getSettingsUpdatePatch(request))
     await services.timer.applySettings(updated)
     await services.onSettingsUpdated?.(updated)
     return updated
@@ -181,7 +178,4 @@ export const registerIpcHandlers = (services: IpcServices): void => {
   })
   ipcMain.handle(IPC_CHANNELS.system.quit, () => services.quit())
 
-  services.timer.onSnapshot((snapshot) => {
-    broadcastSnapshot(snapshot)
-  })
 }

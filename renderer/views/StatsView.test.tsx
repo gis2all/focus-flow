@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, test } from 'vitest'
 import type { CalendarDayStats, FocusStats, MonthStats } from '@shared/types'
@@ -107,6 +108,24 @@ describe('StatsView', () => {
     expect(html).toContain('5m')
     expect(html).toContain('长休息')
     expect(html).toContain('15m')
+    expect(html).toContain('data-composition-kind="focus"')
+    expect(html).toContain('data-composition-kind="shortBreak"')
+    expect(html).toContain('data-composition-kind="longBreak"')
+  })
+
+  test('uses semantic composition color variables instead of nth-child legend coloring', () => {
+    const css = readFileSync(new URL('../App.module.css', import.meta.url), 'utf-8')
+
+    expect(css).toContain('--composition-focus-color: var(--accent);')
+    expect(css).toContain('--composition-short-break-color: #4d5fe0;')
+    expect(css).toContain('--composition-long-break-color: #57bfd0;')
+    expect(css).toContain(':root[data-theme="dark"] .compositionPanel {')
+    expect(css).toContain('--composition-short-break-color: #a3b1ff;')
+    expect(css).toContain('--composition-long-break-color: #63d1e2;')
+    expect(css).toContain('[data-composition-kind="shortBreak"] b')
+    expect(css).toContain('[data-composition-kind="longBreak"] b')
+    expect(css).not.toContain('.legendList span:nth-child(2) b')
+    expect(css).not.toContain('.legendList span:nth-child(3) b')
   })
 
   test('renders all ranked task duration rows, sorts unbound focus in order, and shows y-axis ticks', () => {
@@ -353,6 +372,47 @@ describe('StatsView', () => {
     })
 
     expect(emptyHtml).toContain('这一天还没有专注时长记录')
+  })
+
+  test('keeps the detail pane anchored to today when browsing a historical month', () => {
+    const now = new Date()
+    const todayKey = localDateKey(now)
+    const previousMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+    const previousMonthYear = previousMonthDate.getFullYear()
+    const previousMonth = previousMonthDate.getMonth() + 1
+    const days = createCalendarDays(previousMonthYear, previousMonth)
+    days[0] = {
+      ...days[0],
+      focusMinutes: 40,
+      completedPomodoros: 2,
+      completedTasks: 1,
+      taskFocusMinutes: [{ taskId: 'historical-task', title: 'Historical task', minutes: 40, status: 'completed' }]
+    }
+
+    const html = renderStatsView(
+      createStats({
+        taskFocusMinutes: [{ taskId: 'today-task', title: 'Today task', minutes: 25, status: 'completed' }],
+        unboundFocusMinutes: 15
+      }),
+      {
+        activeStatsTab: 'calendar',
+        monthStats: createMonthStats({
+          year: previousMonthYear,
+          month: previousMonth,
+          days,
+          maxFocusMinutes: 40
+        }),
+        selectedCalendarDate: todayKey
+      }
+    )
+
+    expect(html).not.toContain('data-calendar-selected="true"')
+    expect(html).toContain(`${todayKey.slice(5)} 专注时长`)
+    expect(html).toContain('Today task')
+    expect(html).toContain('25m')
+    expect(html).toContain('未绑定专注')
+    expect(html).toContain('15m')
+    expect(html).not.toContain('Historical task')
   })
 
   test('marks today in the calendar when the selected month contains the local current day', () => {

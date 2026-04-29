@@ -185,6 +185,8 @@ export const StatsView = ({
   ]
   const todayKey = localDateKey(new Date())
   const calendarGridItems = getCalendarGridItems(monthStats)
+  // selectedCalendarDate is the detail-pane anchor, so it may legally point to
+  // absolute today even when the visible historical month has no matching day cell.
   const selectedCalendarDay = monthStats.days.find((day) => day.date === selectedCalendarDate) ?? null
   const isSelectedCalendarDateToday = selectedCalendarDate === todayKey
   const selectedCalendarFocusDurationRows = isSelectedCalendarDateToday
@@ -456,17 +458,17 @@ export const StatsView = ({
                   style={{ '--focus': `${focusPercent}%`, '--break': `${breakPercent}%` } as CSSProperties}
                 />
                 <div className={styles.legendList}>
-                  <span>
+                  <span data-composition-kind="focus">
                     <b />
                     <em>专注</em>
                     <strong>{formatDurationLabel(focusTotal)}</strong>
                   </span>
-                  <span>
+                  <span data-composition-kind="shortBreak">
                     <b />
                     <em>短休息</em>
                     <strong>{formatDurationLabel(shortBreakMinutes)}</strong>
                   </span>
-                  <span>
+                  <span data-composition-kind="longBreak">
                     <b />
                     <em>长休息</em>
                     <strong>{formatDurationLabel(longBreakMinutes)}</strong>

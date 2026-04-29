@@ -226,6 +226,14 @@ export class SqliteTimerSessionRepository implements TimerSessionRepository {
     }
   }
 
+  async deleteHistoricalFocusByTaskId(taskId: string): Promise<void> {
+    await this.database.run(
+      `DELETE FROM timer_sessions
+       WHERE phase = 'focus' AND task_id = ?`,
+      [taskId]
+    )
+  }
+
   async findActive(): Promise<TimerSession | null> {
     const row = this.database.get<TimerSessionRow>(
       'SELECT * FROM timer_sessions WHERE ended_at IS NULL AND completed = 0 ORDER BY started_at DESC LIMIT 1'

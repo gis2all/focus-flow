@@ -36,6 +36,7 @@ export interface TimerSessionRepository {
   create(input: CreateTimerSessionInput): Promise<TimerSession>
   finish(input: FinishTimerSessionInput): Promise<void>
   updateTask(input: UpdateTimerSessionTaskInput): Promise<void>
+  deleteHistoricalFocusByTaskId(taskId: string): Promise<void>
   findActive(): Promise<TimerSession | null>
 }
 

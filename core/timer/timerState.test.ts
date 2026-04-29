@@ -5,6 +5,7 @@ import {
   deriveTimerSnapshot,
   getNextPhase,
   pauseTimer,
+  phaseDurationMs,
   restoreTimerFromSession,
   resumeTimer,
   startTimer
@@ -51,6 +52,25 @@ describe('timer state machine', () => {
     expect(getNextPhase('focus', 1, defaultSettings)).toBe('shortBreak')
     expect(getNextPhase('focus', 4, defaultSettings)).toBe('longBreak')
     expect(getNextPhase('shortBreak', 4, defaultSettings)).toBe('focus')
+  })
+
+  test('falls back to safe defaults when numeric settings are invalid', () => {
+    const invalidSettings = {
+      ...defaultSettings,
+      focusMinutes: Number.NaN,
+      shortBreakMinutes: Number.POSITIVE_INFINITY,
+      longBreakMinutes: 0,
+      longBreakInterval: 0
+    }
+
+    expect(phaseDurationMs('focus', invalidSettings)).toBe(defaultSettings.focusMinutes * 60_000)
+    expect(phaseDurationMs('shortBreak', invalidSettings)).toBe(defaultSettings.shortBreakMinutes * 60_000)
+    expect(phaseDurationMs('longBreak', invalidSettings)).toBe(defaultSettings.longBreakMinutes * 60_000)
+    expect(getNextPhase('focus', 4, invalidSettings)).toBe('longBreak')
+
+    const idle = createIdleTimer(invalidSettings, at('2026-04-25T09:00:00.000'))
+    expect(idle.durationMs).toBe(defaultSettings.focusMinutes * 60_000)
+    expect(Number.isFinite(idle.durationMs)).toBe(true)
   })
 
   test('restores an unfinished session when it is still inside the expected duration', () => {
