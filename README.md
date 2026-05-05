@@ -1,6 +1,7 @@
 # FocusFlow
 
 [![CI](https://github.com/gis2all/focus-flow/actions/workflows/ci.yml/badge.svg)](https://github.com/gis2all/focus-flow/actions/workflows/ci.yml)
+[![License](https://img.shields.io/github/license/gis2all/focus-flow)](LICENSE)
 
 FocusFlow 是一个本地优先的 Windows 桌面番茄钟客户端，面向个人专注、任务绑定和本地统计场景。它把番茄钟、待办任务、专注统计、系统托盘、小窗和 Windows 通知整合在一个轻量桌面应用里。
 
