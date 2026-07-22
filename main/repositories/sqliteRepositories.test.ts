@@ -61,6 +61,29 @@ describe('sqlite repositories', () => {
     expect((await tasks.list()).map((task) => task.id)).toEqual([third.id, first.id])
   })
 
+  test('rolls back every task position when a reorder write fails', async () => {
+    const tasks = new SqliteTaskRepository(database)
+    const first = await tasks.create('First', '2026-04-25T09:00:00.000Z')
+    const second = await tasks.create('Second', '2026-04-25T09:01:00.000Z')
+    const third = await tasks.create('Third', '2026-04-25T09:02:00.000Z')
+    await database.run(`
+      CREATE TRIGGER fail_second_sort_order
+      BEFORE UPDATE OF sort_order ON tasks
+      WHEN NEW.sort_order = 2
+      BEGIN
+        SELECT RAISE(ABORT, 'forced reorder failure');
+      END;
+    `)
+
+    await expect(tasks.reorderActive([third.id, first.id, second.id])).rejects.toThrow('forced reorder failure')
+
+    expect((await tasks.list()).map((task) => [task.id, task.sortOrder])).toEqual([
+      [first.id, 1],
+      [second.id, 2],
+      [third.id, 3]
+    ])
+  })
+
   test('backfills active task sort order when existing rows have zero sort order', async () => {
     const tasks = new SqliteTaskRepository(database)
 
@@ -251,6 +274,24 @@ describe('sqlite repositories', () => {
       focusMinutes: 50,
       themePreference: 'dark'
     })
+  })
+
+  test('rolls back every setting when a multi-field update fails', async () => {
+    const settings = new SqliteSettingsRepository(database)
+    await database.run(`
+      CREATE TRIGGER fail_theme_setting
+      BEFORE INSERT ON settings
+      WHEN NEW.key = 'themePreference'
+      BEGIN
+        SELECT RAISE(ABORT, 'forced settings failure');
+      END;
+    `)
+
+    await expect(settings.update({ focusMinutes: 50, themePreference: 'dark' })).rejects.toThrow(
+      'forced settings failure'
+    )
+
+    expect(await settings.get()).toEqual(defaultSettings)
   })
 
   test('persists timer runtime state for restore scenarios', async () => {
