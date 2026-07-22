@@ -34,3 +34,12 @@ jobs:
 
       - name: Build app
         run: npm run build
+
+      - name: Run Electron end-to-end smoke
+        run: npm run test:e2e
+
+      - name: Package Windows artifacts
+        run: npm run package
+
+      - name: Run packaged executable smoke
+        run: npm run test:package-smoke

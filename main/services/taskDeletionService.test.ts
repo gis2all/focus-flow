@@ -103,6 +103,10 @@ class FakeTimerService {
   }
 }
 
+const passthroughTransactions = {
+  transaction: async <T>(operation: () => Promise<T> | T): Promise<T> => operation()
+}
+
 describe('TaskDeletionService', () => {
   test('deletes a normal task together with its historical focus records', async () => {
     const taskRepository = createTaskRepository([
@@ -114,14 +118,22 @@ describe('TaskDeletionService', () => {
       createSession({ id: 'focus-task-2', phase: 'focus', taskId: 'task-2', startedAt: '2026-04-24T10:00:00.000Z' })
     ])
     const timer = new FakeTimerService([], createSnapshot({ status: 'idle', phase: 'focus', taskId: null, sessionId: null }))
+    let transactionCount = 0
     const service = new TaskDeletionService({
       tasks: taskRepository,
       sessions: sessionRepository,
-      timer
+      timer,
+      transactions: {
+        transaction: async (operation) => {
+          transactionCount += 1
+          return operation()
+        }
+      }
     })
 
     await service.delete('task-1')
 
+    expect(transactionCount).toBe(1)
     await expect(taskRepository.list()).resolves.toEqual([expect.objectContaining({ id: 'task-2' })])
     await expect(sessionRepository.list()).resolves.toEqual([expect.objectContaining({ id: 'focus-task-2' })])
   })
@@ -159,7 +171,8 @@ describe('TaskDeletionService', () => {
     const service = new TaskDeletionService({
       tasks: taskRepository,
       sessions: sessionRepository,
-      timer
+      timer,
+      transactions: passthroughTransactions
     })
 
     await service.delete('task-1')
@@ -199,7 +212,8 @@ describe('TaskDeletionService', () => {
     const service = new TaskDeletionService({
       tasks: taskRepository,
       sessions: sessionRepository,
-      timer
+      timer,
+      transactions: passthroughTransactions
     })
 
     await service.delete('task-1')
@@ -235,7 +249,8 @@ describe('TaskDeletionService', () => {
     const service = new TaskDeletionService({
       tasks: taskRepository,
       sessions: sessionRepository,
-      timer
+      timer,
+      transactions: passthroughTransactions
     })
 
     await service.delete('task-2')

@@ -8,7 +8,8 @@ export default defineConfig({
     setupFiles: ['vitest.setup.ts'],
     include: [
       '{core,main,preload,renderer,shared}/**/*.test.ts',
-      '{core,main,preload,renderer,shared}/**/*.test.tsx'
+      '{core,main,preload,renderer,shared}/**/*.test.tsx',
+      'tools/**/*.test.mjs'
     ]
   },
   resolve: {

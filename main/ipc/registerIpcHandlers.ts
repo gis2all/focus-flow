@@ -13,6 +13,17 @@ import {
 import { MINI_WINDOW_HEIGHT, MINI_WINDOW_WIDTH } from '@main/windowing'
 import type { AppSettings } from '@shared/types'
 import type { SystemThemePort } from '@main/ports/desktop'
+import {
+  getCreateTaskRequest,
+  getMonthStatsRequest,
+  getOptionalTaskId,
+  getReorderTasksRequest,
+  getResizeWindowRequest,
+  getStartTimerRequest,
+  getTaskId,
+  getUpdateTaskRequest,
+  getWindowDragRequest
+} from './requestValidation'
 import { getSettingsUpdatePatch } from './settingsUpdateRequest'
 import type { SettingsService } from '@main/services/settingsService'
 import type { StatsService } from '@main/services/statsService'
@@ -111,8 +122,12 @@ export const registerIpcHandlers = (services: IpcServices): void => {
   }
 
   ipcMain.handle(IPC_CHANNELS.timer.getSnapshot, () => services.timer.getSnapshot())
-  ipcMain.handle(IPC_CHANNELS.timer.start, (_event, request?: StartTimerRequest) => services.timer.start(request))
-  ipcMain.handle(IPC_CHANNELS.timer.bindCurrentTask, (_event, taskId: string | null) => services.timer.bindCurrentTask(taskId))
+  ipcMain.handle(IPC_CHANNELS.timer.start, (_event, request?: StartTimerRequest) =>
+    services.timer.start(getStartTimerRequest(request))
+  )
+  ipcMain.handle(IPC_CHANNELS.timer.bindCurrentTask, (_event, taskId: string | null) =>
+    services.timer.bindCurrentTask(getOptionalTaskId(taskId, 'timer.bindCurrentTask'))
+  )
   ipcMain.handle(IPC_CHANNELS.timer.pause, () => services.timer.pause())
   ipcMain.handle(IPC_CHANNELS.timer.resume, () => services.timer.resume())
   ipcMain.handle(IPC_CHANNELS.timer.skip, () => services.timer.skip())
@@ -120,14 +135,19 @@ export const registerIpcHandlers = (services: IpcServices): void => {
 
   ipcMain.handle(IPC_CHANNELS.tasks.getBoard, () => services.taskBoard.get())
   ipcMain.handle(IPC_CHANNELS.tasks.list, () => services.tasks.list())
-  ipcMain.handle(IPC_CHANNELS.tasks.create, (_event, request: CreateTaskRequest) => services.tasks.create(request.title))
-  ipcMain.handle(IPC_CHANNELS.tasks.update, (_event, request: UpdateTaskRequest) =>
-    services.tasks.update(request.id, request.title)
+  ipcMain.handle(IPC_CHANNELS.tasks.create, (_event, request: CreateTaskRequest) =>
+    services.tasks.create(getCreateTaskRequest(request).title)
   )
-  ipcMain.handle(IPC_CHANNELS.tasks.complete, (_event, id: string) => services.tasks.complete(id))
-  ipcMain.handle(IPC_CHANNELS.tasks.restore, (_event, id: string) => services.tasks.restore(id))
-  ipcMain.handle(IPC_CHANNELS.tasks.reorder, (_event, request: ReorderTasksRequest) => services.tasks.reorder(request.ids))
-  ipcMain.handle(IPC_CHANNELS.tasks.delete, (_event, id: string) => services.taskDeletion.delete(id))
+  ipcMain.handle(IPC_CHANNELS.tasks.update, (_event, request: UpdateTaskRequest) => {
+    const validated = getUpdateTaskRequest(request)
+    return services.tasks.update(validated.id, validated.title)
+  })
+  ipcMain.handle(IPC_CHANNELS.tasks.complete, (_event, id: string) => services.tasks.complete(getTaskId(id, 'tasks.complete')))
+  ipcMain.handle(IPC_CHANNELS.tasks.restore, (_event, id: string) => services.tasks.restore(getTaskId(id, 'tasks.restore')))
+  ipcMain.handle(IPC_CHANNELS.tasks.reorder, (_event, request: ReorderTasksRequest) =>
+    services.tasks.reorder(getReorderTasksRequest(request).ids)
+  )
+  ipcMain.handle(IPC_CHANNELS.tasks.delete, (_event, id: string) => services.taskDeletion.delete(getTaskId(id, 'tasks.delete')))
 
   ipcMain.handle(IPC_CHANNELS.settings.get, () => services.settings.get())
   ipcMain.handle(IPC_CHANNELS.settings.update, async (_event, request: UpdateSettingsRequest | unknown) => {
@@ -137,7 +157,9 @@ export const registerIpcHandlers = (services: IpcServices): void => {
     return updated
   })
   ipcMain.handle(IPC_CHANNELS.stats.get, () => services.stats.get())
-  ipcMain.handle(IPC_CHANNELS.stats.getMonth, (_event, request: MonthStatsRequest) => services.stats.getMonth(request))
+  ipcMain.handle(IPC_CHANNELS.stats.getMonth, (_event, request: MonthStatsRequest) =>
+    services.stats.getMonth(getMonthStatsRequest(request))
+  )
 
   ipcMain.handle(IPC_CHANNELS.system.getTheme, () => (services.theme.shouldUseDarkColors() ? 'dark' : 'light'))
   ipcMain.handle(IPC_CHANNELS.system.showWindow, () => services.showMainWindow())
@@ -145,12 +167,12 @@ export const registerIpcHandlers = (services: IpcServices): void => {
   ipcMain.on(IPC_CHANNELS.system.beginWindowDrag, (event, request: WindowDragRequest) => {
     const window = getSenderWindow(event.sender.id)
     if (!window) return
-    beginSenderWindowDrag(window, request)
+    beginSenderWindowDrag(window, getWindowDragRequest(request))
   })
   ipcMain.on(IPC_CHANNELS.system.updateWindowDrag, (event, request: WindowDragRequest) => {
     const window = getSenderWindow(event.sender.id)
     if (!window) return
-    updateSenderWindowDrag(window, request)
+    updateSenderWindowDrag(window, getWindowDragRequest(request))
   })
   ipcMain.on(IPC_CHANNELS.system.endWindowDrag, (event) => {
     endSenderWindowDrag(event.sender.id)
@@ -158,7 +180,7 @@ export const registerIpcHandlers = (services: IpcServices): void => {
   ipcMain.handle(IPC_CHANNELS.system.resizeWindow, (event, request: ResizeWindowRequest) => {
     const window = getSenderWindow(event.sender.id)
     if (!window) return
-    resizeSenderWindow(window, request)
+    resizeSenderWindow(window, getResizeWindowRequest(request))
   })
   ipcMain.handle(IPC_CHANNELS.system.minimizeWindow, (event) => {
     getSenderWindow(event.sender.id)?.minimize()

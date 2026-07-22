@@ -37,6 +37,8 @@ import { TaskDeletionService } from '@main/services/taskDeletionService'
 import { TaskService } from '@main/services/taskService'
 import { TimerService } from '@main/services/timerService'
 import { createBroadcastTimerSnapshot, createTimerTickRunner } from '@main/timerSnapshotBroadcast'
+import { createSecureWebPreferences, hardenWebContents } from './security'
+import { resolveUserDataPathOverride } from './userDataPath'
 import { buildTrayMenuTemplate } from './trayMenu'
 import {
   MINI_WINDOW_HEIGHT,
@@ -105,6 +107,11 @@ const applyNativeThemePreference = (preference: AppSettings['themePreference']) 
 const MAIN_WINDOW_WIDTH = 888
 const MAIN_WINDOW_HEIGHT = 760
 
+const userDataPathOverride = resolveUserDataPathOverride(process.env.FOCUSFLOW_E2E_USER_DATA_DIR)
+if (userDataPathOverride) {
+  app.setPath('userData', userDataPathOverride)
+}
+
 if (process.platform === 'win32') {
   app.setAppUserModelId(resolveWindowsAppUserModelId(app.isPackaged, process.execPath))
 }
@@ -137,6 +144,7 @@ if (!hasSingleInstanceLock) {
 
 const createMainWindow = (startHidden: boolean): BrowserWindow => {
   const shouldStartHidden = process.argv.includes('--hidden') || startHidden
+  const preloadPath = join(__dirname, '../preload/index.cjs')
   const window = new BrowserWindow({
     width: MAIN_WINDOW_WIDTH,
     height: MAIN_WINDOW_HEIGHT,
@@ -148,13 +156,9 @@ const createMainWindow = (startHidden: boolean): BrowserWindow => {
     autoHideMenuBar: true,
     backgroundColor: '#f4f7fb',
     icon: getRuntimeAssetPath('focusflow-icon.png'),
-    webPreferences: {
-      preload: join(__dirname, '../preload/index.mjs'),
-      contextIsolation: true,
-      nodeIntegration: false,
-      sandbox: false
-    }
+    webPreferences: createSecureWebPreferences(preloadPath)
   })
+  hardenWebContents(window.webContents)
 
   const showWhenReady = (): void => {
     if (!shouldStartHidden && !window.isVisible()) {
@@ -174,17 +178,14 @@ const createMainWindow = (startHidden: boolean): BrowserWindow => {
 }
 
 const createMiniWindow = (position: { x: number; y: number }): BrowserWindow => {
+  const preloadPath = join(__dirname, '../preload/index.cjs')
   const window = new BrowserWindow({
     ...createMiniWindowChromeOptions(position),
     title: 'FocusFlow Mini',
     icon: getRuntimeAssetPath('focusflow-icon.png'),
-    webPreferences: {
-      preload: join(__dirname, '../preload/index.mjs'),
-      contextIsolation: true,
-      nodeIntegration: false,
-      sandbox: false
-    }
+    webPreferences: createSecureWebPreferences(preloadPath)
   })
+  hardenWebContents(window.webContents)
 
   loadRendererWindow(window, 'mini')
   return window
@@ -301,7 +302,8 @@ if (hasSingleInstanceLock) {
   const taskDeletion = new TaskDeletionService({
     tasks: taskRepository,
     sessions: sessionRepository,
-    timer
+    timer,
+    transactions: database
   })
   const runTimerTick = createTimerTickRunner({
     timer,

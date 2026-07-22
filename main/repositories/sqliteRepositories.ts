@@ -135,25 +135,31 @@ export class SqliteTaskRepository implements TaskRepository {
   }
 
   async reorderActive(ids: string[], now = nowIso()): Promise<void> {
-    const activeRows = this.database.all<{ id: string }>(
-      'SELECT id FROM tasks WHERE completed_at IS NULL ORDER BY sort_order ASC, created_at ASC'
-    )
-    const activeIds = activeRows.map((row) => row.id)
-    if (activeIds.length !== ids.length) {
-      throw new Error('Task reorder payload must include every active task')
-    }
-
-    const expected = [...activeIds].sort()
-    const received = [...ids].sort()
-    for (let index = 0; index < expected.length; index += 1) {
-      if (expected[index] !== received[index]) {
-        throw new Error('Task reorder payload does not match active tasks')
+    await this.database.transaction(async () => {
+      const activeRows = this.database.all<{ id: string }>(
+        'SELECT id FROM tasks WHERE completed_at IS NULL ORDER BY sort_order ASC, created_at ASC'
+      )
+      const activeIds = activeRows.map((row) => row.id)
+      if (activeIds.length !== ids.length) {
+        throw new Error('Task reorder payload must include every active task')
       }
-    }
 
-    for (let index = 0; index < ids.length; index += 1) {
-      await this.database.run('UPDATE tasks SET sort_order = ?, updated_at = ? WHERE id = ?', [index + 1, now, ids[index]])
-    }
+      const expected = [...activeIds].sort()
+      const received = [...ids].sort()
+      for (let index = 0; index < expected.length; index += 1) {
+        if (expected[index] !== received[index]) {
+          throw new Error('Task reorder payload does not match active tasks')
+        }
+      }
+
+      for (let index = 0; index < ids.length; index += 1) {
+        await this.database.run('UPDATE tasks SET sort_order = ?, updated_at = ? WHERE id = ?', [
+          index + 1,
+          now,
+          ids[index]
+        ])
+      }
+    })
   }
 
   async delete(id: string): Promise<void> {
@@ -273,13 +279,15 @@ export class SqliteSettingsRepository implements SettingsRepository {
 
   async update(patch: Partial<AppSettings>): Promise<AppSettings> {
     const now = nowIso()
-    for (const [key, value] of Object.entries(patch)) {
-      await this.database.run('INSERT OR REPLACE INTO settings (key, value, updated_at) VALUES (?, ?, ?)', [
-        key,
-        JSON.stringify(value),
-        now
-      ])
-    }
+    await this.database.transaction(async () => {
+      for (const [key, value] of Object.entries(patch)) {
+        await this.database.run('INSERT OR REPLACE INTO settings (key, value, updated_at) VALUES (?, ?, ?)', [
+          key,
+          JSON.stringify(value),
+          now
+        ])
+      }
+    })
     return this.get()
   }
 }
