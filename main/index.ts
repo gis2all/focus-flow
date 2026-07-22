@@ -301,7 +301,8 @@ if (hasSingleInstanceLock) {
   const taskDeletion = new TaskDeletionService({
     tasks: taskRepository,
     sessions: sessionRepository,
-    timer
+    timer,
+    transactions: database
   })
   const runTimerTick = createTimerTickRunner({
     timer,

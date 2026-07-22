@@ -103,6 +103,10 @@ class FakeTimerService {
   }
 }
 
+const passthroughTransactions = {
+  transaction: async <T>(operation: () => Promise<T> | T): Promise<T> => operation()
+}
+
 describe('TaskDeletionService', () => {
   test('deletes a normal task together with its historical focus records', async () => {
     const taskRepository = createTaskRepository([
@@ -167,7 +171,8 @@ describe('TaskDeletionService', () => {
     const service = new TaskDeletionService({
       tasks: taskRepository,
       sessions: sessionRepository,
-      timer
+      timer,
+      transactions: passthroughTransactions
     })
 
     await service.delete('task-1')
@@ -207,7 +212,8 @@ describe('TaskDeletionService', () => {
     const service = new TaskDeletionService({
       tasks: taskRepository,
       sessions: sessionRepository,
-      timer
+      timer,
+      transactions: passthroughTransactions
     })
 
     await service.delete('task-1')
@@ -243,7 +249,8 @@ describe('TaskDeletionService', () => {
     const service = new TaskDeletionService({
       tasks: taskRepository,
       sessions: sessionRepository,
-      timer
+      timer,
+      transactions: passthroughTransactions
     })
 
     await service.delete('task-2')

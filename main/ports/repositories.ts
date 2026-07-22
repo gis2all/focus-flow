@@ -1,5 +1,9 @@
 import type { AppEvent, AppSettings, CompletionReason, Task, TimerPhase, TimerSession, TimerState } from '@shared/types'
 
+export interface TransactionRunner {
+  transaction<T>(operation: () => Promise<T> | T): Promise<T>
+}
+
 export interface CreateTimerSessionInput {
   phase: TimerPhase
   taskId: string | null
