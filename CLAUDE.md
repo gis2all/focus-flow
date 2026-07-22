@@ -210,7 +210,7 @@ npm run package:appx:dev
 - `package.json > build.appx`：集中定义 `identityName`、`applicationId`、`publisherDisplayName`、`publisher` 等 AppX 元数据；当前允许本地验证占位值，正式发布前必须替换。
 - `package.json > build.toolsets.winCodeSign`：固定为 `1.1.0`，让 `electron-builder` 在 Windows 上使用现代签名工具链并补齐 SHA256 摘要参数。
 - AppX 资源位于 `main/assets/appx/`，由现有 `main/assets/focusflow-icon.png` 派生生成。
-- `package-win.mjs` 会预热 `output/cache/electron-builder/`，为 legacy `winCodeSign-2.6.0` cache 提前放入现代 `rcedit`，默认无参数打 `nsis portable`，显式传 `appx` 时只打 `appx`。
+- `package-win.mjs` 会预热 `output/cache/electron-builder/`，为 legacy `winCodeSign-2.6.0` cache 提前放入现代 `rcedit`，默认无参数打 `nsis portable`，显式传 `appx` 时只打 `appx`；调用 electron-builder 时固定传入 `--publish never`，防止 CI push 隐式触发发布。
 - 兼容层目标是稳定 exe 图标与版本资源写入；这是项目级 workaround，不是系统权限修复。
 - 开发证书脚本位于 `tools/appx/prepare-dev-cert.ps1` 和 `tools/appx/package-dev.ps1`，不要放回被忽略的 `scripts/`。
 - 本地开发证书私钥创建在 `CurrentUser\My`，但 AppX 安装信任要导入 `LocalMachine\TrustedPeople`；脚本会优先复用已有机器级信任，缺失时拉起管理员 PowerShell 完成导入。

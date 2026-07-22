@@ -78,7 +78,7 @@ async function prepareWinCodeSignCompatibilityCache() {
 async function runWindowsPackaging() {
   const cliPath = resolve(projectRoot, 'node_modules', 'electron-builder', 'cli.js')
   // Keep the default release flow on nsis + portable unless the caller asks for another allowed target set.
-  const windowsPackagingArgs = ['--win', ...requestedWindowsTargets]
+  const windowsPackagingArgs = ['--win', ...requestedWindowsTargets, '--publish', 'never']
 
   await new Promise((resolvePromise, rejectPromise) => {
     const child = spawn(process.execPath, [cliPath, ...windowsPackagingArgs], {

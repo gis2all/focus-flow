@@ -1,6 +1,6 @@
 # FocusFlow
 
-[![CI](https://github.com/gis2all/focus-flow/actions/workflows/ci.yml/badge.svg)](https://github.com/gis2all/focus-flow/actions/workflows/ci.yml)
+[![CI](https://github.com/gis2all/focus-flow/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/gis2all/focus-flow/actions/workflows/ci.yml?query=branch%3Amain)
 [![Release](https://img.shields.io/github/v/release/gis2all/focus-flow)](https://github.com/gis2all/focus-flow/releases/latest)
 [![License](https://img.shields.io/github/license/gis2all/focus-flow)](LICENSE)
 
