@@ -37,6 +37,7 @@ import { TaskDeletionService } from '@main/services/taskDeletionService'
 import { TaskService } from '@main/services/taskService'
 import { TimerService } from '@main/services/timerService'
 import { createBroadcastTimerSnapshot, createTimerTickRunner } from '@main/timerSnapshotBroadcast'
+import { createSecureWebPreferences, hardenWebContents } from './security'
 import { buildTrayMenuTemplate } from './trayMenu'
 import {
   MINI_WINDOW_HEIGHT,
@@ -137,6 +138,7 @@ if (!hasSingleInstanceLock) {
 
 const createMainWindow = (startHidden: boolean): BrowserWindow => {
   const shouldStartHidden = process.argv.includes('--hidden') || startHidden
+  const preloadPath = join(__dirname, '../preload/index.mjs')
   const window = new BrowserWindow({
     width: MAIN_WINDOW_WIDTH,
     height: MAIN_WINDOW_HEIGHT,
@@ -148,13 +150,9 @@ const createMainWindow = (startHidden: boolean): BrowserWindow => {
     autoHideMenuBar: true,
     backgroundColor: '#f4f7fb',
     icon: getRuntimeAssetPath('focusflow-icon.png'),
-    webPreferences: {
-      preload: join(__dirname, '../preload/index.mjs'),
-      contextIsolation: true,
-      nodeIntegration: false,
-      sandbox: false
-    }
+    webPreferences: createSecureWebPreferences(preloadPath)
   })
+  hardenWebContents(window.webContents)
 
   const showWhenReady = (): void => {
     if (!shouldStartHidden && !window.isVisible()) {
@@ -174,17 +172,14 @@ const createMainWindow = (startHidden: boolean): BrowserWindow => {
 }
 
 const createMiniWindow = (position: { x: number; y: number }): BrowserWindow => {
+  const preloadPath = join(__dirname, '../preload/index.mjs')
   const window = new BrowserWindow({
     ...createMiniWindowChromeOptions(position),
     title: 'FocusFlow Mini',
     icon: getRuntimeAssetPath('focusflow-icon.png'),
-    webPreferences: {
-      preload: join(__dirname, '../preload/index.mjs'),
-      contextIsolation: true,
-      nodeIntegration: false,
-      sandbox: false
-    }
+    webPreferences: createSecureWebPreferences(preloadPath)
   })
+  hardenWebContents(window.webContents)
 
   loadRendererWindow(window, 'mini')
   return window
