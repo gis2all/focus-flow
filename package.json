@@ -1,6 +1,6 @@
 {
   "name": "focusflow",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A local-first Windows desktop Pomodoro timer.",
   "main": "output/build/main/index.js",
   "type": "module",
