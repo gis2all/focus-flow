@@ -14,6 +14,8 @@
     "preview": "cmd /d /s /c \"set ELECTRON_RUN_AS_NODE=&& electron-vite preview\"",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:e2e": "npm run build && node ./tools/electron-e2e.mjs",
+    "test:package-smoke": "node ./tools/packaged-smoke.mjs",
     "package": "npm run build && node ./package-win.mjs",
     "package:appx:dev": "powershell -NoProfile -ExecutionPolicy Bypass -File .\\tools\\appx\\package-dev.ps1"
   },
@@ -31,7 +33,7 @@
     "@types/react-dom": "^19.0.3",
     "@types/sql.js": "^1.4.9",
     "@vitejs/plugin-react": "^5.1.4",
-    "electron": "^43.2.0",
+    "electron": "^41.3.0",
     "electron-builder": "^26.15.3",
     "electron-vite": "^5.0.0",
     "typescript": "^5.9.3",

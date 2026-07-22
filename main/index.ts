@@ -144,7 +144,7 @@ if (!hasSingleInstanceLock) {
 
 const createMainWindow = (startHidden: boolean): BrowserWindow => {
   const shouldStartHidden = process.argv.includes('--hidden') || startHidden
-  const preloadPath = join(__dirname, '../preload/index.mjs')
+  const preloadPath = join(__dirname, '../preload/index.cjs')
   const window = new BrowserWindow({
     width: MAIN_WINDOW_WIDTH,
     height: MAIN_WINDOW_HEIGHT,
@@ -178,7 +178,7 @@ const createMainWindow = (startHidden: boolean): BrowserWindow => {
 }
 
 const createMiniWindow = (position: { x: number; y: number }): BrowserWindow => {
-  const preloadPath = join(__dirname, '../preload/index.mjs')
+  const preloadPath = join(__dirname, '../preload/index.cjs')
   const window = new BrowserWindow({
     ...createMiniWindowChromeOptions(position),
     title: 'FocusFlow Mini',
