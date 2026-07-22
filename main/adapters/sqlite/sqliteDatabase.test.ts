@@ -63,6 +63,33 @@ describe('sqlite database durability', () => {
     )
   })
 
+  test('prefers a newer valid temporary file over a stale valid main file', async () => {
+    await database?.run(
+      'INSERT INTO tasks (id, title, sort_order, completed_at, created_at, updated_at) VALUES (?, ?, ?, NULL, ?, ?)',
+      ['older-task', 'Older', 1, '2026-07-22T09:00:00.000Z', '2026-07-22T09:00:00.000Z']
+    )
+    database?.close()
+    database = null
+    const stalePath = join(tempDirectory, 'stale.sqlite')
+    await copyFile(databasePath, stalePath)
+
+    database = await createSqliteAppDatabase(databasePath)
+    await database.run(
+      'INSERT INTO tasks (id, title, sort_order, completed_at, created_at, updated_at) VALUES (?, ?, ?, NULL, ?, ?)',
+      ['newer-task', 'Newer', 2, '2026-07-22T09:01:00.000Z', '2026-07-22T09:01:00.000Z']
+    )
+    database.close()
+    database = null
+    await rename(databasePath, `${databasePath}.tmp`)
+    await copyFile(stalePath, databasePath)
+
+    database = await createSqliteAppDatabase(databasePath)
+
+    expect(database.get<{ title: string }>('SELECT title FROM tasks WHERE id = ?', ['newer-task'])?.title).toBe(
+      'Newer'
+    )
+  })
+
   test('falls back to the last valid backup when the main file is corrupt', async () => {
     await database?.run(
       'INSERT INTO tasks (id, title, sort_order, completed_at, created_at, updated_at) VALUES (?, ?, ?, NULL, ?, ?)',
