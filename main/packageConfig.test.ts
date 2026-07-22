@@ -52,6 +52,7 @@ const packageJsonPath = resolve(process.cwd(), 'package.json')
 const packageHelperPath = resolve(process.cwd(), 'package-win.mjs')
 const appxAssetPath = resolve(process.cwd(), 'main', 'assets', 'appx')
 const packageConfig = JSON.parse(readFileSync(packageJsonPath, 'utf-8')) as BuildConfig
+const packageHelper = readFileSync(packageHelperPath, 'utf-8')
 
 describe('package.json build config', () => {
   test('keeps the default Windows packaging flow on nsis and portable', () => {
@@ -67,6 +68,12 @@ describe('package.json build config', () => {
     expect(packageConfig.build.nsis.artifactName).toBe('focusflow-setup.${ext}')
     expect(packageConfig.build.nsis.uninstallDisplayName).toBe('FocusFlow')
     expect(packageConfig.build.portable.artifactName).toBe('focusflow-single.${ext}')
+  })
+
+  test('disables electron-builder implicit publishing in CI', () => {
+    expect(packageHelper).toContain(
+      "const windowsPackagingArgs = ['--win', ...requestedWindowsTargets, '--publish', 'never']"
+    )
   })
 
   test('keeps appx packaging on a single signed development entrypoint', () => {
