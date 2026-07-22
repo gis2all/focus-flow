@@ -1,6 +1,7 @@
 # FocusFlow
 
 [![CI](https://github.com/gis2all/focus-flow/actions/workflows/ci.yml/badge.svg)](https://github.com/gis2all/focus-flow/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/gis2all/focus-flow)](https://github.com/gis2all/focus-flow/releases/latest)
 [![License](https://img.shields.io/github/license/gis2all/focus-flow)](LICENSE)
 
 FocusFlow 是一个本地优先的 Windows 桌面番茄钟客户端，面向个人专注、任务绑定和本地统计场景。它把番茄钟、待办任务、专注统计、系统托盘、小窗和 Windows 通知整合在一个轻量桌面应用里。
@@ -16,12 +17,26 @@ FocusFlow 是一个本地优先的 Windows 桌面番茄钟客户端，面向个�
   <img src="main/assets/image.png" alt="FocusFlow 主界面" width="860">
 </p>
 
-## 快速开始
+## 下载与安装
+
+从 [GitHub Releases](https://github.com/gis2all/focus-flow/releases/latest) 下载最新版本：
+
+- `focusflow-setup.exe`：标准安装向导，适合大多数用户。
+- `focusflow-single.exe`：无需安装的单文件便携版。
+
+如果 Windows Defender 或 SmartScreen 显示安全提示，请先确认下载地址来自本仓库的 GitHub Releases。
+
+## 开发与验证
+
+开发环境要求：
+
+- Windows 10/11 x64
+- Node.js 22（包含 npm）
 
 安装依赖：
 
 ```powershell
-npm install
+npm ci
 ```
 
 常用命令：
@@ -30,8 +45,10 @@ npm install
 npm run dev
 npm run build
 npm test
+npm run test:e2e
 npm run preview
 npm run package
+npm run test:package-smoke
 npm run package:appx:dev
 ```
 
@@ -40,33 +57,42 @@ npm run package:appx:dev
 - `npm run dev`：本地开发首选命令，直接启动完整 Electron 应用，适合验证托盘、窗口控制、通知和 preload API。
 - `npm run build`：执行 TypeScript 类型检查，并构建 main、preload、renderer 三端产物到 `output/build/`。
 - `npm test`：运行 Vitest 测试。
+- `npm run test:e2e`：构建并启动真实 Electron，验证沙箱、IPC、任务计时和重启持久化。
 - `npm run preview`：预览构建后的 Electron 应用。
-- `npm run package`：默认 Windows 发布链路，产出标准安装向导版 `nsis` 安装包和 `portable` 单文件版，输出到 `output/release/`。
+- `npm run package`：默认 Windows 发布链路，产出标准安装向导版 `nsis` 安装包和 `portable` 单文件版，输出到 `output/release/`。运行前需要退出从该目录启动的 FocusFlow 实例。
+- `npm run test:package-smoke`：启动 `win-unpacked` 中的新打包应用，检查产物、发布元数据和 preload API；需要先成功运行 `npm run package`。
 - `npm run package:appx:dev`：唯一 AppX 打包入口，内部会自动准备或复用本地开发证书，并产出当前机器可直接安装的签名 `appx`。
 
 ## 技术栈
 
-- 桌面框架：Electron 34
+- 桌面框架：Electron 41
 - 前端界面：React 19 + TypeScript 5
 - 本地数据：SQLite（via `sql.js`）
-- 构建工具：electron-vite 5
-- 测试：Vitest
+- 构建工具：electron-vite 5 + Vite 7
+- 测试：Vitest 4 + Playwright 1.61
 
 ## 项目结构
 
 ```text
-core -> services -> adapters -> UI
+Renderer -> Preload/IPC -> Main services -> Ports/Adapters
+                                  |
+                                 Core
 ```
 
 示意图：
 
 ```mermaid
 flowchart LR
-  Core["core/<br/>计时状态机 / 统计聚合"] --> Main["main/<br/>服务装配 / IPC / 窗口 / 托盘 / 数据库"]
-  Shared["shared/<br/>类型 / IPC 合同 / 默认设置"] --> Main
-  Shared --> Preload["preload/<br/>contextBridge / window.focusFlow"]
-  Main --> Preload
-  Preload --> Renderer["renderer/<br/>React 页面 / 组件 / 视图模型"]
+  Renderer["renderer/<br/>React 页面 / 组件 / 视图模型"] -->|window.focusFlow| Preload["preload/<br/>contextBridge"]
+  Preload -->|IPC| Main["main/<br/>启动 / 窗口 / 托盘"]
+  Main --> Services["main/services/<br/>应用服务"]
+  Services --> Core["core/<br/>计时状态机 / 统计聚合"]
+  Services --> Ports["main/ports/<br/>能力接口"]
+  Adapters["main/adapters + repositories/<br/>Electron / SQLite 实现"] -. implements .-> Ports
+  Main --> Adapters
+  Renderer --> Shared["shared/<br/>类型 / IPC 合同 / 默认设置"]
+  Preload --> Shared
+  Main --> Shared
 ```
 
 关键目录：
@@ -91,7 +117,7 @@ flowchart LR
 
 ### 输出目录与发布包
 
-- `output/` 是生成物目录，需要时可删除后通过 `npm run build`、`npm run package` 或 `npm run package:appx:dev` 重新生成。
+- `output/` 是生成物目录，需要时可删除后通过 `npm run build`、`npm run package` 或 `npm run package:appx:dev` 重新生成；操作前先退出从 `output/release/` 运行的 FocusFlow。
 - `output/build/`：`npm run build` 生成的 Electron main、preload、renderer 构建产物。
 - `output/release/focusflow-setup.exe`：Windows 标准安装向导，可选当前用户或所有用户安装，并可修改安装目录。
 - `output/release/focusflow-single.exe`：Windows 单文件便携版，双击即可运行。

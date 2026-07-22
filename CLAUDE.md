@@ -4,7 +4,7 @@
 
 - 项目名：`FocusFlow`
 - 定位：本地优先的 Windows 桌面番茄钟客户端，核心场景是个人专注、任务绑定、本地统计。
-- 技术栈：Electron 34、electron-vite 5、React 19、TypeScript 5、SQLite via `sql.js`、electron-log、Vitest。
+- 技术栈：Electron 41.3.0、electron-builder 26.15.3、electron-vite 5、Vite 7.3.6、React 19、TypeScript 5、SQLite via `sql.js`、electron-log、Vitest 4.1.10、Playwright 1.61.1。
 - 包管理器：`npm`
 - 源码目录：`core/`、`main/`、`preload/`、`renderer/`、`shared/`
 - 构建产物：`output/build/`
@@ -18,7 +18,9 @@
 
 - 不要把业务规则塞回 React 组件；计时、统计、任务等规则优先放在 `core/` 或 `main/services/`。
 - Renderer 只能通过 preload 暴露的 `window.focusFlow` API 访问桌面能力，不直接触碰 Electron 主进程对象。
+- Preload 必须保持 sandbox 兼容，并以 CommonJS 输出到 `output/build/preload/index.cjs`。
 - IPC channel、shared types、数据库 schema、打包产物命名都是稳定边界，改动前必须确认影响面。
+- IPC 入参在主进程边界做运行时校验；不要把 TypeScript 类型当作不可信 renderer 数据的运行时保证。
 - 当前是 Windows / PowerShell 语义；不要用 bash 风格 `&&` 串命令。
 - 编辑 `md / ts / tsx / json / html / yml` 时优先用 `apply_patch` 或 UTF-8 安全写法，避免 PowerShell 编码问题。
 
@@ -32,6 +34,7 @@
 - 默认设置定义在 `shared/defaults.ts`。
 - 小窗尺寸常量定义在 `shared/windowMetrics.ts`。
 - 如需新增或修改跨进程 API，必须同步更新 `shared/contracts.ts`、`preload/index.ts`、`main/ipc/registerIpcHandlers.ts` 和相关测试。
+- IPC 请求校验集中在 `main/ipc/requestValidation.ts` 和 `main/ipc/settingsUpdateRequest.ts`；新增带 payload 的 channel 时必须补对应运行时校验。
 
 当前 IPC 分组：
 
@@ -41,12 +44,22 @@
 - `stats`：总体统计和月历统计。
 - `system`：主题、主窗口、小窗、拖拽、缩放、最小化、最大化、关闭、退出。
 
+### Electron 安全边界
+
+- BrowserWindow 使用 `contextIsolation: true`、`nodeIntegration: false`、`sandbox: true`、`webviewTag: false`。
+- `main/security.ts` 统一拒绝 renderer 新开窗口、页面跳转和权限请求。
+- Renderer 中不应存在可用的 Node.js `process`、`require` 或 Electron API；唯一桌面桥接是 `window.focusFlow`。
+- 改窗口创建、preload 或 IPC 时，至少同步检查 `main/security.test.ts`、`main/ipc/requestValidation.test.ts` 和真实 Electron E2E。
+
 ### 数据库
 
 - SQLite schema 在 `main/adapters/sqlite/schema.ts`。
 - 数据库初始化在 `main/adapters/sqlite/sqliteDatabase.ts`。
 - 主进程启动时在 `main/index.ts` 调用 `createSqliteAppDatabase(join(app.getPath('userData'), 'focusflow.sqlite'))`。
 - 如果 `focusflow.sqlite` 不存在，`sql.js` 会创建空数据库，执行 schema，并立即 flush 到磁盘。
+- 数据库写入通过临时文件和原子替换落盘，并维护 `focusflow.sqlite.bak`；启动时会依次尝试临时文件、主文件和备份文件恢复。
+- 写操作串行化；顶层事务负责 `BEGIN / COMMIT / ROLLBACK` 和统一落盘，嵌套事务复用当前事务上下文。
+- schema 迁移版本记录在 `PRAGMA user_version`，当前版本是 `2`；遇到高于当前版本或非法版本时拒绝启动迁移。
 - Windows 常见路径：`%APPDATA%/focusflow/focusflow.sqlite`。
 - 安装版、`focusflow-single.exe` 单文件便携版、`output/release/focusflow-appx.appx` 安装出的 AppX 版本、`win-unpacked/focusflow.exe` 展开版默认共享同一个用户级 `userData` 数据库位置。
 - `focusflow-single.exe` 是程序分发形态，不是数据便携形态；数据库不会放在 exe 同目录。
@@ -98,7 +111,9 @@ Electron 主进程层，负责应用启动、服务装配、窗口、托盘、�
 - `main/adapters/`：桌面能力、SQLite、通知帮助函数。
 - `main/ports/`：仓储接口与桌面接口。
 - `main/ipc/settingsUpdateRequest.ts`：`settings.update` 请求形状校验 helper。
+- `main/ipc/requestValidation.ts`：计时、任务、统计和窗口相关 IPC payload 的运行时校验。
 - `main/ipc/registerIpcHandlers.ts`：IPC handler 注册。
+- `main/security.ts`：BrowserWindow webPreferences 与导航、弹窗、权限策略。
 - `main/timerSnapshotBroadcast.ts`：主进程计时快照广播 wiring 与 tick runner helper。
 - `main/assets/`：主进程运行时资源，打包后复制到 `app-assets/`。
 
@@ -109,6 +124,7 @@ Electron 主进程层，负责应用启动、服务装配、窗口、托盘、�
 安全桥接层。
 
 - `preload/index.ts` 通过 `contextBridge` 暴露 `window.focusFlow`。
+- 构建配置强制输出 sandbox 兼容的 CommonJS 文件 `output/build/preload/index.cjs`；主进程窗口必须加载这个路径。
 - 这里是 renderer 唯一能访问主进程能力的入口。
 
 适合放：IPC invoke/send/on 的最小封装，不放业务规则。
@@ -149,17 +165,23 @@ React 渲染层。
 npm run dev
 npm run build
 npm test
+npm run test:e2e
 npm run preview
 npm run package
+npm run test:package-smoke
 npm run package:appx:dev
 ```
 
 - `npm run dev`：启动 `electron-vite dev --watch`，用于完整 Electron 开发态。
 - `npm run build`：执行 `tsc --noEmit && electron-vite build`，输出到 `output/build/`。
-- `npm test`：运行 `vitest run`。
+- `npm test`：运行 `vitest run`；当前基线是 32 个测试文件、185 个测试。
+- `npm run test:e2e`：先构建，再启动真实 Electron，验证 renderer 沙箱与弹窗拦截、IPC 入参校验、任务创建与绑定、计时启动/暂停和重启持久化。
 - `npm run preview`：预览构建后的 Electron 应用。
 - `npm run package`：默认 Windows 发布链路；先构建，再通过 `package-win.mjs` 预热 Windows 打包兼容层，最后生成 `nsis + portable`，输出到 `output/release/`。
+- `npm run test:package-smoke`：检查安装包、便携版和 `latest.yml` 相对 `win-unpacked` 的新鲜度，验证发布元数据，并启动打包态应用检查 preload API。
 - `npm run package:appx:dev`：唯一 AppX 打包入口；内部会自动准备或复用开发证书、在需要时拉起管理员导入机器级信任、执行构建，并通过 `package-win.mjs appx` 产出当前机器可直接安装的签名 `appx`。
+
+运行 `npm run package` 前必须退出所有从 `output/release/` 启动的 FocusFlow 实例，尤其是 `output/release/win-unpacked/focusflow.exe`。运行中的 exe 会锁定该目录，导致 electron-builder 以 `EBUSY` 失败。
 
 直接在普通浏览器打开 `http://localhost:5173/` 时，只会看到 renderer 的浏览器态提示页。要验证完整交互、托盘、窗口控制和 preload API，请使用 `npm run dev` 拉起 Electron。
 
@@ -176,6 +198,7 @@ npm run package:appx:dev
 - 打包工具：`electron-builder`
 - Windows targets：`nsis`、`portable`、`appx`
 - 默认 `npm run package` 仍只打 `nsis + portable`
+- GitHub Release 仍由人工创建和上传产物；项目当前没有 publish 自动化，也没有应用内自动更新。
 - `package.json > build.win.icon`：`main/assets/focusflow-icon.ico`
 - `package.json > build.win.executableName`：`focusflow`
 - `package.json > build.nsis.oneClick`：`false`，保持 `focusflow-setup.exe` 为标准辅助安装向导，而不是一键安装。
@@ -328,19 +351,24 @@ npm run package:appx:dev
 - 打包配置：跑 `npm test -- main/packageConfig.test.ts`。
 - 构建路径、alias、资源路径：跑 `npm run build`。
 - Windows 发布产物：跑 `npm run package`，检查 `output/release/` 中安装包、单文件便携版、`win-unpacked/` 和 `latest.yml`。
+- 真实 Electron 安全与主流程：跑 `npm run test:e2e`，覆盖沙箱、新窗口拒绝、IPC 校验、任务计时和重启持久化。
+- 已打包产物：在 `npm run package` 成功后跑 `npm run test:package-smoke`，覆盖产物新鲜度、元数据、打包态启动和 preload API。
 - AppX 打包链路：统一跑 `npm run package:appx:dev`，并检查 `output/release/` 中 `.appx` 产物与 `output/dev-cert/` 证书导出文件。
 - 启动烟测：用 `output/release/focusflow-single.exe` 和 `output/release/win-unpacked/focusflow.exe` 分别验证；注意单文件版会自解包到 `%TEMP%`，可能受单实例锁影响。
 
-当前测试框架：`vitest`
+当前测试框架：`Vitest 4.1.10`（单元/组件）与 `Playwright 1.61.1`（真实 Electron E2E 和打包烟测）。当前 Vitest 基线是 32 个测试文件、185 个测试。
 
 重点测试文件：
 
 - `core/timer/timerState.test.ts`
 - `core/stats/statsAggregator.test.ts`
 - `main/repositories/sqliteRepositories.test.ts`
+- `main/adapters/sqlite/sqliteDatabase.test.ts`
 - `main/timerSnapshotBroadcast.test.ts`
 - `main/ipc/registerIpcHandlers.test.ts`
+- `main/ipc/requestValidation.test.ts`
 - `main/ipc/settingsUpdateRequest.test.ts`
+- `main/security.test.ts`
 - `main/services/timerService.test.ts`
 - `main/services/taskService.test.ts`
 - `main/services/taskBoardService.test.ts`
@@ -356,6 +384,7 @@ npm run package:appx:dev
 - `renderer/windowMode.test.ts`
 - `renderer/views/*.test.tsx`
 - `renderer/components/*.test.tsx`
+- `tools/packaged-smoke.test.mjs`
 
 ## 工作区纪律
 
