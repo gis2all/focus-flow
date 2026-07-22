@@ -38,6 +38,7 @@ import { TaskService } from '@main/services/taskService'
 import { TimerService } from '@main/services/timerService'
 import { createBroadcastTimerSnapshot, createTimerTickRunner } from '@main/timerSnapshotBroadcast'
 import { createSecureWebPreferences, hardenWebContents } from './security'
+import { resolveUserDataPathOverride } from './userDataPath'
 import { buildTrayMenuTemplate } from './trayMenu'
 import {
   MINI_WINDOW_HEIGHT,
@@ -105,6 +106,11 @@ const applyNativeThemePreference = (preference: AppSettings['themePreference']) 
 // pinned to that verified layout to avoid future clipping regressions.
 const MAIN_WINDOW_WIDTH = 888
 const MAIN_WINDOW_HEIGHT = 760
+
+const userDataPathOverride = resolveUserDataPathOverride(process.env.FOCUSFLOW_E2E_USER_DATA_DIR)
+if (userDataPathOverride) {
+  app.setPath('userData', userDataPathOverride)
+}
 
 if (process.platform === 'win32') {
   app.setAppUserModelId(resolveWindowsAppUserModelId(app.isPackaged, process.execPath))
