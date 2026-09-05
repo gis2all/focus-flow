@@ -15,6 +15,10 @@ jobs:
   validate:
     runs-on: windows-latest
     timeout-minutes: 15
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
 
     steps:
       - name: Checkout
@@ -29,8 +33,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run tests
-        run: npm test
+      - name: Run tests + coverage
+        run: npm run test:coverage
 
       - name: Build app
         run: npm run build
@@ -43,3 +47,29 @@ jobs:
 
       - name: Run packaged executable smoke
         run: npm run test:package-smoke
+
+      - name: Generate shield badge data
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: node tools/badge.mjs
+
+      - name: Upload Pages artifact
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: coverage
+
+  deploy-pages:
+    if: github.ref == 'refs/heads/main'
+    needs: validate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        uses: actions/deploy-pages@v4
+        id: deployment

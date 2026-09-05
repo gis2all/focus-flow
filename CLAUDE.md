@@ -176,6 +176,7 @@ React 渲染层。
 npm run dev
 npm run build
 npm test
+npm run test:coverage
 npm run test:e2e
 npm run preview
 npm run package
@@ -185,7 +186,11 @@ npm run package:appx:dev
 
 - `npm run dev`：启动 `electron-vite dev --watch`，用于完整 Electron 开发态。
 - `npm run build`：执行 `tsc --noEmit && electron-vite build`，输出到 `output/build/`。
-- `npm test`：运行 `vitest run`；当前基线是 32 个测试文件、185 个测试。
+- `npm test`：运行 `vitest run`；当前基线是 32 个测试文件、186 个测试。
+- `npm run test:coverage`：运行 Vitest 覆盖率（v8），输出文本、JSON 摘要与 HTML 报告到 `coverage/`。
+- `npm run test:coverage` 的覆盖率只统计核心业务逻辑（`core/`、`shared/`、`main/services`、`main/repositories`、`main/adapters/sqlite`、`main/ipc` 请求校验、`main/timerSnapshotBroadcast`、`main/windowing`、`renderer` 纯逻辑）；壳层/装配/视图由 E2E 覆盖，不计入单测覆盖率口径。
+- `tools/badge.mjs` 读取 `coverage/coverage-summary.json` 与 `output/test-results.json`，生成 `coverage/{coverage,tests}.json`（shields endpoint 徽章数据）。
+- README 的 `tests`/`coverage` 徽章用 `img.shields.io/endpoint` 读 GitHub Pages 的 JSON；由 CI 的 `badge`+`deploy-pages` job 在 main 分支生成并发布（Pages 来源需设为「GitHub Actions」）。
 - `npm run test:e2e`：先构建，再启动真实 Electron，验证 renderer 沙箱与弹窗拦截、IPC 入参校验、任务创建与绑定、计时启动/暂停和重启持久化。
 - `npm run preview`：预览构建后的 Electron 应用。
 - `npm run package`：默认 Windows 发布链路；先构建，再通过 `package-win.mjs` 预热 Windows 打包兼容层，最后生成 `nsis + portable`，输出到 `output/release/`。
@@ -227,6 +232,18 @@ npm run package:appx:dev
 - 本地开发证书私钥创建在 `CurrentUser\My`，但 AppX 安装信任要导入 `LocalMachine\TrustedPeople`；脚本会优先复用已有机器级信任，缺失时拉起管理员 PowerShell 完成导入。
 - `package.json > build.appx.publisher` 必须与开发证书 subject 完全一致；当前本地占位发布者是 `CN=gis2all`。
 - 本地开发证书导出文件位于 `output/dev-cert/`，包含 `.pfx`、`.cer`、密码文件和 `metadata.json`，仅用于本机验证，不提交仓库。
+
+### 对外发布流程
+
+- 当前正式对外分发优先使用 `focusflow-setup.exe` 和 `focusflow-single.exe`。
+- `win-unpacked/` 仅用于开发者烟测，不作为正式下载项。
+- `focusflow-appx.appx` 当前是开发验证链路，仍依赖本地开发证书与占位身份信息，不作为公开下载承诺。
+- 手动制作公开发布建议流程：
+  1. 从 `main` 拉取最新代码。
+  2. 运行 `npm ci`、`npm test`。
+  3. 运行 `npm run package`。
+  4. 手动验证 `output/release/focusflow-setup.exe` 与 `output/release/focusflow-single.exe`。
+  5. 创建 GitHub Release 并上传这两个产物。
 
 ### 干净 Windows 运行依赖
 
@@ -367,7 +384,7 @@ npm run package:appx:dev
 - AppX 打包链路：统一跑 `npm run package:appx:dev`，并检查 `output/release/` 中 `.appx` 产物与 `output/dev-cert/` 证书导出文件。
 - 启动烟测：用 `output/release/focusflow-single.exe` 和 `output/release/win-unpacked/focusflow.exe` 分别验证；注意单文件版会自解包到 `%TEMP%`，可能受单实例锁影响。
 
-当前测试框架：`Vitest 4.1.10`（单元/组件）与 `Playwright 1.61.1`（真实 Electron E2E 和打包烟测）。当前 Vitest 基线是 32 个测试文件、185 个测试。
+当前测试框架：`Vitest 4.1.10`（单元/组件，覆盖率配套 `@vitest/coverage-v8`）与 `Playwright 1.61.1`（真实 Electron E2E 和打包烟测）。当前 Vitest 基线是 32 个测试文件、186 个测试。
 
 重点测试文件：
 

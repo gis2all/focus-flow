@@ -1,8 +1,6 @@
 # FocusFlow
 
-[![CI](https://github.com/gis2all/focus-flow/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/gis2all/focus-flow/actions/workflows/ci.yml?query=branch%3Amain)
-[![Release](https://img.shields.io/github/v/release/gis2all/focus-flow)](https://github.com/gis2all/focus-flow/releases/latest)
-[![License](https://img.shields.io/github/license/gis2all/focus-flow)](LICENSE)
+[![CI](https://github.com/gis2all/focus-flow/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/gis2all/focus-flow/actions/workflows/ci.yml?query=branch%3Amain) [![Tests](https://img.shields.io/endpoint?url=https://gis2all.github.io/focus-flow/tests.json)](https://github.com/gis2all/focus-flow/actions) [![Coverage](https://img.shields.io/endpoint?url=https://gis2all.github.io/focus-flow/coverage.json)](https://gis2all.github.io/focus-flow/) [![License](https://img.shields.io/github/license/gis2all/focus-flow)](LICENSE)
 
 FocusFlow 是一个本地优先的 Windows 桌面番茄钟客户端，面向个人专注、任务绑定和本地统计场景。它把番茄钟、待办任务、专注统计、系统托盘、小窗和 Windows 通知整合在一个轻量桌面应用里。
 
@@ -103,42 +101,4 @@ flowchart LR
 - `renderer/`：React 渲染层，负责主窗口、小窗、计时页、待办页、统计页和设置页。
 - `shared/`：共享类型、IPC channel、默认设置和窗口尺寸常量。
 
-如果需要 AI coding agent 快速了解修改边界、验证策略和内部约定，请优先阅读 `CLAUDE.md`。
-
-## 数据与发布
-
-### 数据库
-
-- 数据库文件名是 `focusflow.sqlite`，默认放在 Electron 的 `app.getPath('userData')` 目录下，常见路径是 `%APPDATA%/focusflow/focusflow.sqlite`。
-- 首次启动如果 `focusflow.sqlite` 不存在，程序会自动创建空库并完成建表。
-- 数据库不打进发布包；删除 `output/` 或重新打包不会删除用户数据。
-- 如需迁移数据，先退出 FocusFlow，再复制 `focusflow.sqlite` 到新电脑对应的 `userData` 目录。
-- 安装版、单文件便携版、`appx` 包和 `win-unpacked/` 展开版默认共享同一个 `userData` 数据库位置。
-
-### 输出目录与发布包
-
-- `output/` 是生成物目录，需要时可删除后通过 `npm run build`、`npm run package` 或 `npm run package:appx:dev` 重新生成；操作前先退出从 `output/release/` 运行的 FocusFlow。
-- `output/build/`：`npm run build` 生成的 Electron main、preload、renderer 构建产物。
-- `output/release/focusflow-setup.exe`：Windows 标准安装向导，可选当前用户或所有用户安装，并可修改安装目录。
-- `output/release/focusflow-single.exe`：Windows 单文件便携版，双击即可运行。
-- `output/release/focusflow-appx.appx`：Windows `appx` 开发验证包，安装目录由 Windows 系统托管，不支持自选路径，当前不作为公开下载承诺。
-- `output/release/win-unpacked/focusflow.exe`：展开版应用，主要用于开发者烟测。
-- `output/release/latest.yml` 和 `output/release/*.blockmap`：发布与更新相关元数据。
-- `output/cache/electron-builder/`：`package-win.mjs` 使用的项目级 `electron-builder` cache。
-- Windows 打包通过根目录的 `package-win.mjs` 驱动 `electron-builder`；默认无参数时打 `nsis portable`，显式传 `appx` 时只打 `appx`。
-
-### 公开发布
-
-- 当前正式对外分发优先使用 `focusflow-setup.exe` 和 `focusflow-single.exe`。
-- `win-unpacked/` 仅用于开发者烟测，不作为正式下载项。
-- `focusflow-appx.appx` 当前是开发验证链路，仍依赖本地开发证书与占位身份信息，不作为公开下载承诺。
-- 如需手动制作公开发布，建议流程是：从 `main` 拉取最新代码，运行 `npm ci`、`npm test`、`npm run package`，手动验证 `focusflow-setup.exe` 与 `focusflow-single.exe` 后，再创建 GitHub Release 并上传这两个产物。
-
-### 运行依赖
-
-- 当前发布包面向 x64 Windows，建议在 Windows 10/11 x64 上运行。
-- `focusflow-setup.exe` 和 `focusflow-single.exe` 都可以单独分发；如果使用 `win-unpacked/`，必须拷贝整个目录，不能只拷贝其中的 exe。
-- 不需要预装 Node.js、npm、SQLite、WebView2 或项目依赖。Electron、Chromium、Node runtime，以及 `react`、`sql.js`、`electron-log` 等运行依赖都已随应用打包。
-- `sql.js` 需要的 `sql-wasm.wasm` 已随应用一起打包，不依赖系统 SQLite。
-- 新电脑需要允许写入 `%APPDATA%` 和 `%TEMP%`；单文件便携版会使用 `%TEMP%` 解包运行。
-- Windows Defender、SmartScreen、企业安全策略或杀毒软件可能拦截未信任的新程序；这属于系统安全策略，不是缺少依赖。
+如果需要 AI coding agent 快速了解修改边界、验证策略和内部约定，请优先阅读 [`CLAUDE.md`](CLAUDE.md)。
