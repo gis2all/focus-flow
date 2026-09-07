@@ -12,7 +12,8 @@ vi.mock('react-dom/client', () => ({
 }))
 
 vi.mock('./App', () => ({
-  App: ({ windowMode }: { windowMode: string }) => React.createElement('div', { 'data-screen': 'app', 'data-window-mode': windowMode })
+  App: ({ windowMode }: { windowMode: string }) =>
+    React.createElement('div', { 'data-screen': 'app', 'data-window-mode': windowMode })
 }))
 
 vi.mock('./styles/tokens.css', () => ({}))
@@ -50,12 +51,12 @@ describe('renderer entry', () => {
     vi.unstubAllGlobals()
   })
 
-  test('renders a browser fallback instead of the app when preload API is unavailable', async () => {
+  test('installs the web API and renders the app when preload API is unavailable', async () => {
     const markup = await loadEntryMarkup()
 
-    expect(markup).toContain('FocusFlow')
-    expect(markup).toContain('Open the desktop app from Electron')
-    expect(markup).not.toContain('data-screen="app"')
+    expect(markup).toContain('data-screen="app"')
+    expect(markup).toContain('data-window-mode="main"')
+    expect(markup).not.toContain('Electron preload is not available')
   })
 
   test('renders the app normally when preload API is available', async () => {

@@ -18,7 +18,10 @@
     "test:e2e": "npm run build && node ./tools/electron-e2e.mjs",
     "test:package-smoke": "node ./tools/packaged-smoke.mjs",
     "package": "npm run build && node ./package-win.mjs",
-    "package:appx:dev": "powershell -NoProfile -ExecutionPolicy Bypass -File .\\tools\\appx\\package-dev.ps1"
+    "package:appx:dev": "powershell -NoProfile -ExecutionPolicy Bypass -File .\\tools\\appx\\package-dev.ps1",
+    "web:build": "vite build -c vite.server.config.ts",
+    "web:start": "npm run build && vite build -c vite.server.config.ts && node output/build/server/index.js",
+    "web:dev": "node ./tools/web-dev.mjs"
   },
   "dependencies": {
     "electron-log": "^5.2.4",

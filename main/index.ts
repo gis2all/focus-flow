@@ -100,6 +100,9 @@ const applyNativeThemePreference = (preference: AppSettings['themePreference']) 
   nativeTheme.themeSource = preference
 }
 
+const resolveWindowBackgroundColor = (): string =>
+  nativeTheme.shouldUseDarkColors ? '#08192a' : '#ffffff'
+
 // Electron measures BrowserWindow sizes in logical pixels, not physical pixels.
 // The live main window currently lands at 888x760 logical px on a 125% scaled
 // display (1110x950 physical px), so keep the startup height and minimum height
@@ -142,7 +145,7 @@ if (!hasSingleInstanceLock) {
   })
 }
 
-const createMainWindow = (startHidden: boolean): BrowserWindow => {
+const createMainWindow = (startHidden: boolean, backgroundColor: string): BrowserWindow => {
   const shouldStartHidden = process.argv.includes('--hidden') || startHidden
   const preloadPath = join(__dirname, '../preload/index.cjs')
   const window = new BrowserWindow({
@@ -154,7 +157,7 @@ const createMainWindow = (startHidden: boolean): BrowserWindow => {
     frame: false,
     title: 'FocusFlow',
     autoHideMenuBar: true,
-    backgroundColor: '#f4f7fb',
+    backgroundColor,
     icon: getRuntimeAssetPath('focusflow-icon.png'),
     webPreferences: createSecureWebPreferences(preloadPath)
   })
@@ -315,7 +318,8 @@ if (hasSingleInstanceLock) {
 
   const startupSettings = await settings.get()
   applyNativeThemePreference(startupSettings.themePreference)
-  mainWindow = createMainWindow(process.argv.includes('--hidden') && startupSettings.startToTray)
+  const mainWindowBackground = resolveWindowBackgroundColor()
+  mainWindow = createMainWindow(process.argv.includes('--hidden') && startupSettings.startToTray, mainWindowBackground)
   if (shouldRestorePreferredWindow) {
     shouldRestorePreferredWindow = false
     focusPreferredWindow()
@@ -375,6 +379,7 @@ if (hasSingleInstanceLock) {
     quit: requestQuit,
     onSettingsUpdated: (updated) => {
       applyNativeThemePreference(updated.themePreference)
+      mainWindow?.setBackgroundColor(resolveWindowBackgroundColor())
       if (!tray) return
       tray.setImage(createTrayImage(nativeTheme.shouldUseDarkColors))
       tray.setContextMenu(buildTrayMenu())
@@ -388,6 +393,7 @@ if (hasSingleInstanceLock) {
     void showMainWindow().catch((error) => log.error(error))
   })
   nativeTheme.on('updated', () => {
+    mainWindow?.setBackgroundColor(resolveWindowBackgroundColor())
     if (!tray) return
     tray.setImage(createTrayImage(nativeTheme.shouldUseDarkColors))
     tray.setContextMenu(buildTrayMenu())

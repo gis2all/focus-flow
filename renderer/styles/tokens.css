@@ -166,3 +166,31 @@ button:disabled {
   cursor: default;
   opacity: 0.42;
 }
+
+
+/* Web browser mode: present the app as a centered, responsive card.
+   Only active when the web transport is installed (data-focus-flow-web).
+   The Electron desktop window keeps the original full-bleed layout. */
+html[data-focus-flow-web="true"] body {
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--window-bg) 88%, var(--text-3) 12%);
+}
+
+html[data-focus-flow-web="true"] #root {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  padding: clamp(16px, 3vw, 48px);
+}
+
+html[data-focus-flow-web="true"] #root > * {
+  width: min(100%, 960px);
+  height: min(100%, 800px);
+  max-width: 100%;
+  max-height: 100%;
+  overflow: auto;
+  border-radius: 8px;
+}

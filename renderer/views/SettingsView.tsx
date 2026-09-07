@@ -261,8 +261,10 @@ const SettingStepper = ({ icon, label, unit, value, onChange }: SettingStepperPr
   )
 }
 
-export const SettingsView = ({ settings, updateSettings }: SettingsViewProps): ReactElement => (
-  <div className={styles.settingsView}>
+export const SettingsView = ({ settings, updateSettings }: SettingsViewProps): ReactElement => {
+  const isWeb = typeof document !== 'undefined' && document.documentElement.dataset.focusFlowWeb === 'true'
+  return (
+    <div className={styles.settingsView}>
     <section className={styles.settingsBody}>
       <div className={styles.settingsPanel}>
         <div className={styles.settingsGroup}>
@@ -279,12 +281,14 @@ export const SettingsView = ({ settings, updateSettings }: SettingsViewProps): R
             label="播放提示音"
             onChange={(value) => void updateSettings({ soundEnabled: value })}
           />
+          {!isWeb ? (
           <SettingSwitch
             checked={settings.closeToTray}
             icon={SettingsWindowIcon}
             label="关闭窗口后继续运行"
             onChange={(value) => void updateSettings({ closeToTray: value })}
           />
+          ) : null}
         </div>
 
         <div className={styles.settingsGroup}>
@@ -319,6 +323,7 @@ export const SettingsView = ({ settings, updateSettings }: SettingsViewProps): R
           />
         </div>
 
+        {!isWeb ? (
         <div className={styles.settingsGroup}>
           <h2>启动与窗口</h2>
           <SettingSwitch
@@ -334,6 +339,7 @@ export const SettingsView = ({ settings, updateSettings }: SettingsViewProps): R
             onChange={(value) => void updateSettings({ startToTray: value })}
           />
         </div>
+        ) : null}
 
         <div className={styles.settingsGroup}>
           <h2>外观</h2>
@@ -348,4 +354,5 @@ export const SettingsView = ({ settings, updateSettings }: SettingsViewProps): R
       </div>
     </section>
   </div>
-)
+  )
+}
