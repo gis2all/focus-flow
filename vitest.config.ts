@@ -9,6 +9,7 @@ export default defineConfig({
     reporters: ['default', ['json', { outputFile: 'output/test-results.json' }]],
     include: [
       '{core,main,preload,renderer,shared}/**/*.test.ts',
+      'server/**/*.test.ts',
       '{core,main,preload,renderer,shared}/**/*.test.tsx',
       'tools/**/*.test.mjs'
     ],
@@ -19,6 +20,7 @@ export default defineConfig({
       // Shell/assembly/views are E2E-covered and excluded from unit coverage.
       include: [
         'core/**/*.ts',
+        'server/rpc.ts',
         'shared/**/*.ts',
         'main/services/**/*.ts',
         'main/repositories/**/*.ts',

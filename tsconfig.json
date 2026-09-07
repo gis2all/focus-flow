@@ -24,6 +24,6 @@
       "@shared/*": ["./shared/*"]
     }
   },
-  "include": ["core", "main", "preload", "renderer", "shared", "electron.vite.config.ts", "vitest.config.ts"],
+  "include": ["core", "main", "preload", "renderer", "shared", "server", "electron.vite.config.ts", "vitest.config.ts"],
   "references": []
 }
