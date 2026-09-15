@@ -1,0 +1,33 @@
+name: 功能建议
+description: 提出新功能或改进建议
+title: "[Feature] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        描述你希望解决的实际问题，而不是直接给出实现方案，便于一起讨论。
+  - type: textarea
+    id: motivation
+    attributes:
+      label: 动机 / 要解决的问题
+      description: 为什么需要这个功能？现在哪里不方便？
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: 建议方案
+      description: 你期望的交互或实现方式。
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 备选方案
+      description: 其他可以考虑的做法（可选）。
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: 验收标准
+      description: 完成该功能后应能观察到的效果（可选）。
