@@ -1,0 +1,60 @@
+name: Bug 报告
+description: 提交一个可复现的缺陷
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢报告问题。请尽量完整填写以下信息，便于快速定位和复现。
+  - type: textarea
+    id: description
+    attributes:
+      label: 问题描述
+      description: 实际发生了什么？预期应该是什么？
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: 复现步骤
+      description: 从启动应用开始的最小复现路径。
+      placeholder: |
+        1. 启动 FocusFlow
+        2. 点击 …
+        3. 看到 …
+    validations:
+      required: true
+  - type: dropdown
+    id: environment
+    attributes:
+      label: 运行形态
+      description: 在哪种形态下复现？
+      options:
+        - 桌面开发态（npm run dev）
+        - 网页模式（npm run web:start 或 web:dev）
+        - 安装版 focusflow-setup.exe
+        - 便携版 focusflow-single.exe
+        - 其他（请在补充信息里说明）
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: 版本
+      description: 应用版本，或 git log -1 --oneline 的结果。
+  - type: input
+    id: system
+    attributes:
+      label: 系统环境
+      description: 例如 Windows 11 24H2 x64
+  - type: textarea
+    id: logs
+    attributes:
+      label: 日志与截图
+      description: 终端报错、electron-log 输出、浏览器控制台日志或截图（可直接粘贴图片）。
+  - type: textarea
+    id: extra
+    attributes:
+      label: 补充信息
+      description: 其他可能有用的上下文（可选）。
