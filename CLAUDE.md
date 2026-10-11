@@ -1,16 +1,5 @@
 # CLAUDE.md
 
-## 0. 可选：优先使用 code-review-graph
-
-本仓库建有 `.code-review-graph/graph.db`。定位代码、调用链、影响面时，**如果当前环境已挂载 `code-review-graph` MCP**，可优先用它，避免全文读文件或全仓搜索；若工具不可用，则直接按下方「目录地图」「AI 修改路由」定位，不要因此卡住。
-
-可选流程（按需使用）：
-
-1. 先 `get_minimal_context_tool`（`detail_level="minimal"`），根据结果决定下一步工具。
-2. 理解整体架构用 `get_architecture_overview_tool`；评审改动用 `detect_changes_tool` + `get_review_context_tool`；追踪调用/依赖用 `query_graph_tool` 或 `semantic_search_nodes_tool`。
-3. 判断影响面用 `get_impact_radius_tool`、`get_affected_flows_tool`、`get_flow_tool`。
-4. 若图谱缺失或过期，可 `build_or_update_graph_tool`（或 `code-review-graph update`）后复用。
-
 ## AI 快速上下文
 
 - 项目名：`FocusFlow`
